@@ -1,1 +1,217 @@
 # DigiShell
+
+A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal.
+
+This isn't meant to replace FLDIGI at all, it's just a wrapper around FLDIGI's XML-RPC interface that also uses a library of pyFldigi that gives you a cleaner way to control it. FLDIGI still does all the actual work with the modems and signal processing. I built this because I wanted something simpler to interact with during portable operations and field day setups, and figured it might be useful for others too.
+
+It doesn't have all the bells and whistles that FLDIGI has, that's by design and also because of XML-RPC limitations. This is just the essentials for making contacts: modem control, TX/RX, and it's own macro system. If you need FLDIGI's advanced features (waterfall,  waterfall clicking, macro editing in the app, adjust config/ modes, etc.), you'll still use FLDIGI directly for those.
+
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg) ![FastAPI](https://img.shields.io/badge/fastapi-0.104+-green.svg)
+
+## Why this exists
+
+**Web Interface**  
+Access from any browser over a LAN or VPN (**do not expose to internet for safety reasons**), which could be good for remote stations or operating from a tablet, phone/small screen during field operations. No need to be at your main shack computer.
+
+**Terminal Ready**  
+CLI interface for headless setups, SSH sessions, and if you just prefer working in the terminal. Operate from anywhere with a shell.
+
+**Simplified Controls**  
+Only the essentials. No confusing menus or hidden settings buried somewhere. Just the controls you actually need for making contacts.
+
+**Python Powered**  
+Built with Python so it works pretty much anywhere and you can customize it if you want.
+
+**Quick Setup**  
+Get on the air in minutes. Since DigiShell just wraps FLDIGI, your existing setup works immediately. No need to reconfigure everything.
+
+**Portable Friendly**  
+Lightweight and responsive. Works great on Raspberry Pi, portable rigs, and field day operations where you don't want to deal with complicated interfaces.
+
+## What it actually does
+
+**Web Interface**
+- Works on desktop, tablet, or phone (responsive design)
+- Real-time updates via WebSocket
+- Custom keyboard shortcuts
+- Macro system with auto-fill (callsigns, QTH, date/time, etc.)
+- Save your RX buffer to a file
+- Works completely offline 
+
+**Terminal Interface (TUI)**
+- Full-screen terminal UI
+- Chat-style RX/TX display
+- Slash commands for quick actions
+- Same macro system as the web version
+- Works great over SSH
+
+**Modem Control**
+- Switch between digital modes (PSK, RTTY, Olivia, etc.)
+- Adjust carrier frequency with a slider
+
+**Macro System** 
+- Pre-made macros for common stuff (CQ, greetings, 73, signal reports)
+- Create your own custom macros
+- Auto-fill your callsign, name, QTH, date/time, and the station you're working
+- Works in both web and terminal interfaces, so you don't need to setup a macro again for the two interfaces.
+
+## You'll need
+
+1. **FLDIGI** installed with XML-RPC enabled
+   - In FLDIGI: `Configure → Misc → XML-RPC Server`
+   - Default port is `7362`
+
+2. **Python 3.7 or newer**
+
+That's it. Pretty straightforward.
+
+## Quick Start
+
+### Windows (easiest way)
+
+1. Make sure FLDIGI is running with XML-RPC enabled
+2. Double-click `start.bat`
+3. First time it'll set up the virtual environment and install everything (takes a couple minutes)
+4. After that, it'll just start right up
+5. Browser should open automatically to `http://localhost:8000`
+6. Click the **Connect** button and you're good to go
+
+### Manual way (all platforms)
+
+```bash
+# Get the code
+git clone https://github.com/yourusername/digishell.git
+cd digishell
+
+# Set up virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install stuff
+pip install -r requirements.txt
+
+# Start the web interface
+python -m backend.main
+
+# OR start the terminal version
+python run_tui.py
+```
+
+## Using it
+
+### Web Interface
+
+1. Make sure FLDIGI is running with XML-RPC enabled
+2. Start DigiShell: `python -m backend.main`
+3. Open browser to `http://localhost:8000`
+4. Pick your modem mode, adjust the carrier frequency if needed
+5. Type in the TX box and hit the TX button to transmit, while it is transmitting, you can also type to add more to the TX buffer, though due to current limits, this will not allow you to edit / remove text in between, you can only backspace.
+
+**Keyboard shortcuts:**
+- You can rebind anything or create shortcuts for macros
+- Settings icon → Keybinds
+- Example: Set `Ctrl+Alt+1` to send your CQ macro
+
+**Saving RX buffer:**
+- Click the save icon next to the RX buffer
+- Downloads a timestamped text file
+
+### Terminal Interface (TUI)
+
+```bash
+python run_tui.py
+```
+
+**First time setup:**
+```
+/config W1ABC John Pennsylvania
+```
+(use your actual callsign, name, and QTH obviously)
+
+**Common commands:**
+- Just type and hit Enter to transmit
+- `/m BPSK31` - Change modem
+- `/modes` - List available modes
+- `/carrier 1500` - Set carrier frequency  
+- `/call W1AW` - Set the station you're working
+- `/macro 1` - Send macro #1 (CQ)
+- `/save` - Save RX buffer
+- `/clear` - Clear RX buffer
+- `/quit` - Exit
+
+**Macro placeholders you can use:**
+- `<MYCALL>` - Your callsign
+- `<MYNAME>` - Your name  
+- `<MYQTH>` - Your location
+- `<CALL>` - Station you're working
+- `<DATE>` - Current date
+- `<TIME>` - Local time
+- `<UTC>` - UTC time
+
+You can also manually edit  the `.fldigi_tui.json` to add your own custom macros.
+
+## Project Structure
+
+```
+digishell/
+├── backend/
+│   ├── main.py              # FastAPI server
+│   ├── fldigi_client.py     # FLDIGI XML-RPC wrapper
+│   ├── websocket_manager.py # WebSocket handler
+│   ├── models.py            # Data models
+│   └── routers/             # API endpoints
+├── frontend/
+│   ├── index.html           # Main interface
+│   └── static/
+│       ├── css/main.css     # Styling
+│       ├── js/app.js        # Main app logic
+│       └── fontawesome/     # Icons (self-hosted)
+├── run_tui.py               # Terminal interface
+├── start.bat                # Windows launcher
+└── requirements.txt         # Python dependencies
+```
+
+## Built with
+
+**Backend:**
+- FastAPI - Modern async Python framework
+- pyFldigi - FLDIGI XML-RPC client
+- Uvicorn - ASGI server
+
+**Frontend:**
+- Vanilla JavaScript (no frameworks, keeps it simple)
+- Custom CSS
+- Font Awesome (self-hosted)
+
+**Terminal:**
+- prompt_toolkit - Professional terminal UI library
+
+## Common Issues
+
+**Can't connect to FLDIGI:**
+1. Make sure FLDIGI is actually running
+2. Check that XML-RPC is enabled in FLDIGI settings
+3. Verify port 7362 isn't being blocked
+4. Check your firewall if you're still having issues
+
+**Web interface not updating:**
+1. Check browser console (F12) for errors
+2. Make sure the WebSocket is connected
+3. Verify FLDIGI is responding
+
+**TUI looks weird:**
+1. Your terminal might not support colors - try a different terminal
+2. Try resizing the window
+3. Make sure you're using Python 3.8 or newer
+
+## Want to contribute?
+
+Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.
+
+---
+
+**73!**
+
+Built as a fun project to make portable digital operations simpler. It's not meant to replace FLDIGI, just make it easier to control when you're in the field or accessing your station remotely.
+
+- Caleb KC3VPB
