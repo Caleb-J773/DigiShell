@@ -28,6 +28,13 @@ Get on the air in minutes. Since DigiShell just wraps FLDIGI, your existing setu
 **Portable Friendly**  
 Lightweight and responsive. Works great on Raspberry Pi, portable rigs, and field day operations where you don't want to deal with complicated interfaces.
 
+
+## Other Info About This Project
+This is also a personal research and learning project for fun to understand how Large Language Models (LLMs) work to develop projects like this. The majority of the code was written by Claude Code (Anthropic's AI coding assistant), and then I went through it, tested everything, fixed issues, and adjusted things to work properly.
+
+Before anyone says "oh you just prompted it once and got a working app"... no, that's not how this works at all. It took multiple iterations, planning it out step by step, a lot of testing, debugging weird issues, figuring out what worked and what didn't, and learning how to communicate what I wanted to an LLM. 
+
+
 ## What it actually does
 
 **Web Interface**
