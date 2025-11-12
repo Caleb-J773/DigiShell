@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiShell</title>
+    <link rel="stylesheet" href="/static/fontawesome/all.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-broadcast-tower"></i>
+                    </div>
+                    <h1 class="brand-title">DigiShell</h1>
+                </div>
+
+                <div class="status-pill">
+                    <div id="status-indicator" class="status-dot"></div>
+                    <span id="status-text">Disconnected</span>
+                </div>
+
+                <div class="header-actions">
+                    <button class="icon-button" id="theme-toggle" title="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="icon-button" id="settings-btn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="icon-button" id="shortcuts-help-btn" title="Shortcuts">
+                        <i class="fas fa-keyboard"></i>
+                    </button>
+                    <button class="btn-primary" id="connect-btn">
+                        <i class="fas fa-plug"></i>
+                        <span>Connect</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main -->
+        <div class="container">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Mode</div>
+                    <div id="current-modem" class="stat-value">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Status</div>
+                    <div id="trx-status" class="stat-value">RX</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Frequency</div>
+                    <div id="rig-freq-display" class="stat-value">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Carrier</div>
+                    <div class="stat-value"><span id="carrier-value">1500</span> Hz</div>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div class="main-grid">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Modem -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-wave-square"></i>
+                                Modem
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="modem-search" placeholder="Search modes...">
+                            </div>
+                            <select id="modem-select" size="8" style="margin-bottom: 1rem;">
+                            </select>
+                            <button id="set-modem-btn" class="btn btn-primary btn-block">
+                                <i class="fas fa-check"></i> Apply Mode
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Control -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-tower-broadcast"></i>
+                                Control
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="btn-grid">
+                                <button id="rx-btn" class="btn btn-success">
+                                    <i class="fas fa-download"></i> RX
+                                </button>
+                                <button id="tx-btn" class="btn btn-warning">
+                                    <i class="fas fa-upload"></i> TX
+                                </button>
+                                <button id="tune-btn" class="btn btn-secondary">
+                                    <i class="fas fa-sliders-h"></i> Tune
+                                </button>
+                                <button id="abort-btn" class="btn btn-danger">
+                                    <i class="fas fa-stop"></i> Abort
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-sliders-h"></i>
+                                Quick Settings
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="form-label">Carrier Frequency (Hz)</label>
+                                <input type="number" id="carrier-input" min="500" max="3000" value="1500" style="margin-bottom: 0.75rem;">
+                                <input type="range" id="carrier-freq" min="500" max="3000" value="1500">
+                            </div>
+
+                            <div class="toggle-item">
+                                <span class="toggle-label">TXID</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="txid-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rig -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-radio"></i>
+                                Rig Status
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="info-row">
+                                <span>Name</span>
+                                <span id="rig-name" class="info-value">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Frequency</span>
+                                <span id="rig-frequency" class="info-value">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Mode</span>
+                                <span id="rig-mode" class="info-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <!-- RX -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-download"></i>
+                                Receive Buffer
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button id="save-rx-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                                <button id="clear-rx-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="terminal terminal-rx">
+                                <pre id="rx-text"></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TX -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-upload"></i>
+                                Transmit Buffer
+                            </div>
+                            <div style="display: flex; gap: 0.625rem;">
+                                <button id="clear-tx-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button id="send-tx-btn" class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.8125rem;">
+                                    <i class="fas fa-paper-plane"></i> Send
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <textarea id="tx-text" class="terminal terminal-tx" placeholder="Type your message here..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Macros -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-keyboard"></i>
+                                Macros & Station
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button id="edit-macros-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                    <i class="fas fa-edit"></i> Edit Macros
+                                </button>
+                                <button id="config-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                    <i class="fas fa-cog"></i> Configure
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="station-info">
+                                <div class="station-grid">
+                                    <div class="station-field">
+                                        <strong>CALL</strong><br>
+                                        <span id="station-call">NOCALL</span>
+                                    </div>
+                                    <div class="station-field">
+                                        <strong>NAME</strong><br>
+                                        <span id="station-name">Operator</span>
+                                    </div>
+                                    <div class="station-field">
+                                        <strong>QTH</strong><br>
+                                        <span id="station-qth">Somewhere</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.625rem; align-items: center;">
+                                    <label style="font-size: 0.875rem; font-weight: 500; white-space: nowrap;">Last Call:</label>
+                                    <input type="text" id="last-call-input" placeholder="NOCALL" style="flex: 1; text-transform: uppercase;">
+                                    <button id="set-call-btn" class="btn-primary" style="padding: 0.625rem 1.25rem;">Set</button>
+                                </div>
+                            </div>
+                            <div class="macro-grid" id="macro-buttons"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Station Configuration</h2>
+                <button id="close-config-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Callsign</label>
+                    <input type="text" id="config-callsign" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" id="config-name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">QTH (Location)</label>
+                    <input type="text" id="config-qth">
+                </div>
+                <button id="save-config-btn" class="btn-primary btn-block">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Macro Editor Modal -->
+    <div id="macro-editor-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Macro Editor</h2>
+                <button id="close-macro-editor-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Available Placeholders</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <span class="kbd">&lt;MYCALL&gt;</span>
+                        <span class="kbd">&lt;MYNAME&gt;</span>
+                        <span class="kbd">&lt;MYQTH&gt;</span>
+                        <span class="kbd">&lt;CALL&gt;</span>
+                        <span class="kbd">&lt;DATE&gt;</span>
+                        <span class="kbd">&lt;TIME&gt;</span>
+                        <span class="kbd">&lt;UTC&gt;</span>
+                    </div>
+                </div>
+
+                <div id="macro-list" style="margin-bottom: 1.5rem; max-height: 400px; overflow-y: auto;">
+                </div>
+
+                <button id="add-macro-btn" class="btn-primary btn-block">
+                    <i class="fas fa-plus"></i> Add New Macro
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Macro Edit Dialog Modal -->
+    <div id="macro-edit-dialog" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="macro-edit-title">Edit Macro</h2>
+                <button id="close-macro-edit-dialog-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Macro Key</label>
+                    <input type="text" id="macro-key-input" placeholder="e.g., 1, cq, test">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Macro Text</label>
+                    <textarea id="macro-text-input" style="min-height: 120px; font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;" placeholder="Enter macro text with placeholders like <MYCALL>"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Preview</label>
+                    <div id="macro-preview" style="padding: 1rem; background: var(--terminal-bg); color: var(--terminal-text); border-radius: var(--radius-md); font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace; font-size: 0.875rem; min-height: 80px; white-space: pre-wrap; word-wrap: break-word;">
+                        Type macro text to see preview...
+                    </div>
+                </div>
+                <div class="btn-grid">
+                    <button id="cancel-macro-edit-btn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button id="save-macro-edit-btn" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Macro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div id="shortcuts-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Keyboard Shortcuts</h2>
+                <button id="close-shortcuts-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcut-row">
+                    <span>Send TX Message</span>
+                    <kbd class="kbd">Ctrl+Enter</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span>Clear RX Buffer</span>
+                    <kbd class="kbd">Ctrl+K</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span>Abort Transmission</span>
+                    <kbd class="kbd">Escape</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span>Toggle Connection</span>
+                    <kbd class="kbd">Ctrl+D</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span>Switch to RX</span>
+                    <kbd class="kbd">Ctrl+R</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span>Switch to TX</span>
+                    <kbd class="kbd">Ctrl+T</kbd>
+                </div>
+                <div class="shortcut-row">
+                    <span>Send Macro 1-5</span>
+                    <kbd class="kbd">Alt+1-5</kbd>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Modal (First Time) -->
+    <div id="welcome-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Welcome to DigiShell! 📡</h2>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1.5rem; font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+                    Welcome! This is a modern web interface for FLDIGI that makes amateur radio digital mode communications easier and more accessible.
+                </p>
+
+                <div style="background: var(--accent-light); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border-left: 4px solid var(--accent);">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent);">
+                        <i class="fas fa-user-circle"></i> Let's Get Started
+                    </h3>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        First, please enter your amateur radio callsign to configure your station:
+                    </p>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Your Callsign *</label>
+                        <input type="text" id="welcome-callsign" placeholder="e.g., W1ABC" style="text-transform: uppercase; font-weight: 600;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Your Name (Optional)</label>
+                    <input type="text" id="welcome-name" placeholder="e.g., John">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Your QTH/Location (Optional)</label>
+                    <input type="text" id="welcome-qth" placeholder="e.g., Massachusetts">
+                </div>
+
+                <div class="toggle-item" style="margin-bottom: 1.5rem;">
+                    <span class="toggle-label">Show me a quick tutorial</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="welcome-tutorial-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <button id="welcome-continue-btn" class="btn-primary btn-block">
+                    <i class="fas fa-check"></i> Continue to Interface
+                </button>
+
+                <p style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                    You can always change these settings later in the Configuration menu
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorial-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="tutorial-title">Quick Tutorial (1/5)</h2>
+                <button id="close-tutorial-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="tutorial-content">
+                </div>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button id="tutorial-prev-btn" class="btn btn-secondary" style="flex: 1;">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button id="tutorial-next-btn" class="btn-primary" style="flex: 1;">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Advanced Settings</h2>
+                <button id="close-settings-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h3 style="margin-bottom: 1.25rem; font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Modem Configuration</h3>
+                <div class="form-group">
+                    <label class="form-label">Bandwidth (Hz)</label>
+                    <div style="display: flex; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <input type="number" id="settings-bandwidth-value" min="31" max="2000" style="width: 120px;">
+                        <span style="align-self: center; color: var(--text-secondary);">Hz</span>
+                    </div>
+                    <input type="range" id="settings-bandwidth" min="31" max="2000" style="width: 100%;">
+                </div>
+                <div class="toggle-item">
+                    <span class="toggle-label">AFC (Auto Frequency Control)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="settings-afc">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-item">
+                    <span class="toggle-label">Squelch</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="settings-squelch">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-item">
+                    <span class="toggle-label">Reverse Sideband</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="settings-reverse">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <button id="save-settings-btn" class="btn-primary btn-block" style="margin-top: 1.5rem;">
+                    <i class="fas fa-check"></i> Apply Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keybinds Modal -->
+    <div id="keybinds-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Keyboard Shortcuts</h2>
+                <button id="close-keybinds-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="background: var(--accent-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent); margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--accent);">
+                            <i class="fas fa-keyboard"></i> How to Set Custom Keybinds
+                        </h3>
+                        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">
+                            Click in the input box and press your desired key combination. Supports Ctrl, Alt, Shift + any key.
+                        </p>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">Default Actions</h3>
+                        <button id="reset-default-keybinds-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                            <i class="fas fa-undo"></i> Reset to Defaults
+                        </button>
+                    </div>
+
+                    <div id="default-keybinds-list" style="margin-bottom: 2rem;">
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">Macro Shortcuts</h3>
+                        <button id="add-macro-keybind-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                            <i class="fas fa-plus"></i> Add Macro Shortcut
+                        </button>
+                    </div>
+
+                    <div id="macro-keybinds-list">
+                    </div>
+                </div>
+
+                <button id="save-keybinds-btn" class="btn-primary btn-block">
+                    <i class="fas fa-save"></i> Save Keybinds
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Macro Keybind Dialog -->
+    <div id="add-macro-keybind-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Macro Shortcut</h2>
+                <button id="close-add-macro-keybind-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Select Macro</label>
+                    <select id="macro-keybind-select" style="width: 100%;">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Keyboard Shortcut</label>
+                    <input type="text" id="macro-keybind-input" placeholder="Click and press your key combination" readonly style="cursor: pointer;">
+                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                        Example: Ctrl+M, Alt+Q, Shift+F1
+                    </small>
+                </div>
+                <div class="btn-grid">
+                    <button id="cancel-macro-keybind-btn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button id="save-macro-keybind-btn" class="btn-primary">
+                        <i class="fas fa-save"></i> Add Shortcut
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer style="background: var(--bg-primary); border-top: 1px solid var(--border-light); padding: 0.75rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 2rem;">
+        Made with ❤️ by <span style="color: var(--accent); font-weight: 600;">KC3VPB</span> & <span style="color: var(--accent); font-weight: 600;">Claude Code</span>
+    </footer>
+
+    <script type="module" src="/static/js/main.js?v=3.4-fast-typing-fix"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

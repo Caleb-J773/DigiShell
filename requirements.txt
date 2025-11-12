@@ -1,0 +1,19 @@
+# Web Framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+
+# FLDIGI Integration
+pyfldigi>=0.4
+
+# WebSocket support
+websockets>=13.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+
+# Terminal UI (optional, for run_tui.py)
+rich>=13.0.0
+prompt_toolkit>=3.0.0

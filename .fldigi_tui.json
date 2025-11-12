@@ -1,0 +1,12 @@
+{
+  "callsign": "NOCALL",
+  "name": "Operator",
+  "qth": "Somewhere",
+  "macros": {
+    "1": "CQ CQ CQ CQ de <MYCALL> <MYCALL> <MYCALL>\nCQ CQ CQ CQ de <MYCALL> <MYCALL> <MYCALL> pse k",
+    "2": "<CALL> de <MYCALL> = Good morning! Name here is <MYNAME>. QTH is <MYQTH>. How copy? <CALL> de <MYCALL> k",
+    "3": "<CALL> de <MYCALL> = Thanks for the report. 73 and best DX! <MYCALL> sk",
+    "4": "<CALL> de <MYCALL> = QSL QSL, roger that. <MYCALL> k",
+    "5": "<CALL> de <MYCALL> = Signal report is 5x9. <MYCALL> k"
+  }
+}
