@@ -573,7 +573,7 @@ const TUTORIAL_STEPS = [
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <i class="fas fa-satellite-dish" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
-            <p style="margin-bottom: 1rem;"><strong>Receive Buffer:</strong> Shows incoming text from other stations in real-time (green text).</p>
+            <p style="margin-bottom: 1rem;"><strong>Receive Window:</strong> Shows incoming text from other stations in real-time (green text).</p>
             <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>. You can continue typing while your message is being transmitted, but you can only backspace—you cannot edit prior lines.</p>
             <div style="background: var(--warning-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--warning);">
                 <strong>Note:</strong> TX text appears in red in the RX buffer to show what you've sent!
