@@ -56,3 +56,4 @@ requirements-build.txt
 digishell.spec
 DigiShell.spec
 BUILD.md
+.fldigi_tui.json

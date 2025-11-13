@@ -382,8 +382,6 @@ document.getElementById('save-settings-btn').onclick = async () => {
     }
 };
 
-loadConfig();
-
 let currentEditingMacroKey = null;
 
 document.getElementById('edit-macros-btn').onclick = () => {
@@ -549,7 +547,6 @@ const TUTORIAL_STEPS = [
                 <i class="fas fa-plug" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
             <p style="margin-bottom: 1rem;">First, make sure <strong>FLDIGI is running</strong> on your computer with <strong>XML-RPC enabled</strong> (port 7362).</p>
-            <p style="margin-bottom: 1rem;">Then click the <strong>"Connect"</strong> button in the top right corner to establish connection.</p>
             <div style="background: var(--success-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--success);">
                 <strong>Tip:</strong> The status indicator will turn green when connected!
             </div>
@@ -577,7 +574,7 @@ const TUTORIAL_STEPS = [
                 <i class="fas fa-satellite-dish" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
             <p style="margin-bottom: 1rem;"><strong>Receive Buffer:</strong> Shows incoming text from other stations in real-time (green text).</p>
-            <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>.</p>
+            <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>. You can continue typing while your message is being transmitted, but you can only backspace—you cannot edit prior lines.</p>
             <div style="background: var(--warning-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--warning);">
                 <strong>Note:</strong> TX text appears in red in the RX buffer to show what you've sent!
             </div>
@@ -608,7 +605,7 @@ const TUTORIAL_STEPS = [
             <p style="margin-bottom: 1rem;"><strong>Congratulations!</strong> You're ready to use DigiShell.</p>
             <p style="margin-bottom: 1rem;"><strong>Quick Tips:</strong></p>
             <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
-                <li>Press <strong>?</strong> or click the keyboard icon for all shortcuts</li>
+                <li>Click the keyboard icon for all shortcuts</li>
                 <li>Adjust carrier frequency with the slider for optimal signal</li>
                 <li>Use macros (Alt+1-5) for quick, error-free communication</li>
                 <li>Monitor your rig frequency in the status bar</li>
@@ -624,7 +621,32 @@ let currentTutorialStep = 0;
 
 window.addEventListener('load', async () => {
     await loadWebConfig();
-    if (!webConfig.hasSeenWelcome) {
+
+    // Load config to check if setup is needed
+    try {
+        const response = await fetch('/api/macros/config');
+        const config = await response.json();
+        currentConfig = config;
+
+        // Show welcome modal if haven't seen it OR if station callsign is still default
+        const shouldShowWelcome = !webConfig.hasSeenWelcome || config.callsign === 'NOCALL';
+
+        if (shouldShowWelcome) {
+            setTimeout(() => {
+                document.getElementById('welcome-modal').classList.add('active');
+            }, 500);
+        }
+
+        // Now populate the UI elements
+        document.getElementById('station-call').textContent = config.callsign;
+        document.getElementById('station-name').textContent = config.name;
+        document.getElementById('station-qth').textContent = config.qth;
+        document.getElementById('config-callsign').value = config.callsign;
+        document.getElementById('config-name').value = config.name;
+        document.getElementById('config-qth').value = config.qth;
+        loadMacros(config.macros);
+    } catch (e) {
+        // If config fails to load, show welcome modal
         setTimeout(() => {
             document.getElementById('welcome-modal').classList.add('active');
         }, 500);
