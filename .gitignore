@@ -55,5 +55,4 @@ htmlcov/
 requirements-build.txt
 digishell.spec
 DigiShell.spec
-digishell.sh
 BUILD.md
