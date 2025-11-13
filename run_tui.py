@@ -9,13 +9,17 @@ from backend.fldigi_client import fldigi_client
 import re
 
 from prompt_toolkit import Application
-from prompt_toolkit.layout import Layout, HSplit, VSplit, Window, FormattedTextControl, Dimension
+from prompt_toolkit.layout import Layout, HSplit, VSplit, Window, FormattedTextControl, Dimension, BufferControl
 from prompt_toolkit.layout.containers import WindowAlign
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.widgets import TextArea, Frame
-from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.formatted_text import FormattedText, HTML
 from prompt_toolkit.styles import Style
 from prompt_toolkit.application import get_app
+from prompt_toolkit.filters import Condition
+from prompt_toolkit.buffer import Buffer
+from prompt_toolkit.lexers import Lexer
+from prompt_toolkit.document import Document
 
 rx_buffer = []
 last_tx = ""
@@ -170,6 +174,35 @@ def get_header_text():
     ])
 
 
+class RxLexer(Lexer):
+    """Custom lexer to color RX (green) and TX (red) messages"""
+    def lex_document(self, document):
+        # Pre-calculate which lines are TX by scanning all lines
+        tx_lines = set()
+
+        for i, line in enumerate(document.lines):
+            # TX messages start with timestamp [HH:MM:SS]
+            if line.startswith('[') and ']' in line[:12] and 'messages]' not in line:
+                tx_lines.add(i)
+            # Lines that start with 11 spaces are TX continuation lines
+            elif line.startswith('           ') and i > 0 and (i - 1) in tx_lines:
+                tx_lines.add(i)
+
+        def get_line_style(lineno):
+            line = document.lines[lineno]
+
+            if lineno in tx_lines:
+                # This is a TX message or continuation
+                return [('class:tx.text', line)]
+            elif line.startswith('[') and 'messages]' in line:
+                # Footer line
+                return [('class:dim', line)]
+            else:
+                # RX message
+                return [('class:rx', line)]
+
+        return get_line_style
+
 def get_rx_text_content():
     """Build the text content for the RX buffer"""
     if not rx_buffer:
@@ -180,7 +213,14 @@ def get_rx_text_content():
         if isinstance(item, dict):
             timestamp = item['time']
             message = item['text']
-            lines.append(f"[{timestamp}] {message}")
+            # For multi-line TX, indent continuation lines to align with message text
+            msg_lines = message.split('\n')
+            for i, line in enumerate(msg_lines):
+                if i == 0:
+                    lines.append(f"[{timestamp}] {line}")
+                else:
+                    # Continuation line - indent with spaces (11 chars for timestamp + brackets + space)
+                    lines.append(f"           {line}")
         else:
             if item.strip():
                 lines.append(item.rstrip('\n'))
@@ -208,6 +248,12 @@ def get_commands_text():
         ('class:help.cmd', 'Tab'),
         ('class:help', ' for newline\n'),
         ('class:dim', '  (edit live when TX)\n' if live_tx_mode else ''),
+        ('class:help', '\n'),
+        ('class:help.title', 'Navigation:\n'),
+        ('class:help.cmd', '  PgUp/PgDn'),
+        ('class:help', ' Scroll RX\n'),
+        ('class:help.cmd', '  ↑/↓'),
+        ('class:help', ' Scroll RX\n'),
         ('class:help', '\n'),
         ('class:help.title', 'Commands:\n'),
         ('class:help.cmd', '  /live'),
@@ -301,7 +347,8 @@ rx_display = TextArea(
     read_only=True,
     focusable=False,
     style='class:frame.rx',
-    wrap_lines=True
+    wrap_lines=True,
+    lexer=RxLexer()
 )
 
 help_window = Window(
@@ -687,6 +734,59 @@ def _(event):
 def _(event):
     if event.app.layout.has_focus(input_field):
         input_field.buffer.insert_text('\n')
+
+
+def get_rx_window():
+    """Find the window containing the rx_display control"""
+    from prompt_toolkit.layout.containers import Window
+
+    def find_window(container):
+        if isinstance(container, Window):
+            if hasattr(container, 'content') and container.content == rx_display.control:
+                return container
+        if hasattr(container, 'get_children'):
+            for child in container.get_children():
+                result = find_window(child)
+                if result:
+                    return result
+        return None
+
+    app = get_app()
+    return find_window(app.layout.container)
+
+
+@kb.add('pageup')
+def _(event):
+    """Scroll RX buffer up"""
+    window = get_rx_window()
+    if window:
+        window.vertical_scroll = max(0, window.vertical_scroll - 10)
+
+
+@kb.add('pagedown')
+def _(event):
+    """Scroll RX buffer down"""
+    window = get_rx_window()
+    if window:
+        window.vertical_scroll += 10
+
+
+@kb.add('up')
+def _(event):
+    """Scroll RX buffer up one line (only when not in input)"""
+    if not event.app.layout.has_focus(input_field):
+        window = get_rx_window()
+        if window:
+            window.vertical_scroll = max(0, window.vertical_scroll - 1)
+
+
+@kb.add('down')
+def _(event):
+    """Scroll RX buffer down one line (only when not in input)"""
+    if not event.app.layout.has_focus(input_field):
+        window = get_rx_window()
+        if window:
+            window.vertical_scroll += 1
 
 
 root_container = HSplit([
