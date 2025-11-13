@@ -28,7 +28,7 @@ Lightweight and responsive. Works great on small computers, (testing Raspberry P
 ## Other Info About This Project
 This is also a personal research and learning project for fun to understand how Large Language Models (LLMs) work to develop projects like this. The majority of the code was written by Claude Code (Anthropic's AI coding assistant), and then I went through it, tested everything, fixed issues, and adjusted things to work properly.
 
-Before anyone says "oh you just prompted it once and got a working app"... no, that's not how this works at all. It took multiple iterations, planning it out step by step, a lot of testing, debugging weird issues, figuring out what worked and what didn't, and learning how to communicate what I wanted to an LLM. 
+It took multiple iterations, planning it out step by step, a lot of testing, debugging weird issues, figuring out what worked and what didn't, and learning how to communicate what I wanted to an LLM. 
 
 
 ## What it actually does
@@ -46,7 +46,7 @@ Before anyone says "oh you just prompted it once and got a working app"... no, t
 - Chat-style RX/TX display
 - Slash commands for quick actions
 - Same macro system as the web version
-- Works great over SSH
+- Works over SSH
 
 **Modem Control**
 - Switch between digital modes (PSK, RTTY, Olivia, etc.)
@@ -56,13 +56,10 @@ Before anyone says "oh you just prompted it once and got a working app"... no, t
 - Pre-made macros for common stuff (CQ, greetings, 73, signal reports)
 - Create your own custom macros
 - Auto-fill your callsign, name, QTH, date/time, and the station you're working
-- Works in both web and terminal interfaces, so you don't need to setup a macro again for the two interfaces.
 
 ## You'll need
 
-1. **FLDIGI** installed with XML-RPC enabled
-   - In FLDIGI: `Configure → Misc → XML-RPC Server`
-   - Default port is `7362`
+1. **FLDIGI** installed with XML-RPC enabled (it should by default)
 
 2. **Python 3.13.7 or newer**
 
@@ -151,7 +148,7 @@ python run_tui.py
 - `<TIME>` - Local time
 - `<UTC>` - UTC time
 
-You can also manually edit  the `.fldigi_tui.json` to add your own custom macros.
+You can also manually edit  the `.fldigi_tui.json` to add your own custom macros. The configuration files are dumped in a user folder. Like C:/Users/yourusername
 
 ## Project Structure
 
