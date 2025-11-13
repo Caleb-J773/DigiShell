@@ -20,7 +20,7 @@ from prompt_toolkit.application import get_app
 rx_buffer = []
 last_tx = ""
 last_call = ""
-MAX_RX_LINES = 25
+MAX_RX_LINES = 1000  # Keep more history
 connection_time = None
 command_status = ""
 show_status_until = None
@@ -170,37 +170,25 @@ def get_header_text():
     ])
 
 
-def get_rx_text():
+def get_rx_text_content():
+    """Build the text content for the RX buffer"""
     if not rx_buffer:
-        return FormattedText([('class:dim', 'Waiting for data...')])
+        return 'Waiting for data...'
 
-    text = []
-    line_count = 0
-
-    for item in reversed(rx_buffer):
-        if line_count >= MAX_RX_LINES:
-            break
-
+    lines = []
+    for item in rx_buffer:
         if isinstance(item, dict):
             timestamp = item['time']
             message = item['text']
-            item_text = [
-                ('class:rx.timestamp', f"[{timestamp}] "),
-                ('class:tx.text', f"{message}\n")
-            ]
-            text = item_text + text
-            line_count += 1
+            lines.append(f"[{timestamp}] {message}")
         else:
             if item.strip():
-                text = [('class:rx', item)] + text
-                line_count += item.count('\n') + (1 if not item.endswith('\n') else 0)
+                lines.append(item.rstrip('\n'))
 
-    if text and not (isinstance(text[-1], tuple) and text[-1][1].endswith('\n')):
-        text.append(('class:rx', '\n'))
+    lines.append('')
+    lines.append(f'[{len(rx_buffer)} messages]')
 
-    text.append(('', '\n'))
-    text.append(('class:dim', f'[{len(rx_buffer)} messages]'))
-    return FormattedText(text)
+    return '\n'.join(lines)
 
 
 def get_commands_text():
@@ -306,11 +294,14 @@ header_window = Window(
     style='class:header'
 )
 
-rx_window = Window(
-    content=FormattedTextControl(get_rx_text),
-    wrap_lines=True,
+rx_display = TextArea(
+    text='',
+    multiline=True,
+    scrollbar=True,
+    read_only=True,
+    focusable=False,
     style='class:frame.rx',
-    always_hide_cursor=True
+    wrap_lines=True
 )
 
 help_window = Window(
@@ -416,6 +407,7 @@ async def process_input(text):
 
         elif command in ['c', 'clear']:
             rx_buffer.clear()
+            rx_display.text = 'Waiting for data...'
             command_status = "RX buffer cleared"
             show_status_until = datetime.now() + timedelta(seconds=2)
 
@@ -535,6 +527,9 @@ async def process_input(text):
                         })
                         command_status = f"✓ Macro {macro_num}"
                         show_status_until = datetime.now() + timedelta(seconds=2)
+                        # Update display and scroll to bottom
+                        rx_display.text = get_rx_text_content()
+                        rx_display.buffer.cursor_position = len(rx_display.text)
                     else:
                         command_status = "✗ Failed to send macro"
                         show_status_until = datetime.now() + timedelta(seconds=3)
@@ -623,6 +618,9 @@ async def process_input(text):
             })
             command_status = f"✓ Queued for TX"
             show_status_until = datetime.now() + timedelta(seconds=2)
+            # Update display and scroll to bottom
+            rx_display.text = get_rx_text_content()
+            rx_display.buffer.cursor_position = len(rx_display.text)
         else:
             command_status = "✗ Failed to queue"
             show_status_until = datetime.now() + timedelta(seconds=3)
@@ -695,7 +693,7 @@ root_container = HSplit([
     header_window,
     VSplit([
         HSplit([
-            Frame(rx_window, title='Receive Buffer', height=Dimension(weight=70)),
+            Frame(rx_display, title='Receive Buffer', height=Dimension(weight=70)),
             Frame(
                 HSplit([
                     input_help_window,
@@ -760,8 +758,12 @@ async def poll_fldigi():
                     else:
                         rx_buffer.append(new_rx)
 
-                    if len(rx_buffer) > MAX_RX_LINES * 2:
+                    if len(rx_buffer) > MAX_RX_LINES:
                         rx_buffer[:] = rx_buffer[-MAX_RX_LINES:]
+
+                    # Update the RX display and scroll to bottom
+                    rx_display.text = get_rx_text_content()
+                    rx_display.buffer.cursor_position = len(rx_display.text)
 
                 current_trx_status = fldigi_client.get_trx_status()
                 if last_trx_status == 'TX' and current_trx_status == 'RX':
@@ -782,6 +784,10 @@ async def poll_fldigi():
 
                         command_status = "✓ TX Complete"
                         show_status_until = datetime.now() + timedelta(seconds=2)
+
+                        # Update display and scroll to bottom
+                        rx_display.text = get_rx_text_content()
+                        rx_display.buffer.cursor_position = len(rx_display.text)
 
                 last_trx_status = current_trx_status
 
@@ -814,6 +820,9 @@ async def run_app_async():
         sys.exit(1)
 
     connection_time = datetime.now()
+
+    # Initialize RX display
+    rx_display.text = 'Waiting for data...'
 
     if config.get('callsign') != 'NOCALL':
         print(f"Station: {config['callsign']} ({config['name']})")
