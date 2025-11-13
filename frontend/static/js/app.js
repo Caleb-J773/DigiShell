@@ -275,6 +275,9 @@ document.getElementById('shortcuts-help-btn').onclick = async () => {
     await loadKeybinds();
 };
 document.getElementById('close-keybinds-btn').onclick = () => document.getElementById('keybinds-modal').classList.remove('active');
+document.getElementById('tutorial-btn').onclick = () => {
+    startTutorial();
+};
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-modal').classList.add('active');
     loadSettings();
@@ -573,8 +576,9 @@ const TUTORIAL_STEPS = [
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <i class="fas fa-satellite-dish" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
-            <p style="margin-bottom: 1rem;"><strong>Receive Window:</strong> Shows incoming text from other stations in real-time (green text).</p>
-            <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>. You can continue typing while your message is being transmitted, but you can only backspace—you cannot edit prior lines.</p>
+            <p style="margin-bottom: 1rem;"><strong>Receive Window:</strong> Shows incoming text from other stations in real-time (green text). You can resize the window by dragging the bottom-right corner.</p>
+            <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>. You can continue typing while your message is being transmitted, but you can only backspace—you cannot edit prior lines. This window is also resizable.</p>
+            <p style="margin-bottom: 1rem;"><strong>Auto-Stop:</strong> The program automatically ends transmission when you stop typing—no need to manually press Ctrl+R or stop the transmission!</p>
             <div style="background: var(--warning-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--warning);">
                 <strong>Note:</strong> TX text appears in red in the RX buffer to show what you've sent!
             </div>
@@ -740,7 +744,6 @@ const DEFAULT_KEYBINDS = {
     'abort_tx': { keys: 'Escape', description: 'Abort transmission', action: 'abort' },
     'toggle_connection': { keys: 'Ctrl+D', description: 'Connect/Disconnect', action: 'toggleConnection' },
     'start_rx': { keys: 'Ctrl+R', description: 'Start RX', action: 'startRx' },
-    'start_tx': { keys: 'Ctrl+T', description: 'Start TX', action: 'startTx' },
 };
 
 let currentKeybinds = {...DEFAULT_KEYBINDS};
@@ -761,6 +764,18 @@ async function loadStoredKeybinds() {
         } catch (e) {
         }
     }
+
+    // Initialize with default macro shortcuts if macroKeybinds is empty
+    if (Object.keys(macroKeybinds).length === 0) {
+        macroKeybinds = {
+            'Alt+1': '1',
+            'Alt+2': '2',
+            'Alt+3': '3',
+            'Alt+4': '4',
+            'Alt+5': '5'
+        };
+    }
+
     window.currentKeybinds = currentKeybinds;
     window.macroKeybinds = macroKeybinds;
 }
@@ -819,6 +834,7 @@ async function loadKeybinds() {
     if (Object.keys(macroKeybinds).length === 0) {
         macroList.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No macro shortcuts configured. Click "Add Macro Shortcut" to create one.</div>';
     } else {
+        // Display all macro shortcuts
         Object.entries(macroKeybinds).forEach(([keys, macroKey]) => {
             const row = document.createElement('div');
             row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.875rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.625rem;';
@@ -827,12 +843,15 @@ async function loadKeybinds() {
                     <div style="font-weight: 600; color: var(--accent);">Macro: ${macroKey}</div>
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <kbd class="kbd">${keys}</kbd>
+                    <input type="text" value="${keys}" readonly data-macro-key="${macroKey}"
+                           style="width: 120px; cursor: pointer; text-align: center; font-weight: 600; font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace; padding: 0.375rem 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border-medium); border-radius: 6px; font-size: 0.75rem; color: var(--accent);">
                     <button class="btn btn-danger" style="padding: 0.5rem 0.75rem;" onclick="deleteMacroKeybind('${keys}')">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             `;
+            const input = row.querySelector('input');
+            input.addEventListener('click', () => startMacroKeybindCapture(input, macroKey, keys));
             macroList.appendChild(row);
         });
     }
@@ -864,6 +883,43 @@ function startKeybindCapture(inputElement, bindId, isMacro) {
             document.removeEventListener('keydown', handleKeydown, true);
             capturingElement = null;
             window.capturingElement = null;
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown, true);
+}
+
+function startMacroKeybindCapture(inputElement, macroKey, oldKeys) {
+    capturingElement = inputElement;
+    window.capturingElement = inputElement;
+    inputElement.value = 'Press a key combination...';
+    inputElement.style.background = 'var(--accent-light)';
+    inputElement.style.borderColor = 'var(--accent)';
+
+    const handleKeydown = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const keyString = keyEventToString(e);
+        if (keyString) {
+            // Remove old keybind
+            if (macroKeybinds[oldKeys] === macroKey) {
+                delete macroKeybinds[oldKeys];
+            }
+
+            // Add new keybind
+            macroKeybinds[keyString] = macroKey;
+
+            inputElement.value = keyString;
+            inputElement.style.background = '';
+            inputElement.style.borderColor = '';
+
+            document.removeEventListener('keydown', handleKeydown, true);
+            capturingElement = null;
+            window.capturingElement = null;
+
+            // Reload to show updated keybinds
+            loadKeybinds();
         }
     };
 

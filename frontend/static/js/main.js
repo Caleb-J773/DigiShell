@@ -42,7 +42,6 @@ const elements = {
     // TX/RX
     trxStatus: document.getElementById('trx-status'),
     rxBtn: document.getElementById('rx-btn'),
-    txBtn: document.getElementById('tx-btn'),
     tuneBtn: document.getElementById('tune-btn'),
     abortBtn: document.getElementById('abort-btn'),
 
@@ -96,7 +95,6 @@ function setupEventListeners() {
 
     // TX/RX control (with null checks)
     if (elements.rxBtn) elements.rxBtn.addEventListener('click', () => handleTxRxControl('rx'));
-    if (elements.txBtn) elements.txBtn.addEventListener('click', () => handleTxRxControl('tx'));
     if (elements.tuneBtn) elements.tuneBtn.addEventListener('click', () => handleTxRxControl('tune'));
     if (elements.abortBtn) elements.abortBtn.addEventListener('click', () => handleTxRxControl('abort'));
 
