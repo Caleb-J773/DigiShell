@@ -1,13 +1,14 @@
 import json
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/macros", tags=["macros"])
 
-CONFIG_FILE = ".fldigi_tui.json"
+CONFIG_FILE = Path.home() / ".fldigi_tui.json"
 
 class Config(BaseModel):
     callsign: str
@@ -36,7 +37,7 @@ class MacroDeleteRequest(BaseModel):
 
 
 def load_config() -> Config:
-    if os.path.exists(CONFIG_FILE):
+    if CONFIG_FILE.exists():
         try:
             with open(CONFIG_FILE, 'r') as f:
                 data = json.load(f)

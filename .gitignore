@@ -52,3 +52,8 @@ htmlcov/
 # Project specific
 *.db
 *.sqlite
+requirements-build.txt
+digishell.spec
+DigiShell.spec
+digishell.sh
+BUILD.md
