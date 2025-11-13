@@ -1,20 +1,20 @@
 # DigiShell
 
-A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal.
+A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal. This is a work in progress project and it is possibly unstable and has bugs and other issues.
 
-This isn't meant to replace FLDIGI at all, it's just a wrapper around FLDIGI's XML-RPC interface that also uses a library of pyFldigi that gives you a cleaner way to control it. FLDIGI still does all the actual work with the modems and signal processing. I built this because I wanted something simpler to interact with during portable operations and field day setups, and figured it might be useful for others too.
+**This isn't meant to replace FLDIGI at all**, it's just a wrapper around FLDIGI's XML-RPC interface that also uses a library of pyFldigi that gives you a cleaner way to control it. FLDIGI still does all the actual work with the modems and signal processing. I built this because I wanted something simpler to interact with during portable operations and field day setups, and figured it might be useful for others too.
 
 It doesn't have all the bells and whistles that FLDIGI has, that's by design and also because of XML-RPC limitations. This is just the essentials for making contacts: modem control, TX/RX, and it's own macro system. If you need FLDIGI's advanced features (waterfall,  waterfall clicking, macro editing in the app, adjust config/ modes, etc.), you'll still use FLDIGI directly for those.
 
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg) ![FastAPI](https://img.shields.io/badge/fastapi-0.104+-green.svg) ![Claude](https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white)
 
-## Why this exists
+## Some notable features that is being work on.
 
 **Web Interface**  
 Access from any browser over a LAN or VPN (**do not expose to internet for safety reasons**), which could be good for remote stations or operating from a tablet, phone/small screen during field operations. No need to be at your main shack computer.
 
 **Terminal Ready**  
-CLI interface for headless setups, SSH sessions, and if you just prefer working in the terminal. Operate from anywhere with a shell.
+CLI interface for headless setups, SSH sessions, and if you just prefer working in the terminal. 
 
 **Simplified Controls**  
 Only the essentials. No confusing menus or hidden settings buried somewhere. Just the controls you actually need for making contacts.
@@ -22,12 +22,8 @@ Only the essentials. No confusing menus or hidden settings buried somewhere. Jus
 **Python Powered**  
 Built with Python so it works pretty much anywhere and you can customize it if you want.
 
-**Quick Setup**  
-Get on the air in minutes. Since DigiShell just wraps FLDIGI, your existing setup works immediately. No need to reconfigure everything.
-
 **Portable Friendly**  
-Lightweight and responsive. Works great on Raspberry Pi, portable rigs, and field day operations where you don't want to deal with complicated interfaces.
-
+Lightweight and responsive. Works great on small computers, (testing Raspberry Pi's though atm), and field operations 
 
 ## Other Info About This Project
 This is also a personal research and learning project for fun to understand how Large Language Models (LLMs) work to develop projects like this. The majority of the code was written by Claude Code (Anthropic's AI coding assistant), and then I went through it, tested everything, fixed issues, and adjusted things to work properly.
@@ -68,7 +64,7 @@ Before anyone says "oh you just prompted it once and got a working app"... no, t
    - In FLDIGI: `Configure → Misc → XML-RPC Server`
    - Default port is `7362`
 
-2. **Python 3.7 or newer**
+2. **Python 3.13.7 or newer**
 
 That's it. Pretty straightforward.
 
@@ -216,9 +212,6 @@ digishell/
 Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.
 
 ---
-
-**73!**
-
 Built as a fun project to make portable digital operations simpler. It's not meant to replace FLDIGI, just make it easier to control when you're in the field or accessing your station remotely.
 
 - Caleb KC3VPB
