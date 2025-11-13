@@ -1,6 +1,7 @@
 # DigiShell
 
 A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal. This is a work in progress project and it is possibly unstable and has bugs and other issues.
+![Image](https://iili.io/KygYH5x.png)
 
 **This isn't meant to replace FLDIGI at all**, it's just a wrapper around FLDIGI's XML-RPC interface that also uses a library of pyFldigi that gives you a cleaner way to control it. FLDIGI still does all the actual work with the modems and signal processing. I built this because I wanted something simpler to interact with during portable operations and field day setups, and figured it might be useful for others too.
 
