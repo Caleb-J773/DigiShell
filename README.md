@@ -87,7 +87,7 @@ This might work, but I hadn't had the chance just yet to test it, but you can te
 
 ```bash
 # Get the code
-git clone https://github.com/your-repo/digishell.git
+git clone https://github.com/Caleb-J773/DigiShell/
 cd digishell
 
 # Set up virtual environment
