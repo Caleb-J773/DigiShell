@@ -80,3 +80,24 @@ class StatusUpdate(BaseModel):
     tx_status: Optional[str] = None
     rx_text: Optional[str] = None
     connected: bool = True
+    rig_frequency: Optional[float] = None
+    rig_mode: Optional[str] = None
+    rig_name: Optional[str] = None
+
+
+class PresetFrequency(BaseModel):
+    id: str = Field(..., description="Unique identifier for the preset")
+    name: str = Field(..., min_length=1, max_length=50, description="Display name for the preset")
+    modem: str = Field(..., description="Modem mode (e.g., 'PSK31', 'RTTY')")
+    rig_frequency: float = Field(..., ge=0, description="Rig frequency in Hz")
+    carrier_frequency: int = Field(1500, ge=500, le=3000, description="Carrier frequency in Hz")
+    is_default: bool = Field(False, description="Whether this is a hardcoded default preset")
+    band: Optional[str] = Field(None, description="Band name (e.g., '20m', '40m')")
+
+
+class PresetFrequencyCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=50, description="Display name for the preset")
+    modem: str = Field(..., description="Modem mode (e.g., 'PSK31', 'RTTY')")
+    rig_frequency: float = Field(..., ge=0, description="Rig frequency in Hz")
+    carrier_frequency: int = Field(1500, ge=500, le=3000, description="Carrier frequency in Hz")
+    band: Optional[str] = Field(None, description="Band name (e.g., '20m', '40m')")

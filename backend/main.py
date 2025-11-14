@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.fldigi_client import fldigi_client
 from backend.websocket_manager import manager
 from backend.models import ConnectionStatus, StatusUpdate
-from backend.routers import modem, txrx, rig, macros, settings
+from backend.routers import modem, txrx, rig, macros, settings, presets
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -45,6 +45,9 @@ async def poll_fldigi_status():
                         carrier=fldigi_client.get_carrier(),
                         bandwidth=fldigi_client.get_bandwidth(),
                         tx_status=fldigi_client.get_trx_status(),
+                        rig_frequency=fldigi_client.get_rig_frequency(),
+                        rig_mode=fldigi_client.get_rig_mode(),
+                        rig_name=fldigi_client.get_rig_name(),
                         connected=True
                     )
 
@@ -108,6 +111,7 @@ app.include_router(txrx.router)
 app.include_router(rig.router)
 app.include_router(macros.router)
 app.include_router(settings.router)
+app.include_router(presets.router)
 
 
 
