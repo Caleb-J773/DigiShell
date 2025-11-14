@@ -3,11 +3,6 @@ import logging
 import signal
 import sys
 import socket
-import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file if it exists
-load_dotenv()
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -48,37 +43,30 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # Get configuration from environment variables
-    host = os.getenv("DIGISHELL_HOST", "0.0.0.0")
-    port = int(os.getenv("DIGISHELL_PORT", "8000"))
-
     print("=" * 60)
-    print("DigiShell - Starting Server")
+    print("FLDIGI Layer - Starting Server")
     print("=" * 60)
-    print()
-    print(f"Bind Address: {host}")
-    print(f"Port:         {port}")
     print()
     print("Access URLs:")
-    print(f"  Local:    http://localhost:{port}")
+    print(f"  Local:    http://localhost:8000")
 
     network_ips = get_network_ips()
     if network_ips:
         for interface, ip in network_ips:
             label = f"({interface})" if interface else ""
-            print(f"  Network:  http://{ip}:{port} {label}")
+            print(f"  Network:  http://{ip}:8000 {label}")
 
     print()
-    print(f"API Docs:   http://localhost:{port}/docs")
-    print(f"WebSocket:  ws://localhost:{port}/ws")
+    print("API Docs:   http://localhost:8000/docs")
+    print("WebSocket:  ws://localhost:8000/ws")
     print("=" * 60)
     print("Press Ctrl+C to stop")
     print()
 
     uvicorn.run(
         "backend.main:app",
-        host=host,
-        port=port,
+        host="0.0.0.0",
+        port=8000,
         reload=False,
         log_level="warning",
         access_log=False
