@@ -230,7 +230,7 @@ class FldigiClient:
         if not self.is_connected():
             return None
         try:
-            data = self.client.tx.get_data()
+            data = self.client.client.tx.get_data()
             if isinstance(data, bytes):
                 return data.decode('utf-8', errors='ignore')
             return data if data else ""
