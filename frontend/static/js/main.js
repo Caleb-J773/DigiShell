@@ -618,10 +618,12 @@ async function handleSendTx() {
 
                 state.liveTxInFlight = false;
 
+                console.log('[TX LIVE] Waiting for transmission to complete...');
+
                 console.log('[TX LIVE] Waiting for TX buffer to drain...');
                 let bufferEmpty = false;
                 let consecutiveEmpty = 0;
-                for (let i = 0; i < 100; i++) {
+                for (let i = 0; i < 200; i++) {
                     try {
                         const response = await fetch('/api/txrx/text/tx/buffer-length');
                         if (response.ok) {
@@ -629,7 +631,7 @@ async function handleSendTx() {
                             console.log('[TX LIVE] Buffer length:', data.buffer_length);
                             if (data.buffer_length === 0) {
                                 consecutiveEmpty++;
-                                if (consecutiveEmpty >= 3) {
+                                if (consecutiveEmpty >= 5) {
                                     console.log('[TX LIVE] Buffer drained at poll', i + 1);
                                     bufferEmpty = true;
                                     break;
@@ -645,12 +647,33 @@ async function handleSendTx() {
                 }
 
                 if (!bufferEmpty) {
-                    console.log('[TX LIVE] Buffer did not fully drain after 100 polls, proceeding anyway');
+                    console.log('[TX LIVE] Buffer did not fully drain after 200 polls');
                 }
 
-                await new Promise(resolve => setTimeout(resolve, 500));
+                console.log('[TX LIVE] Waiting for TRX status to leave TX mode...');
+                let txComplete = false;
+                for (let i = 0; i < 200; i++) {
+                    try {
+                        const response = await fetch('/api/txrx/status');
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('[TX LIVE] TRX status:', data.status);
+                            if (data.status !== 'TX') {
+                                console.log('[TX LIVE] TRX status is no longer TX, transmission complete at poll', i + 1);
+                                txComplete = true;
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[TX LIVE] Error checking TRX status:', e);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
 
-                await api.endTxLive();
+                if (!txComplete) {
+                    console.log('[TX LIVE] TRX status still TX after 200 polls, forcing end');
+                    await api.endTxLive();
+                }
 
                 stopTxProgressPolling();
 
@@ -658,7 +681,7 @@ async function handleSendTx() {
                 elements.sendTxBtn.classList.remove('btn-danger');
                 elements.sendTxBtn.classList.add('btn-primary');
 
-                showNotification('Ending transmission...', 'info');
+                showNotification('Transmission complete', 'success');
             }
         } else {
             // BATCH MODE: Send entire message at once (old behavior)

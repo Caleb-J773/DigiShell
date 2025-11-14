@@ -858,16 +858,18 @@ def _(event):
                 try:
                     live_tx_ending = True
 
+                    logger.info("[TX LIVE] Waiting for transmission to complete...")
+
                     logger.info("[TX LIVE] Waiting for TX buffer to drain...")
                     buffer_empty = False
                     consecutive_empty = 0
-                    for i in range(100):
+                    for i in range(200):
                         buffer_length = fldigi_client.get_tx_buffer_length()
                         if buffer_length is not None:
                             logger.info(f"[TX LIVE] Buffer length: {buffer_length}")
                             if buffer_length == 0:
                                 consecutive_empty += 1
-                                if consecutive_empty >= 3:
+                                if consecutive_empty >= 5:
                                     logger.info(f"[TX LIVE] Buffer drained at poll {i + 1}")
                                     buffer_empty = True
                                     break
@@ -877,13 +879,26 @@ def _(event):
                         time.sleep(0.05)
 
                     if not buffer_empty:
-                        logger.info("[TX LIVE] Buffer did not fully drain after 100 polls, proceeding anyway")
+                        logger.info("[TX LIVE] Buffer did not fully drain after 200 polls")
 
-                    import time
-                    time.sleep(0.5)
+                    logger.info("[TX LIVE] Waiting for TRX status to leave TX mode...")
+                    tx_complete = False
+                    for i in range(200):
+                        trx_status = fldigi_client.get_trx_status()
+                        if trx_status:
+                            logger.info(f"[TX LIVE] TRX status: {trx_status}")
+                            if trx_status != 'TX':
+                                logger.info(f"[TX LIVE] TRX status is no longer TX, transmission complete at poll {i + 1}")
+                                tx_complete = True
+                                break
+                        import time
+                        time.sleep(0.1)
 
-                    fldigi_client.end_tx_live()
-                    command_status = "Ending TX..."
+                    if not tx_complete:
+                        logger.info("[TX LIVE] TRX status still TX after 200 polls, forcing end")
+                        fldigi_client.end_tx_live()
+
+                    command_status = "TX Complete"
                     show_status_until = datetime.now() + timedelta(seconds=2)
                 except Exception:
                     command_status = "✗ Failed to end TX"
