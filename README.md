@@ -77,9 +77,7 @@ That's it. Pretty straightforward.
 1. Make sure FLDIGI is running with XML-RPC enabled
 2. Double-click `start.bat`
 3. First time it'll set up the virtual environment and install everything (takes a couple minutes)
-4. After that, it'll just start right up
-5. Browser should open automatically to `http://localhost:8000`
-6. Click the **Connect** button and you're good to go
+4. After that, it'll just start right up and you can use the IP's it gives to go to the interface. 
 
 ### Linux (Shell Script)
 This might work, but I hadn't had the chance just yet to chance it, but you can test out the digishell.sh that is included. 
@@ -130,12 +128,6 @@ python run_tui.py
 ```bash
 python run_tui.py
 ```
-
-**First time setup:**
-```
-/config W1ABC John Pennsylvania
-```
-(use your actual callsign, name, and QTH obviously)
 
 **Common commands:**
 - Just type and hit Enter to transmit
