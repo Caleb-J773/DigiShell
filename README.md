@@ -7,7 +7,7 @@ A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal
 
 It doesn't have all the bells and whistles that FLDIGI has, that's by design and also because of XML-RPC limitations. This is just the essentials for making contacts: modem control, TX/RX, and it's own macro system. If you need FLDIGI's advanced features (waterfall,  waterfall clicking, macro editing in the app, adjust config/ modes, etc.), you'll still use FLDIGI directly for those.
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg) ![FastAPI](https://img.shields.io/badge/fastapi-0.104+-green.svg) ![Claude](https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white)
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![FastAPI](https://img.shields.io/badge/fastapi-0.104+-green.svg) ![Claude](https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white)
 
 ## Some notable features that is being work on.
 
@@ -62,7 +62,7 @@ It took multiple iterations, planning it out step by step, a lot of testing, deb
 
 1. **FLDIGI** installed with XML-RPC enabled (it should by default)
 
-2. **Python 3.13.7 or newer**
+2. **Python 3.10 or newer**
 
 That's it. Pretty straightforward.
 
@@ -203,7 +203,7 @@ digishell/
 **TUI looks weird:**
 1. Your terminal might not support colors - try a different terminal
 2. Try resizing the window
-3. Make sure you're using Python 3.8 or newer
+3. Make sure you're using Python 3.10 or newer
 
 ## Want to contribute?
 
