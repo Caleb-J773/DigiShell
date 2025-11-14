@@ -647,17 +647,21 @@
             line-height: 1.5;
             white-space: pre-wrap;
             word-wrap: break-word;
+            word-break: break-word;
             overflow: hidden;
             pointer-events: none;
-            color: var(--terminal-tx);
-            font-weight: 500;
+            color: #ff6b6b;
+            font-weight: 600;
+            text-shadow: 0 0 1px rgba(255, 107, 107, 0.5);
             z-index: 1;
+            letter-spacing: 0;
         }
 
         .terminal-tx {
             position: relative;
-            background: transparent;
+            background: var(--terminal-bg);
             z-index: 2;
+            caret-color: var(--terminal-text);
         }
 
         .toggle-item {

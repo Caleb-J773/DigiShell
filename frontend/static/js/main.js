@@ -409,12 +409,19 @@ function startTxProgressPolling() {
 }
 
 /**
- * Stop polling TX progress
+ * Stop polling TX progress (with final polls to catch remaining chars)
  */
-function stopTxProgressPolling() {
+async function stopTxProgressPolling() {
     if (state.txProgressPollInterval) {
         clearInterval(state.txProgressPollInterval);
         state.txProgressPollInterval = null;
+    }
+
+    // Do a few final polls to catch any remaining transmitted characters
+    // that might not have been reported yet
+    for (let i = 0; i < 5; i++) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        await pollTxProgress();
     }
 }
 

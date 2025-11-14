@@ -459,6 +459,17 @@ async def poll_tx_progress():
         # Poll every 50ms for smooth updates
         await asyncio.sleep(0.05)
 
+    # Do a few final polls to catch any remaining transmitted characters
+    for _ in range(5):
+        await asyncio.sleep(0.05)
+        try:
+            transmitted_data = fldigi_client.get_transmitted_data()
+            if transmitted_data:
+                tx_transmitted_count += len(transmitted_data)
+                get_app().invalidate()
+        except Exception as e:
+            pass
+
     tx_poll_task = None
 
 
