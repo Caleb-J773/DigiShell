@@ -4,9 +4,12 @@ import asyncio
 import sys
 import json
 import os
+import logging
 from datetime import datetime, timedelta, timezone
 from backend.fldigi_client import fldigi_client
 import re
+
+logger = logging.getLogger(__name__)
 
 from prompt_toolkit import Application
 from prompt_toolkit.layout import Layout, HSplit, VSplit, Window, FormattedTextControl, Dimension, BufferControl
@@ -459,17 +462,38 @@ async def poll_tx_progress():
         # Poll every 50ms for smooth updates
         await asyncio.sleep(0.05)
 
-    # Do a few final polls to catch any remaining transmitted characters
-    for _ in range(5):
+    # Do more aggressive final polls to catch any remaining transmitted characters
+    # Poll for up to 2 seconds to ensure we get all data from fldigi
+    logger.info(f"[TX PROGRESS] Starting final polling, current transmitted: {tx_transmitted_count} of {tx_total_sent}")
+
+    no_data_count = 0
+    for i in range(40):
         await asyncio.sleep(0.05)
         try:
+            before_count = tx_transmitted_count
             transmitted_data = fldigi_client.get_transmitted_data()
             if transmitted_data:
                 tx_transmitted_count += len(transmitted_data)
                 get_app().invalidate()
+                no_data_count = 0
+            else:
+                no_data_count += 1
+
+            # If we've caught up to total sent, we can stop early
+            if tx_transmitted_count >= tx_total_sent:
+                logger.info(f"[TX PROGRESS] All characters accounted for, stopping early at poll {i + 1}")
+                break
+
+            # If no new data for last 3 polls and we're close, assume done
+            if no_data_count >= 3 and tx_transmitted_count >= tx_total_sent - 5:
+                logger.info(f"[TX PROGRESS] No new data and close to total, stopping at poll {i + 1}")
+                break
+
         except Exception as e:
             pass
 
+    logger.info(f"[TX PROGRESS] Final polling complete. Transmitted: {tx_transmitted_count} of {tx_total_sent}")
+    get_app().invalidate()  # Final redraw
     tx_poll_task = None
 
 

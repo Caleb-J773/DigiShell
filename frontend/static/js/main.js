@@ -445,12 +445,29 @@ async function stopTxProgressPolling() {
         state.txProgressPollInterval = null;
     }
 
-    // Do a few final polls to catch any remaining transmitted characters
-    // that might not have been reported yet
-    for (let i = 0; i < 5; i++) {
+    // Do more aggressive final polls to catch any remaining transmitted characters
+    // Poll for up to 2 seconds to ensure we get all data from fldigi
+    console.log('[TX PROGRESS] Starting final polling, current transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
+
+    for (let i = 0; i < 40; i++) {
         await new Promise(resolve => setTimeout(resolve, 50));
+        const beforeCount = state.txTransmittedCount;
         await pollTxProgress();
+
+        // If we've caught up to total sent, we can stop early
+        if (state.txTransmittedCount >= state.txTotalSent) {
+            console.log('[TX PROGRESS] All characters accounted for, stopping early at poll', i + 1);
+            break;
+        }
+
+        // If no new data for last 3 polls and we're close, assume done
+        if (i > 3 && state.txTransmittedCount === beforeCount && state.txTransmittedCount >= state.txTotalSent - 5) {
+            console.log('[TX PROGRESS] No new data and close to total, stopping at poll', i + 1);
+            break;
+        }
     }
+
+    console.log('[TX PROGRESS] Final polling complete. Transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
 }
 
 async function handleLiveTxInput(event) {
