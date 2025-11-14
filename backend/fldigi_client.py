@@ -230,7 +230,7 @@ class FldigiClient:
         if not self.is_connected():
             return None
         try:
-            data = self.client.client.tx.get_data()
+            data = self.client.tx.get_data()
             if isinstance(data, bytes):
                 return data.decode('utf-8', errors='ignore')
             return data if data else ""
@@ -272,7 +272,7 @@ class FldigiClient:
             return False
 
         try:
-            self.client.client.text.add_tx(text)
+            self.client.text.add_tx(text)
 
             if start_tx:
                 trx_status = self.get_trx_status()
@@ -290,7 +290,7 @@ class FldigiClient:
             return False
 
         try:
-            self.client.client.text.add_tx('\x08')
+            self.client.text.add_tx('\x08')
             return True
         except Exception as e:
             logger.error(f"Error sending backspace: {e}")
