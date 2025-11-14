@@ -161,14 +161,31 @@ digishell/
 │   ├── websocket_manager.py # WebSocket handler
 │   ├── models.py            # Data models
 │   └── routers/             # API endpoints
+│       ├── macros.py        # Macro management
+│       ├── modem.py         # Modem control
+│       ├── rig.py           # Rig operations
+│       ├── settings.py      # Settings management
+│       └── txrx.py          # TX/RX operations
 ├── frontend/
 │   ├── index.html           # Main interface
 │   └── static/
-│       ├── css/main.css     # Styling
-│       ├── js/app.js        # Main app logic
-│       └── fontawesome/     # Icons (self-hosted)
+│       ├── css/
+│       │   └── main.css     # Styling
+│       ├── js/
+│       │   ├── api.js       # API client
+│       │   ├── app.js       # Main app logic
+│       │   ├── main.js      # Initialization
+│       │   └── websocket.js # WebSocket handler
+│       ├── fontawesome/     # Font Awesome CSS
+│       └── webfonts/        # Font Awesome fonts (self-hosted)
 ├── run_tui.py               # Terminal interface
-├── start.bat                # Windows launcher
+├── run_backend.py           # Backend runner
+├── launcher.py              # Unified launcher
+├── DigiShell.bat            # Windows launcher
+├── digishell.sh             # Unix/Linux launcher
+├── DigiShell.spec           # PyInstaller build spec
+├── BUILD.md                 # Build instructions
+├── DOCUMENTATION.md         # Additional documentation
 └── requirements.txt         # Python dependencies
 ```
 
