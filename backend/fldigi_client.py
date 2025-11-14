@@ -232,8 +232,8 @@ class FldigiClient:
         if not self.is_connected():
             return None
         try:
-            # Use tx.get_data which returns transmitted data since last call
-            data = self.client.tx.get_data()
+            # Use client.tx.get_data which returns transmitted data since last call
+            data = self.client.client.tx.get_data()
             if isinstance(data, bytes):
                 return data.decode('utf-8', errors='ignore')
             return data if data else ""
