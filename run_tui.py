@@ -857,6 +857,23 @@ def _(event):
             else:
                 try:
                     live_tx_ending = True
+
+                    logger.info("[TX LIVE] Waiting for TX buffer to drain...")
+                    buffer_empty = False
+                    for i in range(50):
+                        buffer_length = fldigi_client.get_tx_buffer_length()
+                        if buffer_length is not None:
+                            logger.info(f"[TX LIVE] Buffer length: {buffer_length}")
+                            if buffer_length == 0:
+                                logger.info(f"[TX LIVE] Buffer drained at poll {i + 1}")
+                                buffer_empty = True
+                                break
+                        import time
+                        time.sleep(0.1)
+
+                    if not buffer_empty:
+                        logger.info("[TX LIVE] Buffer did not fully drain, proceeding anyway")
+
                     fldigi_client.end_tx_live()
                     command_status = "Ending TX..."
                     show_status_until = datetime.now() + timedelta(seconds=2)

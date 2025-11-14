@@ -618,10 +618,33 @@ async function handleSendTx() {
 
                 state.liveTxInFlight = false;
 
-                // Stop transmission progress polling
-                stopTxProgressPolling();
+                console.log('[TX LIVE] Waiting for TX buffer to drain...');
+                let bufferEmpty = false;
+                for (let i = 0; i < 50; i++) {
+                    try {
+                        const response = await fetch('/api/txrx/text/tx/buffer-length');
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('[TX LIVE] Buffer length:', data.buffer_length);
+                            if (data.buffer_length === 0) {
+                                console.log('[TX LIVE] Buffer drained at poll', i + 1);
+                                bufferEmpty = true;
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[TX LIVE] Error checking buffer:', e);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                if (!bufferEmpty) {
+                    console.log('[TX LIVE] Buffer did not fully drain, proceeding anyway');
+                }
 
                 await api.endTxLive();
+
+                stopTxProgressPolling();
 
                 elements.sendTxBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
                 elements.sendTxBtn.classList.remove('btn-danger');
