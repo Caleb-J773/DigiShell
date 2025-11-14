@@ -9,6 +9,10 @@ It doesn't have all the bells and whistles that FLDIGI has, that's by design and
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![FastAPI](https://img.shields.io/badge/fastapi-0.104+-green.svg) ![Claude](https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white)
 
+## !! DO NOT EXPOSE DIGISHELL TO THE INTERNET !!
+This is not designed and has not been secured for the public web. It's purpose is not to be that way either. It's meant for local devices, a LAN or when it comes to remote operations, via secured VPN tunnel. **Do not expose the port to the web and or port forward.** If you need remote operations, use tailscale, OpenVPN or other services.
+
+
 ## Some notable features that is being work on.
 
 **Web Interface**  
