@@ -165,6 +165,35 @@ echo.
 choice /C 12 /M "Select interface mode"
 set INTERFACE_MODE=%ERRORLEVEL%
 
+if !INTERFACE_MODE! EQU 1 (
+    echo.
+    echo ============================================
+    echo Server Configuration
+    echo ============================================
+    echo.
+    echo The default settings work for EVERYONE (local, LAN, and VPN access):
+    echo   - Host: 0.0.0.0 (accessible on your local network)
+    echo   - Port: 8000
+    echo.
+    echo Only customize if you know you need to (most users should choose No).
+    echo.
+    choice /C YN /M "Customize server settings"
+    if !ERRORLEVEL! EQU 1 (
+        echo.
+        set /P "CUSTOM_HOST=Enter bind address (0.0.0.0 for all, 127.0.0.1 for local only) [0.0.0.0]: "
+        if "!CUSTOM_HOST!"=="" set CUSTOM_HOST=0.0.0.0
+
+        set /P "CUSTOM_PORT=Enter port number [8000]: "
+        if "!CUSTOM_PORT!"=="" set CUSTOM_PORT=8000
+
+        set DIGISHELL_HOST=!CUSTOM_HOST!
+        set DIGISHELL_PORT=!CUSTOM_PORT!
+    ) else (
+        set DIGISHELL_HOST=0.0.0.0
+        set DIGISHELL_PORT=8000
+    )
+)
+
 timeout /t 2 /nobreak >nul
 echo.
 echo ============================================
@@ -172,8 +201,13 @@ if !INTERFACE_MODE! EQU 1 (
     echo DigiShell - Starting Server
     echo ============================================
     echo.
-    echo [INFO] Server starting on http://localhost:8000
-    echo [INFO] Open your browser and navigate to: http://localhost:8000
+    echo [WARNING] SECURITY NOTICE
+    echo This server is for LOCAL USE ONLY or trusted LAN/VPN access.
+    echo NEVER expose this to the public internet - it has no authentication!
+    echo Anyone with access can control your radio station.
+    echo.
+    echo [INFO] Server starting on http://localhost:!DIGISHELL_PORT!
+    echo [INFO] Open your browser and navigate to: http://localhost:!DIGISHELL_PORT!
     echo [INFO] Press Ctrl+C to stop the server
     echo.
     python -m backend.main

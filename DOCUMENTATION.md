@@ -404,16 +404,31 @@ const ws = new WebSocket('ws://localhost:8000/ws');
 
 ### Web Server Configuration
 
-**Port Configuration** (`backend/main.py`):
-```python
-uvicorn.run(
-    "backend.main:app",
-    host="0.0.0.0",
-    port=8000,  # Change port here
-    reload=False,
-    log_level="info"
-)
+DigiShell supports multiple ways to configure the server:
+
+**Method 1: Environment Variables**
+```bash
+# Set bind address (default: 0.0.0.0)
+export DIGISHELL_HOST=127.0.0.1
+
+# Set port (default: 8000)
+export DIGISHELL_PORT=8080
 ```
+
+**Method 2: Configuration File**
+Create a `.env` file in the project root:
+```
+DIGISHELL_HOST=127.0.0.1
+DIGISHELL_PORT=8080
+```
+
+**Method 3: Interactive (Startup Scripts)**
+The `DigiShell.bat` and `digishell.sh` scripts prompt for configuration when starting the web interface.
+
+**Bind Address Options:**
+- `0.0.0.0` - All network interfaces (default, allows LAN access)
+- `127.0.0.1` - Localhost only (most secure)
+- Specific IP - Bind to a specific network interface
 
 ### TUI Configuration
 

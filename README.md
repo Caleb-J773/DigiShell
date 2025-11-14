@@ -9,6 +9,28 @@ It doesn't have all the bells and whistles that FLDIGI has, that's by design and
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![FastAPI](https://img.shields.io/badge/fastapi-0.104+-green.svg) ![Claude](https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white)
 
+## ⚠️ IMPORTANT SECURITY WARNING ⚠️
+
+**NEVER expose DigiShell directly to the public internet!**
+
+This application is designed for **LOCAL USE ONLY** or access over a **TRUSTED LOCAL NETWORK (LAN)** or **VPN connection**.
+
+**Why this matters:**
+- DigiShell has **NO authentication or security features**
+- It provides direct control over your radio equipment and FLDIGI
+- Exposing it to the internet allows **anyone** to control your station
+- It could be abused for unauthorized transmissions or malicious activity
+
+**Safe usage:**
+- ✅ Local machine only (localhost)
+- ✅ Trusted LAN (home/shack network)
+- ✅ VPN connection to your network
+- ❌ **NEVER** port forward to the internet
+- ❌ **NEVER** expose on public WiFi
+- ❌ **NEVER** run on a public-facing server
+
+If you need remote access, use a VPN solution like WireGuard, OpenVPN, or Tailscale to securely connect to your home network first.
+
 ## Some notable features that is being work on.
 
 **Web Interface**  
@@ -71,13 +93,42 @@ That's it. Pretty straightforward.
 ### Windows (easiest way)
 
 1. Make sure FLDIGI is running with XML-RPC enabled
-2. Double-click `start.bat`
+2. Double-click `DigiShell.bat`
 3. First time it'll set up the virtual environment and install everything (takes a couple minutes)
-4. After that, it'll just start right up
-5. Browser should open automatically to `http://localhost:8000`
-6. Click the **Connect** button and you're good to go
+4. Choose option **[1] Web Interface** when prompted
+5. When asked to customize settings, choose **[N] No** to use defaults (recommended for most users)
+6. Open your browser and go to `http://localhost:8000`
+7. Click the **Connect** button and you're ready to operate!
 
-### Manual way (all platforms)
+**Note:** The default settings (`0.0.0.0:8000`) work for **everyone** - local use, LAN access, and VPN connections. You only need to customize if port 8000 is already in use or you want extra security.
+
+### Linux/Mac (easiest way)
+
+1. Make sure FLDIGI is running with XML-RPC enabled
+2. Open terminal in the DigiShell folder
+3. Run: `chmod +x digishell.sh` (first time only, makes it executable)
+4. Run: `./digishell.sh`
+5. First time it'll set up the virtual environment and install everything (takes a couple minutes)
+6. Choose option **[1] Web Interface** when prompted
+7. When asked to customize settings, type **N** and press Enter to use defaults (recommended for most users)
+8. Open your browser and go to `http://localhost:8000`
+9. Click the **Connect** button and you're ready to operate!
+
+**Note:** The default settings (`0.0.0.0:8000`) work for **everyone** - local use, LAN access, and VPN connections. You only need to customize if port 8000 is already in use or you want extra security.
+
+**Accessing from other devices on your LAN:**
+When DigiShell starts, it will show you the network addresses you can use. Look for the "Network:" line in the startup message - that's the address to use from other devices on your network!
+
+Example startup message:
+```
+Access URLs:
+  Local:    http://localhost:8000
+  Network:  http://192.168.1.100:8000
+```
+
+Use the "Network" address (`http://192.168.1.100:8000` in this example) from your tablet, phone, or other computer on the same network.
+
+### Manual way (all platforms - if you're comfortable with command line)
 
 ```bash
 # Get the code
@@ -97,6 +148,65 @@ python -m backend.main
 # OR start the terminal version
 python run_tui.py
 ```
+
+## Server Configuration (Advanced - Optional)
+
+**Most users can skip this section!** The defaults work fine for typical use.
+
+Only customize these settings if you:
+- Need to use a different port (e.g., 8000 is already in use)
+- Want localhost-only access for extra security
+- Have specific networking requirements
+
+### Method 1: Interactive (Easiest)
+
+When running `DigiShell.bat` (Windows) or `digishell.sh` (Linux/Mac), you'll be asked if you want to customize:
+- **Bind Address**:
+  - `0.0.0.0` = Access from this computer AND other devices on your LAN/VPN (default, works for everyone)
+  - `127.0.0.1` = ONLY accessible from this computer (extra security, no LAN access)
+- **Port**: Default is 8000, but you can use any available port (1024-65535)
+
+**Most users should choose No** - the defaults support local, LAN, and VPN access!
+
+### Method 2: Environment Variables (Advanced)
+
+Set these environment variables before starting DigiShell:
+
+**Windows (Command Prompt):**
+```cmd
+set DIGISHELL_HOST=127.0.0.1
+set DIGISHELL_PORT=8080
+python -m backend.main
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:DIGISHELL_HOST="127.0.0.1"
+$env:DIGISHELL_PORT="8080"
+python -m backend.main
+```
+
+**Linux/Mac:**
+```bash
+export DIGISHELL_HOST=127.0.0.1
+export DIGISHELL_PORT=8080
+python -m backend.main
+```
+
+### Method 3: Configuration File
+
+1. Copy the example config: `cp .env.example .env` (or `copy .env.example .env` on Windows)
+2. Edit `.env` and set your preferences:
+   ```
+   DIGISHELL_HOST=127.0.0.1
+   DIGISHELL_PORT=8080
+   ```
+3. Run DigiShell normally - it will automatically load these settings
+
+**Bind Address Options:**
+- `127.0.0.1` - Localhost only (most secure, only accessible from the same machine)
+- `0.0.0.0` - All interfaces (allows LAN access from other devices on your network)
+- Specific IP - Bind to a specific network interface
 
 ## Using it
 
