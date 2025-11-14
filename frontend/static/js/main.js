@@ -26,7 +26,7 @@ const state = {
     txTotalSent: 0,
     txTransmittedCount: 0,
     txProgressPollInterval: null,
-    txPollDelay: 50,
+    txPollDelay: 20,
     txLastPollTime: 0
 };
 
@@ -404,10 +404,10 @@ async function pollTxProgress() {
         const result = await response.json();
         const latency = performance.now() - startTime;
 
-        if (latency > 100) {
-            state.txPollDelay = Math.min(200, state.txPollDelay + 10);
-        } else if (latency < 30 && state.txPollDelay > 50) {
-            state.txPollDelay = Math.max(50, state.txPollDelay - 5);
+        if (latency > 80) {
+            state.txPollDelay = Math.min(100, state.txPollDelay + 5);
+        } else if (latency < 25 && state.txPollDelay > 20) {
+            state.txPollDelay = Math.max(20, state.txPollDelay - 2);
         }
 
         if (result.length > 0) {
@@ -418,7 +418,7 @@ async function pollTxProgress() {
 
     } catch (error) {
         console.error('[TX PROGRESS] Error polling transmitted data:', error);
-        state.txPollDelay = Math.min(200, state.txPollDelay + 20);
+        state.txPollDelay = Math.min(100, state.txPollDelay + 10);
     }
 }
 
@@ -427,7 +427,7 @@ function startTxProgressPolling() {
         clearInterval(state.txProgressPollInterval);
     }
 
-    state.txPollDelay = 50;
+    state.txPollDelay = 20;
 
     const dynamicPoll = async () => {
         await pollTxProgress();
@@ -448,7 +448,7 @@ async function stopTxProgressPolling() {
     console.log('[TX PROGRESS] Starting final polling, current transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
 
     const maxPolls = 100;
-    const pollDelay = Math.max(50, state.txPollDelay);
+    const pollDelay = Math.max(20, state.txPollDelay);
     let noDataCount = 0;
 
     for (let i = 0; i < maxPolls; i++) {
@@ -474,7 +474,7 @@ async function stopTxProgressPolling() {
     }
 
     console.log('[TX PROGRESS] Final polling complete. Transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
-    state.txPollDelay = 50;
+    state.txPollDelay = 20;
 }
 
 async function handleLiveTxInput(event) {

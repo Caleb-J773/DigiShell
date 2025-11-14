@@ -43,7 +43,7 @@ live_tx_start_time = 0
 tx_total_sent = 0
 tx_transmitted_count = 0
 tx_poll_task = None
-tx_poll_delay = 0.05
+tx_poll_delay = 0.02
 
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
@@ -457,19 +457,19 @@ async def poll_tx_progress():
                 get_app().invalidate()
 
             elapsed = time.time() - start_time
-            if elapsed > 0.1:
-                tx_poll_delay = min(0.2, tx_poll_delay + 0.01)
-            elif elapsed < 0.03 and tx_poll_delay > 0.05:
-                tx_poll_delay = max(0.05, tx_poll_delay - 0.005)
+            if elapsed > 0.08:
+                tx_poll_delay = min(0.1, tx_poll_delay + 0.005)
+            elif elapsed < 0.025 and tx_poll_delay > 0.02:
+                tx_poll_delay = max(0.02, tx_poll_delay - 0.002)
         except Exception as e:
-            tx_poll_delay = min(0.2, tx_poll_delay + 0.02)
+            tx_poll_delay = min(0.1, tx_poll_delay + 0.01)
 
         await asyncio.sleep(tx_poll_delay)
 
     logger.info(f"[TX PROGRESS] Starting final polling, current transmitted: {tx_transmitted_count} of {tx_total_sent}")
 
     no_data_count = 0
-    poll_delay = max(0.05, tx_poll_delay)
+    poll_delay = max(0.02, tx_poll_delay)
     for i in range(100):
         await asyncio.sleep(poll_delay)
         try:
@@ -495,7 +495,7 @@ async def poll_tx_progress():
 
     logger.info(f"[TX PROGRESS] Final polling complete. Transmitted: {tx_transmitted_count} of {tx_total_sent}")
     get_app().invalidate()
-    tx_poll_delay = 0.05
+    tx_poll_delay = 0.02
     tx_poll_task = None
 
 
@@ -505,7 +505,7 @@ def start_tx_progress_polling():
     if tx_poll_task is not None:
         tx_poll_task.cancel()
 
-    tx_poll_delay = 0.05
+    tx_poll_delay = 0.02
     tx_poll_task = asyncio.create_task(poll_tx_progress())
 
 
