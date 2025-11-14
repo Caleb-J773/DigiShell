@@ -21,7 +21,11 @@ const state = {
     liveTxStarting: false,
     liveTxDebounceTimer: null,
     liveTxDebounceDelay: 30,
-    liveTxInFlight: false
+    liveTxInFlight: false,
+    // Transmission progress tracking
+    txTotalSent: 0,              // Total characters sent to buffer
+    txTransmittedCount: 0,       // Characters actually transmitted
+    txProgressPollInterval: null // Polling interval ID
 };
 
 // DOM Elements
@@ -353,11 +357,63 @@ function updateTxOverlay() {
         return;
     }
 
-    // Show transmitted characters in the overlay
-    elements.txTextOverlay.textContent = state.liveTxBuffer;
+    // Show only the characters that have actually been transmitted (based on transmitted count)
+    const transmittedText = state.liveTxBuffer.substring(0, state.txTransmittedCount);
+    elements.txTextOverlay.textContent = transmittedText;
 
     // Sync scroll position with textarea
     elements.txTextOverlay.scrollTop = elements.txText.scrollTop;
+}
+
+/**
+ * Poll TX buffer length to calculate transmission progress
+ */
+async function pollTxProgress() {
+    if (!state.liveTxActive || !state.connected) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/txrx/text/tx/buffer-length');
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        const bufferLength = data.buffer_length;
+
+        // Calculate how many characters have been transmitted
+        // transmitted = total_sent - buffer_remaining
+        state.txTransmittedCount = Math.max(0, state.txTotalSent - bufferLength);
+
+        // Update the overlay to show transmitted characters
+        updateTxOverlay();
+
+    } catch (error) {
+        console.error('[TX PROGRESS] Error polling buffer length:', error);
+    }
+}
+
+/**
+ * Start polling TX progress
+ */
+function startTxProgressPolling() {
+    if (state.txProgressPollInterval) {
+        clearInterval(state.txProgressPollInterval);
+    }
+
+    // Poll every 50ms for smooth updates
+    state.txProgressPollInterval = setInterval(pollTxProgress, 50);
+}
+
+/**
+ * Stop polling TX progress
+ */
+function stopTxProgressPolling() {
+    if (state.txProgressPollInterval) {
+        clearInterval(state.txProgressPollInterval);
+        state.txProgressPollInterval = null;
+    }
 }
 
 async function handleLiveTxInput(event) {
@@ -387,6 +443,7 @@ async function handleLiveTxInput(event) {
 
                 try {
                     await api.addTxCharsLive(newChars, false);
+                    state.txTotalSent += newChars.length;  // Track total sent
                     console.log('[TX LIVE] Added chars:', JSON.stringify(newChars));
                 } catch (error) {
                     state.liveTxBuffer = previousBuffer;
@@ -417,6 +474,7 @@ async function handleLiveTxInput(event) {
                 console.log('[TX LIVE] Backspacing', numDeleted, 'characters from end');
                 try {
                     await api.sendBackspaceLive(numDeleted);
+                    state.txTotalSent = Math.max(0, state.txTotalSent - numDeleted);  // Track total sent
                     console.log('[TX LIVE] Sent', numDeleted, 'backspaces');
                 } catch (error) {
                     state.liveTxBuffer = previousBuffer;
@@ -474,6 +532,12 @@ async function handleSendTx() {
                 state.liveTxBuffer = text;  // What we've sent so far
                 state.lastTxText = elements.txText.value;  // Current textarea value
                 state.liveTxStarting = false;  // Re-enable input handler
+
+                // Initialize transmission progress tracking
+                state.txTotalSent = text.length;
+                state.txTransmittedCount = 0;
+                startTxProgressPolling();  // Start polling for transmission progress
+
                 console.log('[TX LIVE] Startup complete, sent:', text.length, 'chars, current textarea:', elements.txText.value.length, 'chars');
                 updateTxOverlay();
 
@@ -492,6 +556,9 @@ async function handleSendTx() {
                 }
 
                 state.liveTxInFlight = false;
+
+                // Stop transmission progress polling
+                stopTxProgressPolling();
 
                 await api.endTxLive();
 
@@ -545,6 +612,8 @@ async function handleClearTx() {
         elements.txText.value = '';
         state.liveTxBuffer = '';
         state.lastTxText = '';
+        state.txTotalSent = 0;
+        state.txTransmittedCount = 0;
         updateTxOverlay();
         showNotification('TX buffer cleared', 'success');
     } catch (error) {
@@ -615,6 +684,9 @@ function updateTxRxStatus(status) {
         state.liveTxBuffer = '';
         state.lastTxText = '';
         state.liveTxActive = false;
+        state.txTotalSent = 0;
+        state.txTransmittedCount = 0;
+        stopTxProgressPolling();  // Stop polling when TX ends
         updateTxOverlay();
 
         if (elements.sendTxBtn.textContent.includes('End')) {

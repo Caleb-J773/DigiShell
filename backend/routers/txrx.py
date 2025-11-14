@@ -171,3 +171,16 @@ async def end_tx_live():
         raise HTTPException(status_code=500, detail="Failed to end TX")
 
     return StatusResponse(success=True, message="TX ended, returning to RX")
+
+
+@router.get("/text/tx/buffer-length")
+async def get_tx_buffer_length():
+    """Get the current TX buffer length (characters waiting to be transmitted)"""
+    if not fldigi_client.is_connected():
+        raise HTTPException(status_code=503, detail="Not connected to FLDIGI")
+
+    length = fldigi_client.get_tx_buffer_length()
+    if length is None:
+        raise HTTPException(status_code=500, detail="Failed to get TX buffer length")
+
+    return {"buffer_length": length}

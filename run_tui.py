@@ -37,6 +37,11 @@ live_tx_buffer = ""
 last_input_text = ""
 live_tx_start_time = 0
 
+# Transmission progress tracking
+tx_total_sent = 0
+tx_transmitted_count = 0
+tx_poll_task = None
+
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
     "callsign": "NOCALL",
@@ -376,8 +381,8 @@ class TxLexer(Lexer):
             # Count total chars in previous lines
             chars_before_line = sum(len(document.lines[i]) + 1 for i in range(lineno))  # +1 for newline
 
-            # Calculate transmitted length for this line
-            tx_length = len(live_tx_buffer)
+            # Use tx_transmitted_count which tracks actual transmission progress
+            tx_length = tx_transmitted_count
 
             if chars_before_line >= tx_length:
                 # This line hasn't been transmitted yet
@@ -436,8 +441,47 @@ async def send_tx_text(text):
         return False
 
 
+async def poll_tx_progress():
+    """Poll TX buffer length to calculate transmission progress"""
+    global tx_total_sent, tx_transmitted_count, tx_poll_task
+
+    while live_tx_active and not live_tx_ending:
+        try:
+            buffer_length = fldigi_client.get_tx_buffer_length()
+            if buffer_length is not None:
+                # Calculate transmitted = total_sent - buffer_remaining
+                tx_transmitted_count = max(0, tx_total_sent - buffer_length)
+                get_app().invalidate()  # Redraw to update highlighting
+        except Exception as e:
+            pass
+
+        # Poll every 50ms for smooth updates
+        await asyncio.sleep(0.05)
+
+    tx_poll_task = None
+
+
+def start_tx_progress_polling():
+    """Start polling TX progress"""
+    global tx_poll_task
+
+    if tx_poll_task is not None:
+        tx_poll_task.cancel()
+
+    tx_poll_task = asyncio.create_task(poll_tx_progress())
+
+
+def stop_tx_progress_polling():
+    """Stop polling TX progress"""
+    global tx_poll_task
+
+    if tx_poll_task is not None:
+        tx_poll_task.cancel()
+        tx_poll_task = None
+
+
 async def handle_live_tx_change():
-    global live_tx_buffer, last_input_text, command_status, show_status_until
+    global live_tx_buffer, last_input_text, command_status, show_status_until, tx_total_sent
 
     if not live_tx_active or live_tx_ending:
         return
@@ -463,6 +507,7 @@ async def handle_live_tx_change():
             success = fldigi_client.add_tx_chars(new_chars, start_tx=False)
             if success:
                 live_tx_buffer += new_chars
+                tx_total_sent += len(new_chars)  # Track total sent
                 get_app().invalidate()  # Redraw to update transmitted text highlighting
         except Exception as e:
             pass
@@ -474,6 +519,7 @@ async def handle_live_tx_change():
                 fldigi_client.send_backspace()
             if len(live_tx_buffer) >= num_deleted:
                 live_tx_buffer = live_tx_buffer[:-num_deleted]
+                tx_total_sent = max(0, tx_total_sent - num_deleted)  # Track total sent
                 get_app().invalidate()  # Redraw to update transmitted text highlighting
         except Exception as e:
             pass
@@ -482,7 +528,7 @@ async def handle_live_tx_change():
 
 
 async def process_input(text):
-    global command_status, show_status_until, last_tx
+    global command_status, show_status_until, last_tx, tx_total_sent, tx_transmitted_count
 
     if not text.strip():
         return
@@ -591,6 +637,9 @@ async def process_input(text):
             live_tx_buffer = ""
             live_tx_active = False
             live_tx_ending = False
+            tx_total_sent = 0
+            tx_transmitted_count = 0
+            stop_tx_progress_polling()
             get_app().invalidate()  # Redraw to clear transmitted text highlighting
             mode_name = "LIVE" if live_tx_mode else "BATCH"
             command_status = f"TX mode: {mode_name}"
@@ -736,7 +785,7 @@ def _(event):
 
 @kb.add('enter')
 def _(event):
-    global live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, live_tx_start_time, command_status, show_status_until
+    global live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, live_tx_start_time, command_status, show_status_until, tx_total_sent, tx_transmitted_count
     import time
 
     if event.app.layout.has_focus(input_field):
@@ -756,6 +805,12 @@ def _(event):
                             live_tx_buffer = text
                             last_input_text = text
                             live_tx_start_time = time.time()
+
+                            # Initialize transmission progress tracking
+                            tx_total_sent = len(text)
+                            tx_transmitted_count = 0
+                            start_tx_progress_polling()  # Start polling
+
                             get_app().invalidate()  # Redraw to show transmitted text highlighting
                             command_status = "✓ TX Started - type to continue"
                             show_status_until = datetime.now() + timedelta(seconds=2)
@@ -929,6 +984,12 @@ async def poll_fldigi():
                         last_input_text = ""
                         live_tx_active = False
                         live_tx_ending = False
+
+                        # Stop polling and reset tracking
+                        stop_tx_progress_polling()
+                        tx_total_sent = 0
+                        tx_transmitted_count = 0
+
                         get_app().invalidate()  # Redraw to clear transmitted text highlighting
 
                         command_status = "✓ TX Complete"

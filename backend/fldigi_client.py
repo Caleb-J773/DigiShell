@@ -214,6 +214,33 @@ class FldigiClient:
             logger.error(f"Error getting TX text: {e}")
             return None
 
+    def get_tx_buffer_length(self) -> Optional[int]:
+        """Get the current length of the TX buffer (characters waiting to be transmitted)"""
+        if not self.is_connected():
+            return None
+        try:
+            tx_data = self.client.text.get_tx_data()
+            if isinstance(tx_data, bytes):
+                return len(tx_data)
+            return len(tx_data) if tx_data else 0
+        except Exception as e:
+            logger.error(f"Error getting TX buffer length: {e}")
+            return None
+
+    def get_transmitted_data(self) -> Optional[str]:
+        """Get data that has been transmitted since last query (from tx.get_data)"""
+        if not self.is_connected():
+            return None
+        try:
+            # Use tx.get_data which returns transmitted data since last call
+            data = self.client.tx.get_data()
+            if isinstance(data, bytes):
+                return data.decode('utf-8', errors='ignore')
+            return data if data else ""
+        except Exception as e:
+            logger.error(f"Error getting transmitted data: {e}")
+            return None
+
     def add_tx_text(self, text: str, wait: bool = False) -> bool:
         if not self.is_connected():
             return False
