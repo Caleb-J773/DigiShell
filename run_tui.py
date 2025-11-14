@@ -470,7 +470,7 @@ async def poll_tx_progress():
 
     no_data_count = 0
     poll_delay = max(0.05, tx_poll_delay)
-    for i in range(40):
+    for i in range(100):
         await asyncio.sleep(poll_delay)
         try:
             before_count = tx_transmitted_count
@@ -483,11 +483,11 @@ async def poll_tx_progress():
                 no_data_count += 1
 
             if tx_transmitted_count >= tx_total_sent:
-                logger.info(f"[TX PROGRESS] All characters accounted for, stopping early at poll {i + 1}")
+                logger.info(f"[TX PROGRESS] All characters accounted for, stopping at poll {i + 1}")
                 break
 
-            if no_data_count >= 3 and tx_transmitted_count >= tx_total_sent - 5:
-                logger.info(f"[TX PROGRESS] No new data and close to total, stopping at poll {i + 1}")
+            if no_data_count >= 15:
+                logger.info(f"[TX PROGRESS] No new data for 15 polls, stopping at poll {i + 1}, transmitted: {tx_transmitted_count} of {tx_total_sent}")
                 break
 
         except Exception as e:

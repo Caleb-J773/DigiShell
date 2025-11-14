@@ -447,21 +447,28 @@ async function stopTxProgressPolling() {
 
     console.log('[TX PROGRESS] Starting final polling, current transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
 
-    const maxPolls = 40;
+    const maxPolls = 100;
     const pollDelay = Math.max(50, state.txPollDelay);
+    let noDataCount = 0;
 
     for (let i = 0; i < maxPolls; i++) {
         await new Promise(resolve => setTimeout(resolve, pollDelay));
         const beforeCount = state.txTransmittedCount;
         await pollTxProgress();
 
+        if (state.txTransmittedCount > beforeCount) {
+            noDataCount = 0;
+        } else {
+            noDataCount++;
+        }
+
         if (state.txTransmittedCount >= state.txTotalSent) {
-            console.log('[TX PROGRESS] All characters accounted for, stopping early at poll', i + 1);
+            console.log('[TX PROGRESS] All characters accounted for, stopping at poll', i + 1);
             break;
         }
 
-        if (i > 3 && state.txTransmittedCount === beforeCount && state.txTransmittedCount >= state.txTotalSent - 5) {
-            console.log('[TX PROGRESS] No new data and close to total, stopping at poll', i + 1);
+        if (noDataCount >= 15) {
+            console.log('[TX PROGRESS] No new data for 15 polls, stopping at poll', i + 1, 'transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
             break;
         }
     }
