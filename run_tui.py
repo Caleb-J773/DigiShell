@@ -27,7 +27,7 @@ from prompt_toolkit.document import Document
 rx_buffer = []
 last_tx = ""
 last_call = ""
-MAX_RX_LINES = 1000  # Keep more history
+MAX_RX_LINES = 1000
 connection_time = None
 command_status = ""
 show_status_until = None
@@ -40,10 +40,10 @@ live_tx_buffer = ""
 last_input_text = ""
 live_tx_start_time = 0
 
-# Transmission progress tracking
 tx_total_sent = 0
 tx_transmitted_count = 0
 tx_poll_task = None
+tx_poll_delay = 0.05
 
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
@@ -445,30 +445,33 @@ async def send_tx_text(text):
 
 
 async def poll_tx_progress():
-    """Poll for newly transmitted data (incremental)"""
-    global tx_total_sent, tx_transmitted_count, tx_poll_task
+    global tx_total_sent, tx_transmitted_count, tx_poll_task, tx_poll_delay
+    import time
 
     while live_tx_active and not live_tx_ending:
+        start_time = time.time()
         try:
-            # Get data transmitted since last query (incremental)
             transmitted_data = fldigi_client.get_transmitted_data()
             if transmitted_data:
-                # Accumulate transmitted character count
                 tx_transmitted_count += len(transmitted_data)
-                get_app().invalidate()  # Redraw to update highlighting
+                get_app().invalidate()
+
+            elapsed = time.time() - start_time
+            if elapsed > 0.1:
+                tx_poll_delay = min(0.2, tx_poll_delay + 0.01)
+            elif elapsed < 0.03 and tx_poll_delay > 0.05:
+                tx_poll_delay = max(0.05, tx_poll_delay - 0.005)
         except Exception as e:
-            pass
+            tx_poll_delay = min(0.2, tx_poll_delay + 0.02)
 
-        # Poll every 50ms for smooth updates
-        await asyncio.sleep(0.05)
+        await asyncio.sleep(tx_poll_delay)
 
-    # Do more aggressive final polls to catch any remaining transmitted characters
-    # Poll for up to 2 seconds to ensure we get all data from fldigi
     logger.info(f"[TX PROGRESS] Starting final polling, current transmitted: {tx_transmitted_count} of {tx_total_sent}")
 
     no_data_count = 0
+    poll_delay = max(0.05, tx_poll_delay)
     for i in range(40):
-        await asyncio.sleep(0.05)
+        await asyncio.sleep(poll_delay)
         try:
             before_count = tx_transmitted_count
             transmitted_data = fldigi_client.get_transmitted_data()
@@ -479,12 +482,10 @@ async def poll_tx_progress():
             else:
                 no_data_count += 1
 
-            # If we've caught up to total sent, we can stop early
             if tx_transmitted_count >= tx_total_sent:
                 logger.info(f"[TX PROGRESS] All characters accounted for, stopping early at poll {i + 1}")
                 break
 
-            # If no new data for last 3 polls and we're close, assume done
             if no_data_count >= 3 and tx_transmitted_count >= tx_total_sent - 5:
                 logger.info(f"[TX PROGRESS] No new data and close to total, stopping at poll {i + 1}")
                 break
@@ -493,22 +494,22 @@ async def poll_tx_progress():
             pass
 
     logger.info(f"[TX PROGRESS] Final polling complete. Transmitted: {tx_transmitted_count} of {tx_total_sent}")
-    get_app().invalidate()  # Final redraw
+    get_app().invalidate()
+    tx_poll_delay = 0.05
     tx_poll_task = None
 
 
 def start_tx_progress_polling():
-    """Start polling TX progress"""
-    global tx_poll_task
+    global tx_poll_task, tx_poll_delay
 
     if tx_poll_task is not None:
         tx_poll_task.cancel()
 
+    tx_poll_delay = 0.05
     tx_poll_task = asyncio.create_task(poll_tx_progress())
 
 
 def stop_tx_progress_polling():
-    """Stop polling TX progress"""
     global tx_poll_task
 
     if tx_poll_task is not None:

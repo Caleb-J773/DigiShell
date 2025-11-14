@@ -215,7 +215,6 @@ class FldigiClient:
             return None
 
     def get_tx_buffer_length(self) -> Optional[int]:
-        """Get the current length of the TX buffer (characters waiting to be transmitted)"""
         if not self.is_connected():
             return None
         try:
@@ -228,11 +227,9 @@ class FldigiClient:
             return None
 
     def get_transmitted_data(self) -> Optional[str]:
-        """Get data that has been transmitted since last query (from tx.get_data)"""
         if not self.is_connected():
             return None
         try:
-            # Use client.tx.get_data which returns transmitted data since last call
             data = self.client.client.tx.get_data()
             if isinstance(data, bytes):
                 return data.decode('utf-8', errors='ignore')

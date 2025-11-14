@@ -23,9 +23,11 @@ const state = {
     liveTxDebounceDelay: 30,
     liveTxInFlight: false,
     // Transmission progress tracking
-    txTotalSent: 0,              // Total characters sent to buffer
-    txTransmittedCount: 0,       // Characters actually transmitted
-    txProgressPollInterval: null // Polling interval ID
+    txTotalSent: 0,
+    txTransmittedCount: 0,
+    txProgressPollInterval: null,
+    txPollDelay: 50,
+    txLastPollTime: 0
 };
 
 // DOM Elements
@@ -352,9 +354,6 @@ async function handleTxRxControl(action) {
     }
 }
 
-/**
- * Update the TX text overlay to show transmitted characters
- */
 function updateTxOverlay() {
     if (!elements.txTextOverlay) {
         return;
@@ -363,11 +362,9 @@ function updateTxOverlay() {
     const currentText = elements.txText.value;
     const transmittedCount = state.txTransmittedCount;
 
-    // Clear overlay
     elements.txTextOverlay.innerHTML = '';
 
     if (transmittedCount > 0 && currentText.length > 0) {
-        // Create spans for transmitted (red) and pending (green) text
         const transmitted = currentText.substring(0, transmittedCount);
         const pending = currentText.substring(transmittedCount);
 
@@ -382,24 +379,21 @@ function updateTxOverlay() {
         elements.txTextOverlay.appendChild(transmittedSpan);
         elements.txTextOverlay.appendChild(pendingSpan);
     } else {
-        // No transmission yet, show all text in green
         const pendingSpan = document.createElement('span');
         pendingSpan.className = 'pending-chars';
         pendingSpan.textContent = currentText;
         elements.txTextOverlay.appendChild(pendingSpan);
     }
 
-    // Sync scroll position with textarea
     elements.txTextOverlay.scrollTop = elements.txText.scrollTop;
 }
 
-/**
- * Poll for newly transmitted data (incremental)
- */
 async function pollTxProgress() {
     if (!state.liveTxActive || !state.connected) {
         return;
     }
+
+    const startTime = performance.now();
 
     try {
         const response = await fetch('/api/txrx/text/tx/transmitted-data');
@@ -408,59 +402,64 @@ async function pollTxProgress() {
         }
 
         const result = await response.json();
+        const latency = performance.now() - startTime;
 
-        // tx.get_data() returns characters transmitted since last query
-        // Accumulate the length to track total transmitted
+        if (latency > 100) {
+            state.txPollDelay = Math.min(200, state.txPollDelay + 10);
+        } else if (latency < 30 && state.txPollDelay > 50) {
+            state.txPollDelay = Math.max(50, state.txPollDelay - 5);
+        }
+
         if (result.length > 0) {
             state.txTransmittedCount += result.length;
-            console.log('[TX PROGRESS] Transmitted', result.length, 'chars, total:', state.txTransmittedCount);
-
-            // Update the overlay to show transmitted characters
+            console.log('[TX PROGRESS] Transmitted', result.length, 'chars, total:', state.txTransmittedCount, 'latency:', Math.round(latency), 'ms');
             updateTxOverlay();
         }
 
     } catch (error) {
         console.error('[TX PROGRESS] Error polling transmitted data:', error);
+        state.txPollDelay = Math.min(200, state.txPollDelay + 20);
     }
 }
 
-/**
- * Start polling TX progress
- */
 function startTxProgressPolling() {
     if (state.txProgressPollInterval) {
         clearInterval(state.txProgressPollInterval);
     }
 
-    // Poll every 50ms for smooth updates
-    state.txProgressPollInterval = setInterval(pollTxProgress, 50);
+    state.txPollDelay = 50;
+
+    const dynamicPoll = async () => {
+        await pollTxProgress();
+        if (state.liveTxActive) {
+            state.txProgressPollInterval = setTimeout(dynamicPoll, state.txPollDelay);
+        }
+    };
+
+    dynamicPoll();
 }
 
-/**
- * Stop polling TX progress (with final polls to catch remaining chars)
- */
 async function stopTxProgressPolling() {
     if (state.txProgressPollInterval) {
-        clearInterval(state.txProgressPollInterval);
+        clearTimeout(state.txProgressPollInterval);
         state.txProgressPollInterval = null;
     }
 
-    // Do more aggressive final polls to catch any remaining transmitted characters
-    // Poll for up to 2 seconds to ensure we get all data from fldigi
     console.log('[TX PROGRESS] Starting final polling, current transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
 
-    for (let i = 0; i < 40; i++) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+    const maxPolls = 40;
+    const pollDelay = Math.max(50, state.txPollDelay);
+
+    for (let i = 0; i < maxPolls; i++) {
+        await new Promise(resolve => setTimeout(resolve, pollDelay));
         const beforeCount = state.txTransmittedCount;
         await pollTxProgress();
 
-        // If we've caught up to total sent, we can stop early
         if (state.txTransmittedCount >= state.txTotalSent) {
             console.log('[TX PROGRESS] All characters accounted for, stopping early at poll', i + 1);
             break;
         }
 
-        // If no new data for last 3 polls and we're close, assume done
         if (i > 3 && state.txTransmittedCount === beforeCount && state.txTransmittedCount >= state.txTotalSent - 5) {
             console.log('[TX PROGRESS] No new data and close to total, stopping at poll', i + 1);
             break;
@@ -468,6 +467,7 @@ async function stopTxProgressPolling() {
     }
 
     console.log('[TX PROGRESS] Final polling complete. Transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
+    state.txPollDelay = 50;
 }
 
 async function handleLiveTxInput(event) {
