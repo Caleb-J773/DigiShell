@@ -80,7 +80,7 @@ That's it. Pretty straightforward.
 4. After that, it'll just start right up and you can use the IP's it gives to go to the interface. 
 
 ### Linux (Shell Script)
-This might work, but I hadn't had the chance just yet to chance it, but you can test out the digishell.sh that is included. 
+This might work, but I hadn't had the chance just yet to test it, but you can test out the digishell.sh that is included. 
 
 
 ### Manual way (all platforms)
@@ -212,11 +212,7 @@ digishell/
 3. Verify port 7362 isn't being blocked
 4. Check your firewall if you're still having issues
 
-**Web interface not updating:**
-1. Check browser console (F12) for errors
-2. Make sure the WebSocket is connected
-3. Verify FLDIGI is responding
-
+5. 
 **TUI looks weird:**
 1. Your terminal might not support colors - try a different terminal
 2. Try resizing the window
@@ -228,5 +224,3 @@ Feel free to open issues or submit pull requests. I'm happy to look at improveme
 
 ---
 Built as a fun project to make portable digital operations simpler. It's not meant to replace FLDIGI, just make it easier to control when you're in the field or accessing your station remotely.
-
-- Caleb KC3VPB
