@@ -81,7 +81,7 @@ That's it. Pretty straightforward.
 
 ```bash
 # Get the code
-git clone https://github.com/yourusername/digishell.git
+git clone https://github.com/your-repo/digishell.git
 cd digishell
 
 # Set up virtual environment
@@ -149,7 +149,7 @@ python run_tui.py
 - `<TIME>` - Local time
 - `<UTC>` - UTC time
 
-You can also manually edit  the `.fldigi_tui.json` to add your own custom macros. The configuration files are dumped in a user folder. Like C:/Users/yourusername
+You can also manually edit the `.fldigi_tui.json` to add your own custom macros. The configuration file is saved in your user folder (e.g., C:/Users/YourUsername on Windows)
 
 ## Project Structure
 

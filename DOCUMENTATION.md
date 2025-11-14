@@ -1,6 +1,6 @@
-# FLDIGI Layer - Technical Documentation
+# DigiShell - Technical Documentation
 
-Complete technical documentation for the FLDIGI Layer project.
+Complete technical documentation for the DigiShell project.
 
 ## Table of Contents
 1. [Architecture](#architecture)
@@ -518,8 +518,8 @@ uvicorn.run(
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/fldigi-layer.git
-cd fldigi-layer
+git clone https://github.com/your-repo/digishell.git
+cd digishell
 
 # Create virtual environment
 python -m venv venv
@@ -684,14 +684,14 @@ gunicorn backend.main:app \
 **Using systemd:**
 ```ini
 [Unit]
-Description=FLDIGI Layer Web Interface
+Description=DigiShell Web Interface
 After=network.target
 
 [Service]
 Type=notify
 User=radio
-WorkingDirectory=/home/radio/fldigi-layer
-ExecStart=/home/radio/fldigi-layer/venv/bin/gunicorn backend.main:app \
+WorkingDirectory=/home/radio/digishell
+ExecStart=/home/radio/digishell/venv/bin/gunicorn backend.main:app \
   -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 Restart=always
 
@@ -734,12 +734,10 @@ WantedBy=multi-user.target
 
 ## License
 
-MIT License - See LICENSE file for details.
+GNU General Public License v3.0 - See LICENSE file for details.
 
 ## Support
 
-For issues, questions, or feature requests:
-- GitHub Issues: https://github.com/yourusername/fldigi-layer/issues
-- Email: your-email@example.com
+For issues, questions, or feature requests, please open an issue on GitHub.
 
 **73! 📡**
