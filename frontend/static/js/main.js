@@ -366,7 +366,7 @@ function updateTxOverlay() {
 }
 
 /**
- * Poll TX buffer length to calculate transmission progress
+ * Poll for newly transmitted data (incremental)
  */
 async function pollTxProgress() {
     if (!state.liveTxActive || !state.connected) {
@@ -374,23 +374,25 @@ async function pollTxProgress() {
     }
 
     try {
-        const response = await fetch('/api/txrx/text/tx/buffer-length');
+        const response = await fetch('/api/txrx/text/tx/transmitted-data');
         if (!response.ok) {
             return;
         }
 
-        const data = await response.json();
-        const bufferLength = data.buffer_length;
+        const result = await response.json();
 
-        // Calculate how many characters have been transmitted
-        // transmitted = total_sent - buffer_remaining
-        state.txTransmittedCount = Math.max(0, state.txTotalSent - bufferLength);
+        // tx.get_data() returns characters transmitted since last query
+        // Accumulate the length to track total transmitted
+        if (result.length > 0) {
+            state.txTransmittedCount += result.length;
+            console.log('[TX PROGRESS] Transmitted', result.length, 'chars, total:', state.txTransmittedCount);
 
-        // Update the overlay to show transmitted characters
-        updateTxOverlay();
+            // Update the overlay to show transmitted characters
+            updateTxOverlay();
+        }
 
     } catch (error) {
-        console.error('[TX PROGRESS] Error polling buffer length:', error);
+        console.error('[TX PROGRESS] Error polling transmitted data:', error);
     }
 }
 

@@ -184,3 +184,16 @@ async def get_tx_buffer_length():
         raise HTTPException(status_code=500, detail="Failed to get TX buffer length")
 
     return {"buffer_length": length}
+
+
+@router.get("/text/tx/transmitted-data")
+async def get_transmitted_data():
+    """Get data that has been transmitted since last query (incremental)"""
+    if not fldigi_client.is_connected():
+        raise HTTPException(status_code=503, detail="Not connected to FLDIGI")
+
+    data = fldigi_client.get_transmitted_data()
+    if data is None:
+        raise HTTPException(status_code=500, detail="Failed to get transmitted data")
+
+    return {"data": data, "length": len(data)}

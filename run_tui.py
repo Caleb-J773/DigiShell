@@ -442,15 +442,16 @@ async def send_tx_text(text):
 
 
 async def poll_tx_progress():
-    """Poll TX buffer length to calculate transmission progress"""
+    """Poll for newly transmitted data (incremental)"""
     global tx_total_sent, tx_transmitted_count, tx_poll_task
 
     while live_tx_active and not live_tx_ending:
         try:
-            buffer_length = fldigi_client.get_tx_buffer_length()
-            if buffer_length is not None:
-                # Calculate transmitted = total_sent - buffer_remaining
-                tx_transmitted_count = max(0, tx_total_sent - buffer_length)
+            # Get data transmitted since last query (incremental)
+            transmitted_data = fldigi_client.get_transmitted_data()
+            if transmitted_data:
+                # Accumulate transmitted character count
+                tx_transmitted_count += len(transmitted_data)
                 get_app().invalidate()  # Redraw to update highlighting
         except Exception as e:
             pass
