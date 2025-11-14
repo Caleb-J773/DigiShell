@@ -202,7 +202,7 @@ digishell/
 - Font Awesome (self-hosted)
 
 **Terminal:**
-- prompt_toolkit - Professional terminal UI library
+- prompt_toolkit - terminal UI library
 
 ## Common Issues
 
