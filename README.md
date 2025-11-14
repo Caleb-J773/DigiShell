@@ -77,6 +77,10 @@ That's it. Pretty straightforward.
 5. Browser should open automatically to `http://localhost:8000`
 6. Click the **Connect** button and you're good to go
 
+### Linux (Shell Script)
+This might work, but I hadn't had the chance just yet to chance it, but you can test out the digishell.sh that is included. 
+
+
 ### Manual way (all platforms)
 
 ```bash
