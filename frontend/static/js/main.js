@@ -111,6 +111,9 @@ function setupEventListeners() {
     // Live TX editing - monitor textarea changes
     elements.txText.addEventListener('input', handleLiveTxInput);
 
+    // Update overlay on any text change
+    elements.txText.addEventListener('input', updateTxOverlay);
+
     // Sync overlay scroll with textarea scroll
     elements.txText.addEventListener('scroll', () => {
         if (elements.txTextOverlay) {
@@ -357,9 +360,34 @@ function updateTxOverlay() {
         return;
     }
 
-    // Show only the characters that have actually been transmitted (based on transmitted count)
-    const transmittedText = state.liveTxBuffer.substring(0, state.txTransmittedCount);
-    elements.txTextOverlay.textContent = transmittedText;
+    const currentText = elements.txText.value;
+    const transmittedCount = state.txTransmittedCount;
+
+    // Clear overlay
+    elements.txTextOverlay.innerHTML = '';
+
+    if (transmittedCount > 0 && currentText.length > 0) {
+        // Create spans for transmitted (red) and pending (green) text
+        const transmitted = currentText.substring(0, transmittedCount);
+        const pending = currentText.substring(transmittedCount);
+
+        const transmittedSpan = document.createElement('span');
+        transmittedSpan.className = 'transmitted-chars';
+        transmittedSpan.textContent = transmitted;
+
+        const pendingSpan = document.createElement('span');
+        pendingSpan.className = 'pending-chars';
+        pendingSpan.textContent = pending;
+
+        elements.txTextOverlay.appendChild(transmittedSpan);
+        elements.txTextOverlay.appendChild(pendingSpan);
+    } else {
+        // No transmission yet, show all text in green
+        const pendingSpan = document.createElement('span');
+        pendingSpan.className = 'pending-chars';
+        pendingSpan.textContent = currentText;
+        elements.txTextOverlay.appendChild(pendingSpan);
+    }
 
     // Sync scroll position with textarea
     elements.txTextOverlay.scrollTop = elements.txText.scrollTop;

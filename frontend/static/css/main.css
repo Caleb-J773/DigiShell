@@ -649,19 +649,33 @@
             word-wrap: break-word;
             word-break: break-word;
             overflow: hidden;
+            overflow-y: auto;
             pointer-events: none;
-            color: #ff6b6b;
-            font-weight: 600;
-            text-shadow: 0 0 1px rgba(255, 107, 107, 0.5);
-            z-index: 1;
+            z-index: 2;
             letter-spacing: 0;
+        }
+
+        .tx-text-overlay .transmitted-chars {
+            color: #ff6b6b;
+            font-weight: 700;
+        }
+
+        .tx-text-overlay .pending-chars {
+            color: var(--terminal-text);
+            font-weight: 400;
         }
 
         .terminal-tx {
             position: relative;
             background: var(--terminal-bg);
-            z-index: 2;
+            z-index: 1;
             caret-color: var(--terminal-text);
+            color: transparent;
+        }
+
+        .terminal-tx::selection {
+            background: rgba(16, 185, 129, 0.3);
+            color: transparent;
         }
 
         .toggle-item {
