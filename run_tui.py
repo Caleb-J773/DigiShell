@@ -43,7 +43,7 @@ live_tx_start_time = 0
 tx_total_sent = 0
 tx_transmitted_count = 0
 tx_poll_task = None
-tx_poll_delay = 0.02
+tx_poll_delay = 0.01
 
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
@@ -457,20 +457,20 @@ async def poll_tx_progress():
                 get_app().invalidate()
 
             elapsed = time.time() - start_time
-            if elapsed > 0.08:
-                tx_poll_delay = min(0.1, tx_poll_delay + 0.005)
-            elif elapsed < 0.025 and tx_poll_delay > 0.02:
-                tx_poll_delay = max(0.02, tx_poll_delay - 0.002)
+            if elapsed > 0.05:
+                tx_poll_delay = min(0.05, tx_poll_delay + 0.003)
+            elif elapsed < 0.015 and tx_poll_delay > 0.01:
+                tx_poll_delay = max(0.01, tx_poll_delay - 0.001)
         except Exception as e:
-            tx_poll_delay = min(0.1, tx_poll_delay + 0.01)
+            tx_poll_delay = min(0.05, tx_poll_delay + 0.005)
 
         await asyncio.sleep(tx_poll_delay)
 
     logger.info(f"[TX PROGRESS] Starting final polling, current transmitted: {tx_transmitted_count} of {tx_total_sent}")
 
     no_data_count = 0
-    poll_delay = max(0.02, tx_poll_delay)
-    for i in range(100):
+    poll_delay = max(0.01, tx_poll_delay)
+    for i in range(150):
         await asyncio.sleep(poll_delay)
         try:
             before_count = tx_transmitted_count
@@ -495,7 +495,7 @@ async def poll_tx_progress():
 
     logger.info(f"[TX PROGRESS] Final polling complete. Transmitted: {tx_transmitted_count} of {tx_total_sent}")
     get_app().invalidate()
-    tx_poll_delay = 0.02
+    tx_poll_delay = 0.01
     tx_poll_task = None
 
 
@@ -505,7 +505,7 @@ def start_tx_progress_polling():
     if tx_poll_task is not None:
         tx_poll_task.cancel()
 
-    tx_poll_delay = 0.02
+    tx_poll_delay = 0.01
     tx_poll_task = asyncio.create_task(poll_tx_progress())
 
 
@@ -860,19 +860,27 @@ def _(event):
 
                     logger.info("[TX LIVE] Waiting for TX buffer to drain...")
                     buffer_empty = False
-                    for i in range(50):
+                    consecutive_empty = 0
+                    for i in range(100):
                         buffer_length = fldigi_client.get_tx_buffer_length()
                         if buffer_length is not None:
                             logger.info(f"[TX LIVE] Buffer length: {buffer_length}")
                             if buffer_length == 0:
-                                logger.info(f"[TX LIVE] Buffer drained at poll {i + 1}")
-                                buffer_empty = True
-                                break
+                                consecutive_empty += 1
+                                if consecutive_empty >= 3:
+                                    logger.info(f"[TX LIVE] Buffer drained at poll {i + 1}")
+                                    buffer_empty = True
+                                    break
+                            else:
+                                consecutive_empty = 0
                         import time
-                        time.sleep(0.1)
+                        time.sleep(0.05)
 
                     if not buffer_empty:
-                        logger.info("[TX LIVE] Buffer did not fully drain, proceeding anyway")
+                        logger.info("[TX LIVE] Buffer did not fully drain after 100 polls, proceeding anyway")
+
+                    import time
+                    time.sleep(0.5)
 
                     fldigi_client.end_tx_live()
                     command_status = "Ending TX..."

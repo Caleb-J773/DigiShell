@@ -26,7 +26,7 @@ const state = {
     txTotalSent: 0,
     txTransmittedCount: 0,
     txProgressPollInterval: null,
-    txPollDelay: 20,
+    txPollDelay: 10,
     txLastPollTime: 0
 };
 
@@ -404,10 +404,10 @@ async function pollTxProgress() {
         const result = await response.json();
         const latency = performance.now() - startTime;
 
-        if (latency > 80) {
-            state.txPollDelay = Math.min(100, state.txPollDelay + 5);
-        } else if (latency < 25 && state.txPollDelay > 20) {
-            state.txPollDelay = Math.max(20, state.txPollDelay - 2);
+        if (latency > 50) {
+            state.txPollDelay = Math.min(50, state.txPollDelay + 3);
+        } else if (latency < 15 && state.txPollDelay > 10) {
+            state.txPollDelay = Math.max(10, state.txPollDelay - 1);
         }
 
         if (result.length > 0) {
@@ -418,7 +418,7 @@ async function pollTxProgress() {
 
     } catch (error) {
         console.error('[TX PROGRESS] Error polling transmitted data:', error);
-        state.txPollDelay = Math.min(100, state.txPollDelay + 10);
+        state.txPollDelay = Math.min(50, state.txPollDelay + 5);
     }
 }
 
@@ -427,7 +427,7 @@ function startTxProgressPolling() {
         clearInterval(state.txProgressPollInterval);
     }
 
-    state.txPollDelay = 20;
+    state.txPollDelay = 10;
 
     const dynamicPoll = async () => {
         await pollTxProgress();
@@ -447,8 +447,8 @@ async function stopTxProgressPolling() {
 
     console.log('[TX PROGRESS] Starting final polling, current transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
 
-    const maxPolls = 100;
-    const pollDelay = Math.max(20, state.txPollDelay);
+    const maxPolls = 150;
+    const pollDelay = Math.max(10, state.txPollDelay);
     let noDataCount = 0;
 
     for (let i = 0; i < maxPolls; i++) {
@@ -474,7 +474,7 @@ async function stopTxProgressPolling() {
     }
 
     console.log('[TX PROGRESS] Final polling complete. Transmitted:', state.txTransmittedCount, 'of', state.txTotalSent);
-    state.txPollDelay = 20;
+    state.txPollDelay = 10;
 }
 
 async function handleLiveTxInput(event) {
@@ -620,27 +620,35 @@ async function handleSendTx() {
 
                 console.log('[TX LIVE] Waiting for TX buffer to drain...');
                 let bufferEmpty = false;
-                for (let i = 0; i < 50; i++) {
+                let consecutiveEmpty = 0;
+                for (let i = 0; i < 100; i++) {
                     try {
                         const response = await fetch('/api/txrx/text/tx/buffer-length');
                         if (response.ok) {
                             const data = await response.json();
                             console.log('[TX LIVE] Buffer length:', data.buffer_length);
                             if (data.buffer_length === 0) {
-                                console.log('[TX LIVE] Buffer drained at poll', i + 1);
-                                bufferEmpty = true;
-                                break;
+                                consecutiveEmpty++;
+                                if (consecutiveEmpty >= 3) {
+                                    console.log('[TX LIVE] Buffer drained at poll', i + 1);
+                                    bufferEmpty = true;
+                                    break;
+                                }
+                            } else {
+                                consecutiveEmpty = 0;
                             }
                         }
                     } catch (e) {
                         console.error('[TX LIVE] Error checking buffer:', e);
                     }
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 }
 
                 if (!bufferEmpty) {
-                    console.log('[TX LIVE] Buffer did not fully drain, proceeding anyway');
+                    console.log('[TX LIVE] Buffer did not fully drain after 100 polls, proceeding anyway');
                 }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
 
                 await api.endTxLive();
 
