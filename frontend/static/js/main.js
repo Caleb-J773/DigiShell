@@ -4,6 +4,7 @@
 
 import { wsClient } from './websocket.js';
 import { api } from './api.js';
+import { initPresets } from './presets.js';
 
 // UI State
 const state = {
@@ -71,6 +72,9 @@ async function init() {
     // Setup WebSocket handlers
     setupWebSocketHandlers();
 
+    // Initialize presets
+    await initPresets();
+
     // Connect to WebSocket
     wsClient.connect();
 
@@ -126,6 +130,15 @@ function setupWebSocketHandlers() {
         }
         if (data.tx_status) {
             updateTxRxStatus(data.tx_status);
+        }
+        // Update rig information if present
+        if (data.rig_frequency !== undefined || data.rig_mode !== undefined || data.rig_name !== undefined) {
+            const rigInfo = {
+                frequency: data.rig_frequency,
+                mode: data.rig_mode,
+                name: data.rig_name
+            };
+            updateRigInfo(rigInfo);
         }
     });
 
@@ -604,21 +617,30 @@ function updateTxRxStatus(status) {
  * Update rig information
  */
 function updateRigInfo(rigInfo) {
-    elements.rigName.textContent = rigInfo.name || 'Not configured';
-
-    // Format frequency for display
-    const freqText = rigInfo.frequency ? rigInfo.frequency.toLocaleString() + ' Hz' : '-';
-    elements.rigFrequency.textContent = freqText;
-
-    // Also update the stat card display (show in MHz for cleaner display)
-    if (rigInfo.frequency) {
-        const mhz = (rigInfo.frequency / 1000000).toFixed(4);
-        elements.rigFreqDisplay.textContent = `${mhz} MHz`;
-    } else {
-        elements.rigFreqDisplay.textContent = '-';
+    // Update name if provided
+    if (rigInfo.name !== undefined) {
+        elements.rigName.textContent = rigInfo.name || 'Not configured';
     }
 
-    elements.rigMode.textContent = rigInfo.mode || '-';
+    // Update frequency if provided
+    if (rigInfo.frequency !== undefined) {
+        // Format frequency for display
+        const freqText = rigInfo.frequency ? rigInfo.frequency.toLocaleString() + ' Hz' : '-';
+        elements.rigFrequency.textContent = freqText;
+
+        // Also update the stat card display (show in MHz for cleaner display)
+        if (rigInfo.frequency) {
+            const mhz = (rigInfo.frequency / 1000000).toFixed(4);
+            elements.rigFreqDisplay.textContent = `${mhz} MHz`;
+        } else {
+            elements.rigFreqDisplay.textContent = '-';
+        }
+    }
+
+    // Update mode if provided
+    if (rigInfo.mode !== undefined) {
+        elements.rigMode.textContent = rigInfo.mode || '-';
+    }
 }
 
 /**

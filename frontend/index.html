@@ -140,6 +140,30 @@
                         </div>
                     </div>
 
+                    <!-- Preset Frequencies -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-bookmark"></i>
+                                Preset Frequencies
+                            </div>
+                            <button id="manage-presets-btn" class="btn btn-icon" title="Manage Presets">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label">Filter by Mode</label>
+                                <select id="preset-mode-filter" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--bg-primary); color: var(--text-primary);">
+                                    <option value="">All Modes</option>
+                                </select>
+                            </div>
+                            <div id="preset-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto;">
+                                <p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center;">Loading presets...</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Rig -->
                     <div class="panel">
                         <div class="panel-header">
@@ -593,6 +617,78 @@
                     </button>
                     <button id="save-macro-keybind-btn" class="btn-primary">
                         <i class="fas fa-save"></i> Add Shortcut
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preset Manager Modal -->
+    <div id="preset-manager-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Manage Preset Frequencies</h2>
+                <button id="close-preset-manager-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">Your Custom Presets</h3>
+                        <button id="add-preset-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                            <i class="fas fa-plus"></i> Add Preset
+                        </button>
+                    </div>
+                    <div id="custom-presets-list" style="max-height: 300px; overflow-y: auto;">
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center; padding: 2rem;">No custom presets yet. Click "Add Preset" to create one.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Preset Modal -->
+    <div id="add-preset-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Custom Preset</h2>
+                <button id="close-add-preset-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Preset Name</label>
+                    <input type="text" id="preset-name-input" placeholder="e.g., My Favorite PSK Freq" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mode</label>
+                    <select id="preset-mode-input" style="width: 100%;">
+                        <option value="">Select a mode...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rig Frequency (Hz)</label>
+                    <input type="number" id="preset-rig-freq-input" placeholder="e.g., 14070000" min="0" step="1">
+                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                        Enter frequency in Hz (e.g., 14.070 MHz = 14070000 Hz)
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Carrier Frequency (Hz)</label>
+                    <input type="number" id="preset-carrier-freq-input" value="1500" min="500" max="3000" step="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Band (Optional)</label>
+                    <input type="text" id="preset-band-input" placeholder="e.g., 20m" maxlength="10">
+                </div>
+                <div class="btn-grid">
+                    <button id="cancel-add-preset-btn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button id="save-preset-btn" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Preset
                     </button>
                 </div>
             </div>

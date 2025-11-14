@@ -211,6 +211,39 @@ class APIClient {
     async healthCheck() {
         return this.request('/health');
     }
+
+    // Preset Frequencies
+    async getPresets(modeFilter = null) {
+        const url = modeFilter ? `/api/presets/?mode_filter=${modeFilter}` : '/api/presets/';
+        return this.request(url);
+    }
+
+    async getDefaultPresets() {
+        return this.request('/api/presets/defaults');
+    }
+
+    async getCustomPresets() {
+        return this.request('/api/presets/custom');
+    }
+
+    async createPreset(presetData) {
+        return this.request('/api/presets/', {
+            method: 'POST',
+            body: JSON.stringify(presetData)
+        });
+    }
+
+    async deletePreset(presetId) {
+        return this.request(`/api/presets/${presetId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async applyPreset(presetId) {
+        return this.request(`/api/presets/${presetId}/apply`, {
+            method: 'POST'
+        });
+    }
 }
 
 export const api = new APIClient();
