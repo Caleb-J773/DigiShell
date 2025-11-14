@@ -48,6 +48,7 @@ const elements = {
     // Text
     rxText: document.getElementById('rx-text'),
     txText: document.getElementById('tx-text'),
+    txTextOverlay: document.getElementById('tx-text-overlay'),
     clearRxBtn: document.getElementById('clear-rx-btn'),
     clearTxBtn: document.getElementById('clear-tx-btn'),
     sendTxBtn: document.getElementById('send-tx-btn'),
@@ -105,6 +106,13 @@ function setupEventListeners() {
 
     // Live TX editing - monitor textarea changes
     elements.txText.addEventListener('input', handleLiveTxInput);
+
+    // Sync overlay scroll with textarea scroll
+    elements.txText.addEventListener('scroll', () => {
+        if (elements.txTextOverlay) {
+            elements.txTextOverlay.scrollTop = elements.txText.scrollTop;
+        }
+    });
 
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -337,6 +345,21 @@ async function handleTxRxControl(action) {
     }
 }
 
+/**
+ * Update the TX text overlay to show transmitted characters
+ */
+function updateTxOverlay() {
+    if (!elements.txTextOverlay) {
+        return;
+    }
+
+    // Show transmitted characters in the overlay
+    elements.txTextOverlay.textContent = state.liveTxBuffer;
+
+    // Sync scroll position with textarea
+    elements.txTextOverlay.scrollTop = elements.txText.scrollTop;
+}
+
 async function handleLiveTxInput(event) {
     if (!state.liveTxMode || !state.connected || !state.liveTxActive || state.liveTxStarting) {
         return;
@@ -372,11 +395,12 @@ async function handleLiveTxInput(event) {
                     showNotification('Failed to send characters', 'error');
                 } finally {
                     state.liveTxInFlight = false;
+                    updateTxOverlay();
                 }
             } else {
                 console.warn('[TX LIVE] Cannot edit middle of text, reverting');
                 elements.txText.value = state.liveTxBuffer;
-                showNotification('Cannot edit already-transmitted text', 'warning');
+                showNotification('⚠️ Cannot edit transmitted text (shown in red). You can only add new text at the end or backspace from the end.', 'warning');
                 state.lastTxText = state.liveTxBuffer;
                 return;
             }
@@ -401,11 +425,12 @@ async function handleLiveTxInput(event) {
                     showNotification('Failed to send backspace', 'error');
                 } finally {
                     state.liveTxInFlight = false;
+                    updateTxOverlay();
                 }
             } else {
                 console.warn('[TX LIVE] Cannot edit middle of text, reverting');
                 elements.txText.value = state.liveTxBuffer;
-                showNotification('Cannot edit already-transmitted text - backspace from END only', 'warning');
+                showNotification('⚠️ Cannot delete from middle of transmitted text (shown in red). You can only backspace from the end.', 'warning');
                 state.lastTxText = state.liveTxBuffer;
                 return;
             }
@@ -450,6 +475,7 @@ async function handleSendTx() {
                 state.lastTxText = elements.txText.value;  // Current textarea value
                 state.liveTxStarting = false;  // Re-enable input handler
                 console.log('[TX LIVE] Startup complete, sent:', text.length, 'chars, current textarea:', elements.txText.value.length, 'chars');
+                updateTxOverlay();
 
                 // Update button appearance
                 elements.sendTxBtn.innerHTML = '<i class="fas fa-stop"></i> End TX';
@@ -517,6 +543,9 @@ async function handleClearTx() {
     try {
         await api.clearTx();
         elements.txText.value = '';
+        state.liveTxBuffer = '';
+        state.lastTxText = '';
+        updateTxOverlay();
         showNotification('TX buffer cleared', 'success');
     } catch (error) {
         showNotification('Failed to clear TX: ' + error.message, 'error');
@@ -586,6 +615,7 @@ function updateTxRxStatus(status) {
         state.liveTxBuffer = '';
         state.lastTxText = '';
         state.liveTxActive = false;
+        updateTxOverlay();
 
         if (elements.sendTxBtn.textContent.includes('End')) {
             elements.sendTxBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';

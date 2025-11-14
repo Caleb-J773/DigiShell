@@ -628,6 +628,38 @@
             font-style: italic;
         }
 
+        /* TX Text Container and Overlay */
+        .tx-text-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tx-text-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0.875rem;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow: hidden;
+            pointer-events: none;
+            color: var(--terminal-tx);
+            font-weight: 500;
+            z-index: 1;
+        }
+
+        .terminal-tx {
+            position: relative;
+            background: transparent;
+            z-index: 2;
+        }
+
         .toggle-item {
             display: flex;
             justify-content: space-between;

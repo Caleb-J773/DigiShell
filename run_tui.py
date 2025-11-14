@@ -363,6 +363,39 @@ status_window = Window(
     style='class:status'
 )
 
+
+class TxLexer(Lexer):
+    """
+    Custom lexer that highlights transmitted characters in red
+    """
+    def lex_document(self, document):
+        def get_line(lineno):
+            line_text = document.lines[lineno]
+
+            # Calculate how many characters of this line have been transmitted
+            # Count total chars in previous lines
+            chars_before_line = sum(len(document.lines[i]) + 1 for i in range(lineno))  # +1 for newline
+
+            # Calculate transmitted length for this line
+            tx_length = len(live_tx_buffer)
+
+            if chars_before_line >= tx_length:
+                # This line hasn't been transmitted yet
+                return [('class:input', line_text)]
+            elif chars_before_line + len(line_text) <= tx_length:
+                # This entire line has been transmitted
+                return [('class:tx', line_text)]
+            else:
+                # This line is partially transmitted
+                transmitted_chars = tx_length - chars_before_line
+                return [
+                    ('class:tx', line_text[:transmitted_chars]),
+                    ('class:input', line_text[transmitted_chars:])
+                ]
+
+        return get_line
+
+
 input_field = TextArea(
     height=Dimension(min=4, max=10, preferred=6),
     prompt='> ',
@@ -370,6 +403,7 @@ input_field = TextArea(
     wrap_lines=True,
     style='class:input',
     focus_on_click=True,
+    lexer=TxLexer(),
 )
 
 
@@ -403,7 +437,7 @@ async def send_tx_text(text):
 
 
 async def handle_live_tx_change():
-    global live_tx_buffer, last_input_text
+    global live_tx_buffer, last_input_text, command_status, show_status_until
 
     if not live_tx_active or live_tx_ending:
         return
@@ -413,12 +447,23 @@ async def handle_live_tx_change():
     if current_text == last_input_text:
         return
 
+    # Validate that user isn't editing transmitted text
+    if len(live_tx_buffer) > 0:
+        if not current_text.startswith(live_tx_buffer):
+            # User tried to edit transmitted text - revert and warn
+            input_field.text = last_input_text
+            command_status = "⚠️ Cannot edit transmitted text (shown in red). Add at end or backspace from end only."
+            show_status_until = datetime.now() + timedelta(seconds=4)
+            get_app().invalidate()
+            return
+
     if len(current_text) > len(last_input_text):
         new_chars = current_text[len(last_input_text):]
         try:
             success = fldigi_client.add_tx_chars(new_chars, start_tx=False)
             if success:
                 live_tx_buffer += new_chars
+                get_app().invalidate()  # Redraw to update transmitted text highlighting
         except Exception as e:
             pass
 
@@ -429,6 +474,7 @@ async def handle_live_tx_change():
                 fldigi_client.send_backspace()
             if len(live_tx_buffer) >= num_deleted:
                 live_tx_buffer = live_tx_buffer[:-num_deleted]
+                get_app().invalidate()  # Redraw to update transmitted text highlighting
         except Exception as e:
             pass
 
@@ -545,6 +591,7 @@ async def process_input(text):
             live_tx_buffer = ""
             live_tx_active = False
             live_tx_ending = False
+            get_app().invalidate()  # Redraw to clear transmitted text highlighting
             mode_name = "LIVE" if live_tx_mode else "BATCH"
             command_status = f"TX mode: {mode_name}"
             show_status_until = datetime.now() + timedelta(seconds=3)
@@ -709,6 +756,7 @@ def _(event):
                             live_tx_buffer = text
                             last_input_text = text
                             live_tx_start_time = time.time()
+                            get_app().invalidate()  # Redraw to show transmitted text highlighting
                             command_status = "✓ TX Started - type to continue"
                             show_status_until = datetime.now() + timedelta(seconds=2)
                         except Exception:
@@ -881,6 +929,7 @@ async def poll_fldigi():
                         last_input_text = ""
                         live_tx_active = False
                         live_tx_ending = False
+                        get_app().invalidate()  # Redraw to clear transmitted text highlighting
 
                         command_status = "✓ TX Complete"
                         show_status_until = datetime.now() + timedelta(seconds=2)
