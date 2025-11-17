@@ -55,11 +55,7 @@ It took multiple iterations, planning it out step by step, a lot of testing, deb
 - Slash commands for quick actions
 - Same macro system as the web version
 - Works over SSH
-
-**Modem Control**
-- Switch between digital modes (PSK, RTTY, Olivia, etc.)
-- Adjust carrier frequency with a slider
-
+  
 **Macro System** 
 - Pre-made macros for common stuff (CQ, greetings, 73, signal reports)
 - Create your own custom macros
@@ -70,8 +66,6 @@ It took multiple iterations, planning it out step by step, a lot of testing, deb
 1. **FLDIGI** installed with XML-RPC enabled (it should by default)
 
 2. **Python 3.10 or newer**
-
-That's it. Pretty straightforward.
 
 ## Quick Start
 
@@ -100,7 +94,9 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 # Install stuff
 pip install -r requirements.txt
 
-# Start the web interface
+# make sure FlDigi is running before starting either the web or terminal versions
+
+# Start the web interface 
 python -m backend.main
 
 # OR start the terminal version
@@ -121,40 +117,15 @@ python run_tui.py
 - You can rebind anything or create shortcuts for macros
 - Settings icon → Keybinds
 - Example: Set `Ctrl+Alt+1` to send your CQ macro
-
-**Saving RX buffer:**
 - Click the save icon next to the RX buffer
-- Downloads a timestamped text file
-
-### Terminal Interface (TUI)
-
-```bash
-python run_tui.py
-```
-
-**Common commands:**
-- Just type and hit Enter to transmit
-- `/m BPSK31` - Change modem
-- `/modes` - List available modes
-- `/carrier 1500` - Set carrier frequency  
-- `/call W1AW` - Set the station you're working
-- `/macro 1` - Send macro #1 (CQ)
-- `/save` - Save RX buffer
-- `/clear` - Clear RX buffer
-- `/quit` - Exit
-
-**Macro placeholders you can use:**
-- `<MYCALL>` - Your callsign
-- `<MYNAME>` - Your name  
-- `<MYQTH>` - Your location
-- `<CALL>` - Station you're working
-- `<DATE>` - Current date
-- `<TIME>` - Local time
-- `<UTC>` - UTC time
 
 You can also manually edit the `.fldigi_tui.json` to add your own custom macros. The configuration file is saved in your user folder (e.g., C:/Users/YourUsername on Windows)
 
-## Project Structure
+#### Some issues and problems with it to work on
+- Currently right now, it doesn't actively track the transmitted characters unlike FlDigi. I'm not too experienced to figure this issue out and my attempts to resolve it have resulted in various issues with the transmit buffer being cleared. I'm unsure if this is an API issue or something with the library
+-  You can't edit lines in between other lines. FlDigi does let you do this, but I hadn't been able to find a way to do this.
+
+### Project Structure
 
 ```
 digishell/
@@ -185,14 +156,12 @@ digishell/
 ├── run_backend.py           # Backend runner
 ├── launcher.py              # Unified launcher
 ├── DigiShell.bat            # Windows launcher
-├── digishell.sh             # Unix/Linux launcher
-├── DigiShell.spec           # PyInstaller build spec
 ├── BUILD.md                 # Build instructions
 ├── DOCUMENTATION.md         # Additional documentation
 └── requirements.txt         # Python dependencies
 ```
 
-## Built with
+### Built with
 
 **Backend:**
 - FastAPI - Modern async Python framework
@@ -211,5 +180,5 @@ digishell/
 
 Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.
 
+
 ---
-Built as a fun project to make portable digital operations simpler. It's not meant to replace FLDIGI, just make it easier to control when you're in the field or accessing your station remotely.
