@@ -127,6 +127,7 @@ function initTxOverlay() {
         overflow: hidden;
         color: transparent;
         box-sizing: border-box;
+        letter-spacing: 0.02em;
     `;
     txContainer.style.position = 'relative';
     txContainer.appendChild(overlay);
