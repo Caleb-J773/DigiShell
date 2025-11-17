@@ -8,12 +8,12 @@ import { initPresets } from './presets.js';
 
 // UI State
 const MODE_SPEEDS = {
-    'BPSK31': 50,
-    'QPSK31': 50,
-    'BPSK63': 100,
-    'QPSK63': 100,
-    'BPSK125': 200,
-    'QPSK125': 200
+    'BPSK31': 80,
+    'QPSK31': 160,
+    'BPSK63': 120,
+    'QPSK63': 200,
+    'BPSK125': 240,
+    'QPSK125': 400
 };
 
 const state = {
@@ -35,7 +35,8 @@ const state = {
     txOverlay: {
         charQueue: [],
         transmittedCount: 0,
-        animationFrame: null
+        animationFrame: null,
+        startTime: 0
     }
 };
 
@@ -134,6 +135,7 @@ function getTransmitSpeed() {
 function startTxOverlay() {
     state.txOverlay.charQueue = [];
     state.txOverlay.transmittedCount = 0;
+    state.txOverlay.startTime = Date.now();
 
     if (state.txOverlay.animationFrame) {
         cancelAnimationFrame(state.txOverlay.animationFrame);
@@ -149,7 +151,7 @@ function updateTxOverlay() {
     }
 
     const currentTime = Date.now();
-    const elapsed = (currentTime - state.liveTxStartTime) / 1000;
+    const elapsed = (currentTime - state.txOverlay.startTime) / 1000;
     const charsPerSec = getTransmitSpeed();
     const expectedChars = Math.floor(elapsed * charsPerSec);
     const currentText = elements.txText.value;
@@ -178,6 +180,7 @@ function stopTxOverlay() {
     elements.txOverlay.innerHTML = '';
     state.txOverlay.charQueue = [];
     state.txOverlay.transmittedCount = 0;
+    state.txOverlay.startTime = 0;
 }
 
 function escapeHtml(text) {
@@ -576,13 +579,10 @@ async function handleSendTx() {
 
                 console.log('[TX LIVE] Starting transmission with buffer');
 
-                // CRITICAL: Set flags FIRST to prevent race conditions
                 state.liveTxActive = true;
-                state.liveTxStarting = true;  // Prevent input handler during startup
-                state.liveTxStartTime = Date.now();  // Timestamp to detect new vs old TX sessions
+                state.liveTxStarting = true;
+                state.liveTxStartTime = Date.now();
 
-                // ATOMIC START: Use new endpoint that does clear+add+tx in ONE backend call
-                // This prevents async race conditions where clear and add could execute out of order
                 console.log('[TX LIVE] Calling atomic startLiveTx endpoint with', text.length, 'chars');
                 await api.startLiveTx(text);
                 console.log('[TX LIVE] Text added to buffer and TX started atomically');
