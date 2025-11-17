@@ -161,7 +161,7 @@ def expand_macros(text):
 def get_transmit_speed():
     import time
     if not fldigi_client.is_connected():
-        return 4.17
+        return None
 
     modem = fldigi_client.get_modem() or ""
     modem_upper = modem.upper()
@@ -170,19 +170,37 @@ def get_transmit_speed():
         if mode in modem_upper:
             return (wpm * 5) / 60.0
 
-    return 4.17
+    return None
+
+
+def is_mode_supported():
+    if not fldigi_client.is_connected():
+        return False
+
+    modem = fldigi_client.get_modem() or ""
+    modem_upper = modem.upper()
+
+    for mode in MODE_SPEEDS.keys():
+        if mode in modem_upper:
+            return True
+
+    return False
 
 
 def update_tx_overlay_count():
     global tx_overlay_transmitted_count
     import time
 
-    if not show_tx_progress or not live_tx_active or live_tx_start_time == 0:
+    if not show_tx_progress or not live_tx_active or live_tx_start_time == 0 or not is_mode_supported():
+        tx_overlay_transmitted_count = 0
+        return
+
+    chars_per_sec = get_transmit_speed()
+    if chars_per_sec is None:
         tx_overlay_transmitted_count = 0
         return
 
     elapsed = time.time() - live_tx_start_time
-    chars_per_sec = get_transmit_speed()
     expected_chars = int(elapsed * chars_per_sec)
     current_text = input_field.text
     tx_overlay_transmitted_count = min(expected_chars, len(current_text))

@@ -139,11 +139,21 @@ function getTransmitSpeed() {
             return (wpm * 5) / 60;
         }
     }
-    return 4.17;
+    return null;
+}
+
+function isModeSupported() {
+    const modemUpper = state.modem.toUpperCase();
+    for (const mode of Object.keys(MODE_SPEEDS)) {
+        if (modemUpper.includes(mode)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function startTxOverlay() {
-    if (!state.showTxProgress) {
+    if (!state.showTxProgress || !isModeSupported()) {
         return;
     }
 
@@ -166,9 +176,14 @@ function updateTxOverlay() {
         return;
     }
 
+    const charsPerSec = getTransmitSpeed();
+    if (charsPerSec === null) {
+        stopTxOverlay();
+        return;
+    }
+
     const currentTime = Date.now();
     const elapsed = (currentTime - state.txOverlay.startTime) / 1000;
-    const charsPerSec = getTransmitSpeed();
     const expectedChars = Math.floor(elapsed * charsPerSec);
     const currentText = elements.txText.value;
     const transmittedChars = Math.min(expectedChars, currentText.length);
