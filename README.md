@@ -106,7 +106,11 @@ python run_tui.py
 
 You can also manually edit the `.fldigi_tui.json` to add your own custom macros. The configuration file is saved in your user folder (e.g., C:/Users/YourUsername on Windows)
 
-## Project Structure
+#### Some issues and problems with it to work on
+- Currently right now, it doesn't actively track the transmitted characters unlike FlDigi. I'm not too experienced to figure this issue out and my attempts to resolve it have resulted in various issues with the transmit buffer being cleared. I'm unsure if this is an API issue or something with the library
+-  You can't edit lines in between other lines. FlDigi does let you do this, but I hadn't been able to find a way to do this.
+
+### Project Structure
 
 ```
 digishell/
@@ -142,7 +146,7 @@ digishell/
 └── requirements.txt         # Python dependencies
 ```
 
-## Built with
+### Built with
 
 **Backend:**
 - FastAPI - Modern async Python framework
@@ -159,5 +163,6 @@ digishell/
 ## Want to contribute?
 
 Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.
+
 
 ---
