@@ -7,19 +7,16 @@ import { api } from './api.js';
 let allPresets = [];
 let currentModeFilter = '';
 
-// DOM Elements
 const elements = {
     presetList: document.getElementById('preset-list'),
     presetModeFilter: document.getElementById('preset-mode-filter'),
     managePresetsBtn: document.getElementById('manage-presets-btn'),
 
-    // Preset Manager Modal
     presetManagerModal: document.getElementById('preset-manager-modal'),
     closePresetManagerBtn: document.getElementById('close-preset-manager-btn'),
     customPresetsList: document.getElementById('custom-presets-list'),
     addPresetBtn: document.getElementById('add-preset-btn'),
 
-    // Add Preset Modal
     addPresetModal: document.getElementById('add-preset-modal'),
     closeAddPresetBtn: document.getElementById('close-add-preset-btn'),
     presetNameInput: document.getElementById('preset-name-input'),
@@ -46,20 +43,16 @@ export async function initPresets() {
  * Setup event listeners for preset UI
  */
 function setupEventListeners() {
-    // Mode filter
     elements.presetModeFilter.addEventListener('change', handleModeFilterChange);
 
-    // Manage presets button
     elements.managePresetsBtn.addEventListener('click', openPresetManager);
 
-    // Modal controls
     elements.closePresetManagerBtn.addEventListener('click', closePresetManager);
     elements.addPresetBtn.addEventListener('click', openAddPresetModal);
     elements.closeAddPresetBtn.addEventListener('click', closeAddPresetModal);
     elements.cancelAddPresetBtn.addEventListener('click', closeAddPresetModal);
     elements.savePresetBtn.addEventListener('click', handleSavePreset);
 
-    // Close modal when clicking outside
     elements.presetManagerModal.addEventListener('click', (e) => {
         if (e.target === elements.presetManagerModal) closePresetManager();
     });
@@ -89,7 +82,6 @@ async function populateModeFilters() {
     try {
         const modes = [...new Set(allPresets.map(p => p.modem))].sort();
 
-        // Update filter dropdown
         elements.presetModeFilter.innerHTML = '<option value="">All Modes</option>';
         modes.forEach(mode => {
             const option = document.createElement('option');
@@ -98,7 +90,6 @@ async function populateModeFilters() {
             elements.presetModeFilter.appendChild(option);
         });
 
-        // Update add preset modal dropdown
         elements.presetModeInput.innerHTML = '<option value="">Select a mode...</option>';
         modes.forEach(mode => {
             const option = document.createElement('option');
@@ -184,16 +175,12 @@ async function applyPreset(presetId) {
 
         console.log('Applying preset:', preset);
 
-        // Set modem mode
         await api.setModem(preset.modem);
 
-        // Set rig frequency
         await api.setRigFrequency(preset.rig_frequency);
 
-        // Set carrier frequency
         await api.setCarrier(preset.carrier_frequency);
 
-        // Update UI elements directly
         updateUIAfterPresetApplied(preset);
 
         showSuccess(`Applied preset: ${preset.name}`);
@@ -207,13 +194,11 @@ async function applyPreset(presetId) {
  * Update UI elements after preset is applied
  */
 function updateUIAfterPresetApplied(preset) {
-    // Update modem display
     const modemDisplay = document.getElementById('current-modem');
     if (modemDisplay) {
         modemDisplay.textContent = preset.modem;
     }
 
-    // Update carrier frequency display and slider
     const carrierValue = document.getElementById('carrier-value');
     const carrierFreq = document.getElementById('carrier-freq');
     const carrierInput = document.getElementById('carrier-input');
@@ -227,7 +212,6 @@ function updateUIAfterPresetApplied(preset) {
         carrierInput.value = preset.carrier_frequency;
     }
 
-    // Update rig frequency display
     const rigFrequency = document.getElementById('rig-frequency');
     const rigFreqDisplay = document.getElementById('rig-freq-display');
 
@@ -306,7 +290,6 @@ async function loadCustomPresets() {
  * Open add preset modal
  */
 function openAddPresetModal() {
-    // Reset form
     elements.presetNameInput.value = '';
     elements.presetModeInput.value = '';
     elements.presetRigFreqInput.value = '';
@@ -333,7 +316,6 @@ async function handleSavePreset() {
     const carrierFreq = parseInt(elements.presetCarrierFreqInput.value);
     const band = elements.presetBandInput.value.trim();
 
-    // Validation
     if (!name) {
         showError('Please enter a preset name');
         return;
