@@ -110,10 +110,10 @@ function initTxOverlay() {
         pointer-events: none;
         white-space: pre-wrap;
         word-wrap: break-word;
-        font-family: inherit;
-        font-size: inherit;
-        line-height: inherit;
-        padding: inherit;
+        font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        padding: 0.875rem;
         overflow: hidden;
         color: transparent;
     `;
