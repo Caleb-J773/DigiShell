@@ -21,10 +21,19 @@ from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.document import Document
 
+MODE_SPEEDS = {
+    'BPSK31': 50,
+    'QPSK31': 50,
+    'BPSK63': 100,
+    'QPSK63': 100,
+    'BPSK125': 200,
+    'QPSK125': 200
+}
+
 rx_buffer = []
 last_tx = ""
 last_call = ""
-MAX_RX_LINES = 1000  # Keep more history
+MAX_RX_LINES = 1000
 connection_time = None
 command_status = ""
 show_status_until = None
@@ -36,6 +45,7 @@ live_tx_ending = False
 live_tx_buffer = ""
 last_input_text = ""
 live_tx_start_time = 0
+tx_overlay_transmitted_count = 0
 
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
@@ -145,6 +155,36 @@ def expand_macros(text):
     return result
 
 
+def get_transmit_speed():
+    import time
+    if not fldigi_client.is_connected():
+        return 4.17
+
+    modem = fldigi_client.get_modem() or ""
+    modem_upper = modem.upper()
+
+    for mode, wpm in MODE_SPEEDS.items():
+        if mode in modem_upper:
+            return (wpm * 5) / 60.0
+
+    return 4.17
+
+
+def update_tx_overlay_count():
+    global tx_overlay_transmitted_count
+    import time
+
+    if not live_tx_active or live_tx_start_time == 0:
+        tx_overlay_transmitted_count = 0
+        return
+
+    elapsed = time.time() - live_tx_start_time
+    chars_per_sec = get_transmit_speed()
+    expected_chars = int(elapsed * chars_per_sec)
+    current_text = input_field.text
+    tx_overlay_transmitted_count = min(expected_chars, len(current_text))
+
+
 def get_header_text():
     if fldigi_client.is_connected():
         status = "● CONNECTED"
@@ -175,16 +215,12 @@ def get_header_text():
 
 
 class RxLexer(Lexer):
-    """Custom lexer to color RX (green) and TX (red) messages"""
     def lex_document(self, document):
-        # Pre-calculate which lines are TX by scanning all lines
         tx_lines = set()
 
         for i, line in enumerate(document.lines):
-            # TX messages start with timestamp [HH:MM:SS]
             if line.startswith('[') and ']' in line[:12] and 'messages]' not in line:
                 tx_lines.add(i)
-            # Lines that start with 11 spaces are TX continuation lines
             elif line.startswith('           ') and i > 0 and (i - 1) in tx_lines:
                 tx_lines.add(i)
 
@@ -192,14 +228,40 @@ class RxLexer(Lexer):
             line = document.lines[lineno]
 
             if lineno in tx_lines:
-                # This is a TX message or continuation
                 return [('class:tx.text', line)]
             elif line.startswith('[') and 'messages]' in line:
-                # Footer line
                 return [('class:dim', line)]
             else:
-                # RX message
                 return [('class:rx', line)]
+
+        return get_line_style
+
+
+class TxInputLexer(Lexer):
+    def lex_document(self, document):
+        def get_line_style(lineno):
+            line = document.lines[lineno]
+            result = []
+
+            if live_tx_active and tx_overlay_transmitted_count > 0:
+                line_start = sum(len(document.lines[i]) + 1 for i in range(lineno))
+                line_end = line_start + len(line)
+
+                if line_start < tx_overlay_transmitted_count:
+                    split_pos = min(tx_overlay_transmitted_count - line_start, len(line))
+                    transmitted_part = line[:split_pos]
+                    untransmitted_part = line[split_pos:]
+
+                    if transmitted_part:
+                        result.append(('class:input.transmitted', transmitted_part))
+                    if untransmitted_part:
+                        result.append(('', untransmitted_part))
+                else:
+                    result.append(('', line))
+            else:
+                result.append(('', line))
+
+            return result
 
         return get_line_style
 
@@ -370,6 +432,7 @@ input_field = TextArea(
     wrap_lines=True,
     style='class:input',
     focus_on_click=True,
+    lexer=TxInputLexer()
 )
 
 
@@ -403,7 +466,7 @@ async def send_tx_text(text):
 
 
 async def handle_live_tx_change():
-    global live_tx_buffer, last_input_text
+    global live_tx_buffer, last_input_text, command_status, show_status_until
 
     if not live_tx_active or live_tx_ending:
         return
@@ -414,6 +477,13 @@ async def handle_live_tx_change():
         return
 
     if len(current_text) > len(last_input_text):
+        if not current_text.startswith(live_tx_buffer):
+            input_field.text = live_tx_buffer
+            last_input_text = live_tx_buffer
+            command_status = "⚠️ Cannot insert into transmitted text (shown in red). Type at end only."
+            show_status_until = datetime.now() + timedelta(seconds=3)
+            return
+
         new_chars = current_text[len(last_input_text):]
         try:
             success = fldigi_client.add_tx_chars(new_chars, start_tx=False)
@@ -424,6 +494,22 @@ async def handle_live_tx_change():
 
     elif len(current_text) < len(last_input_text):
         num_deleted = len(last_input_text) - len(current_text)
+        expected_after_delete = live_tx_buffer[:-num_deleted] if len(live_tx_buffer) >= num_deleted else ""
+
+        if current_text != expected_after_delete:
+            input_field.text = live_tx_buffer
+            last_input_text = live_tx_buffer
+            command_status = "⚠️ Cannot delete from middle. Backspace from end only."
+            show_status_until = datetime.now() + timedelta(seconds=3)
+            return
+
+        if len(live_tx_buffer) - num_deleted < tx_overlay_transmitted_count:
+            input_field.text = live_tx_buffer
+            last_input_text = live_tx_buffer
+            command_status = "⚠️ Cannot delete transmitted text (shown in red). Wait or press Enter to end TX."
+            show_status_until = datetime.now() + timedelta(seconds=3)
+            return
+
         try:
             for _ in range(num_deleted):
                 fldigi_client.send_backspace()
@@ -689,7 +775,7 @@ def _(event):
 
 @kb.add('enter')
 def _(event):
-    global live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, live_tx_start_time, command_status, show_status_until
+    global live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, live_tx_start_time, command_status, show_status_until, tx_overlay_transmitted_count
     import time
 
     if event.app.layout.has_focus(input_field):
@@ -709,6 +795,7 @@ def _(event):
                             live_tx_buffer = text
                             last_input_text = text
                             live_tx_start_time = time.time()
+                            tx_overlay_transmitted_count = 0
                             command_status = "✓ TX Started - type to continue"
                             show_status_until = datetime.now() + timedelta(seconds=2)
                         except Exception:
@@ -718,6 +805,7 @@ def _(event):
                 try:
                     live_tx_ending = True
                     fldigi_client.end_tx_live()
+                    tx_overlay_transmitted_count = 0
                     command_status = "Ending TX..."
                     show_status_until = datetime.now() + timedelta(seconds=2)
                 except Exception:
@@ -836,6 +924,7 @@ style = Style.from_dict({
     'status.other': 'bold fg:#d29922',
     'input': 'bg:#161b22 fg:#f0f6fc',
     'input.help': 'bg:#0d1117 fg:#6e7681',
+    'input.transmitted': 'bg:#161b22 fg:#f85149 bold',
     'command.status': 'bold fg:#d29922',
     'dim': 'fg:#6e7681',
     'bold': 'bold',
@@ -844,7 +933,7 @@ style = Style.from_dict({
 
 
 async def poll_fldigi():
-    global last_trx_status, live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, command_status, show_status_until
+    global last_trx_status, live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, command_status, show_status_until, tx_overlay_transmitted_count
 
     while True:
         try:
@@ -861,7 +950,6 @@ async def poll_fldigi():
                     if len(rx_buffer) > MAX_RX_LINES:
                         rx_buffer[:] = rx_buffer[-MAX_RX_LINES:]
 
-                    # Update the RX display and scroll to bottom
                     rx_display.text = get_rx_text_content()
                     rx_display.buffer.cursor_position = len(rx_display.text)
 
@@ -881,11 +969,11 @@ async def poll_fldigi():
                         last_input_text = ""
                         live_tx_active = False
                         live_tx_ending = False
+                        tx_overlay_transmitted_count = 0
 
                         command_status = "✓ TX Complete"
                         show_status_until = datetime.now() + timedelta(seconds=2)
 
-                        # Update display and scroll to bottom
                         rx_display.text = get_rx_text_content()
                         rx_display.buffer.cursor_position = len(rx_display.text)
 
@@ -902,6 +990,7 @@ async def update_display():
         try:
             if live_tx_mode and fldigi_client.is_connected():
                 await handle_live_tx_change()
+                update_tx_overlay_count()
 
             app.invalidate()
             await asyncio.sleep(0.1)
