@@ -52,11 +52,7 @@ It took multiple iterations, planning it out step by step, a lot of testing, deb
 - Slash commands for quick actions
 - Same macro system as the web version
 - Works over SSH
-
-**Modem Control**
-- Switch between digital modes (PSK, RTTY, Olivia, etc.)
-- Adjust carrier frequency with a slider
-
+  
 **Macro System** 
 - Pre-made macros for common stuff (CQ, greetings, 73, signal reports)
 - Create your own custom macros
@@ -67,8 +63,6 @@ It took multiple iterations, planning it out step by step, a lot of testing, deb
 1. **FLDIGI** installed with XML-RPC enabled (it should by default)
 
 2. **Python 3.10 or newer**
-
-That's it. Pretty straightforward.
 
 ## Quick Start
 
@@ -97,57 +91,20 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 # Install stuff
 pip install -r requirements.txt
 
-# Start the web interface
+# make sure FlDigi is running before starting either the web or terminal versions
+
+# Start the web interface 
 python -m backend.main
 
 # OR start the terminal version
 python run_tui.py
 ```
 
-## Using it
-
-### Web Interface
-
-1. Make sure FLDIGI is running with XML-RPC enabled
-2. Start DigiShell: `python -m backend.main`
-3. Open browser to `http://localhost:8000`
-4. Pick your modem mode, adjust the carrier frequency if needed
-5. Type in the TX box and hit the TX button to transmit, while it is transmitting, you can also type to add more to the TX buffer, though due to current limits, this will not allow you to edit / remove text in between, you can only backspace.
-
 **Keyboard shortcuts:**
 - You can rebind anything or create shortcuts for macros
 - Settings icon → Keybinds
 - Example: Set `Ctrl+Alt+1` to send your CQ macro
-
-**Saving RX buffer:**
 - Click the save icon next to the RX buffer
-- Downloads a timestamped text file
-
-### Terminal Interface (TUI)
-
-```bash
-python run_tui.py
-```
-
-**Common commands:**
-- Just type and hit Enter to transmit
-- `/m BPSK31` - Change modem
-- `/modes` - List available modes
-- `/carrier 1500` - Set carrier frequency  
-- `/call W1AW` - Set the station you're working
-- `/macro 1` - Send macro #1 (CQ)
-- `/save` - Save RX buffer
-- `/clear` - Clear RX buffer
-- `/quit` - Exit
-
-**Macro placeholders you can use:**
-- `<MYCALL>` - Your callsign
-- `<MYNAME>` - Your name  
-- `<MYQTH>` - Your location
-- `<CALL>` - Station you're working
-- `<DATE>` - Current date
-- `<TIME>` - Local time
-- `<UTC>` - UTC time
 
 You can also manually edit the `.fldigi_tui.json` to add your own custom macros. The configuration file is saved in your user folder (e.g., C:/Users/YourUsername on Windows)
 
@@ -182,8 +139,6 @@ digishell/
 ├── run_backend.py           # Backend runner
 ├── launcher.py              # Unified launcher
 ├── DigiShell.bat            # Windows launcher
-├── digishell.sh             # Unix/Linux launcher
-├── DigiShell.spec           # PyInstaller build spec
 ├── BUILD.md                 # Build instructions
 ├── DOCUMENTATION.md         # Additional documentation
 └── requirements.txt         # Python dependencies
@@ -203,24 +158,8 @@ digishell/
 
 **Terminal:**
 - prompt_toolkit - terminal UI library
-
-## Common Issues
-
-**Can't connect to FLDIGI:**
-1. Make sure FLDIGI is actually running
-2. Check that XML-RPC is enabled in FLDIGI settings
-3. Verify port 7362 isn't being blocked
-4. Check your firewall if you're still having issues
-
-5. 
-**TUI looks weird:**
-1. Your terminal might not support colors - try a different terminal
-2. Try resizing the window
-3. Make sure you're using Python 3.10 or newer
-
 ## Want to contribute?
 
 Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.
 
 ---
-Built as a fun project to make portable digital operations simpler. It's not meant to replace FLDIGI, just make it easier to control when you're in the field or accessing your station remotely.
