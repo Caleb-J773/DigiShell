@@ -22,12 +22,12 @@ from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.document import Document
 
 MODE_SPEEDS = {
-    'BPSK31': 80,
-    'QPSK31': 160,
-    'BPSK63': 120,
-    'QPSK63': 200,
-    'BPSK125': 240,
-    'QPSK125': 400
+    'BPSK31': 65,
+    'QPSK31': 130,
+    'BPSK63': 100,
+    'QPSK63': 160,
+    'BPSK125': 200,
+    'QPSK125': 320
 }
 
 rx_buffer = []
