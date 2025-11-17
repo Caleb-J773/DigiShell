@@ -137,6 +137,8 @@ function startTxOverlay() {
     state.txOverlay.transmittedCount = 0;
     state.txOverlay.startTime = Date.now();
 
+    elements.txText.classList.add('tx-transmitting');
+
     if (state.txOverlay.animationFrame) {
         cancelAnimationFrame(state.txOverlay.animationFrame);
     }
@@ -162,10 +164,10 @@ function updateTxOverlay() {
         const untransmitted = currentText.substring(transmittedChars);
 
         elements.txOverlay.innerHTML =
-            `<span style="background-color: rgba(239, 68, 68, 0.3); color: rgb(239, 68, 68);">${escapeHtml(transmitted)}</span>` +
-            `<span style="color: transparent;">${escapeHtml(untransmitted)}</span>`;
+            `<span style="color: rgb(239, 68, 68);">${escapeHtml(transmitted)}</span>` +
+            `<span style="color: #10b981;">${escapeHtml(untransmitted)}</span>`;
     } else {
-        elements.txOverlay.innerHTML = `<span style="color: transparent;">${escapeHtml(currentText)}</span>`;
+        elements.txOverlay.innerHTML = `<span style="color: #10b981;">${escapeHtml(currentText)}</span>`;
     }
 
     state.txOverlay.transmittedCount = transmittedChars;
@@ -178,6 +180,7 @@ function stopTxOverlay() {
         state.txOverlay.animationFrame = null;
     }
     elements.txOverlay.innerHTML = '';
+    elements.txText.classList.remove('tx-transmitting');
     state.txOverlay.charQueue = [];
     state.txOverlay.transmittedCount = 0;
     state.txOverlay.startTime = 0;

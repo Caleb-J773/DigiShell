@@ -623,6 +623,10 @@
             color: var(--terminal-text);
         }
 
+        .terminal-tx.tx-transmitting {
+            color: transparent;
+        }
+
         .terminal-tx::placeholder {
             color: rgba(16, 185, 129, 0.4);
             font-style: italic;
