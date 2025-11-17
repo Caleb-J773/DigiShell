@@ -9,7 +9,7 @@ from backend.fldigi_client import fldigi_client
 import re
 
 from prompt_toolkit import Application
-from prompt_toolkit.layout import Layout, HSplit, VSplit, Window, FormattedTextControl, Dimension, BufferControl
+from prompt_toolkit.layout import Layout, HSplit, VSplit, Window, FormattedTextControl, Dimension, BufferControl, ScrollOffsets
 from prompt_toolkit.layout.containers import WindowAlign
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.widgets import TextArea, Frame
@@ -21,10 +21,19 @@ from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.document import Document
 
+MODE_SPEEDS = {
+    'BPSK31': 65,
+    'QPSK31': 130,
+    'BPSK63': 100,
+    'QPSK63': 160,
+    'BPSK125': 200,
+    'QPSK125': 320
+}
+
 rx_buffer = []
 last_tx = ""
 last_call = ""
-MAX_RX_LINES = 1000  # Keep more history
+MAX_RX_LINES = 1000
 connection_time = None
 command_status = ""
 show_status_until = None
@@ -36,6 +45,9 @@ live_tx_ending = False
 live_tx_buffer = ""
 last_input_text = ""
 live_tx_start_time = 0
+tx_overlay_transmitted_count = 0
+show_tx_progress = False
+help_page = 1
 
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
@@ -43,6 +55,7 @@ config = {
     "name": "Operator",
     "qth": "Somewhere",
     "macros": {},
+    "show_tx_progress": False,
 }
 
 COMMON_MODES = [
@@ -101,12 +114,13 @@ def first_time_setup():
 
 
 def load_config():
-    global config
+    global config, show_tx_progress
     try:
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, 'r') as f:
                 loaded = json.load(f)
                 config.update(loaded)
+                show_tx_progress = config.get('show_tx_progress', False)
         else:
             return False
     except Exception as e:
@@ -145,6 +159,54 @@ def expand_macros(text):
     return result
 
 
+def get_transmit_speed():
+    import time
+    if not fldigi_client.is_connected():
+        return None
+
+    modem = fldigi_client.get_modem() or ""
+    modem_upper = modem.upper()
+
+    for mode, wpm in MODE_SPEEDS.items():
+        if mode in modem_upper:
+            return (wpm * 5) / 60.0
+
+    return None
+
+
+def is_mode_supported():
+    if not fldigi_client.is_connected():
+        return False
+
+    modem = fldigi_client.get_modem() or ""
+    modem_upper = modem.upper()
+
+    for mode in MODE_SPEEDS.keys():
+        if mode in modem_upper:
+            return True
+
+    return False
+
+
+def update_tx_overlay_count():
+    global tx_overlay_transmitted_count
+    import time
+
+    if not show_tx_progress or not live_tx_active or live_tx_start_time == 0 or not is_mode_supported():
+        tx_overlay_transmitted_count = 0
+        return
+
+    chars_per_sec = get_transmit_speed()
+    if chars_per_sec is None:
+        tx_overlay_transmitted_count = 0
+        return
+
+    elapsed = time.time() - live_tx_start_time
+    expected_chars = int(elapsed * chars_per_sec)
+    current_text = input_field.text
+    tx_overlay_transmitted_count = min(expected_chars, len(current_text))
+
+
 def get_header_text():
     if fldigi_client.is_connected():
         status = "● CONNECTED"
@@ -175,16 +237,12 @@ def get_header_text():
 
 
 class RxLexer(Lexer):
-    """Custom lexer to color RX (green) and TX (red) messages"""
     def lex_document(self, document):
-        # Pre-calculate which lines are TX by scanning all lines
         tx_lines = set()
 
         for i, line in enumerate(document.lines):
-            # TX messages start with timestamp [HH:MM:SS]
             if line.startswith('[') and ']' in line[:12] and 'messages]' not in line:
                 tx_lines.add(i)
-            # Lines that start with 11 spaces are TX continuation lines
             elif line.startswith('           ') and i > 0 and (i - 1) in tx_lines:
                 tx_lines.add(i)
 
@@ -192,14 +250,40 @@ class RxLexer(Lexer):
             line = document.lines[lineno]
 
             if lineno in tx_lines:
-                # This is a TX message or continuation
                 return [('class:tx.text', line)]
             elif line.startswith('[') and 'messages]' in line:
-                # Footer line
                 return [('class:dim', line)]
             else:
-                # RX message
                 return [('class:rx', line)]
+
+        return get_line_style
+
+
+class TxInputLexer(Lexer):
+    def lex_document(self, document):
+        def get_line_style(lineno):
+            line = document.lines[lineno]
+            result = []
+
+            if live_tx_active and tx_overlay_transmitted_count > 0:
+                line_start = sum(len(document.lines[i]) + 1 for i in range(lineno))
+                line_end = line_start + len(line)
+
+                if line_start < tx_overlay_transmitted_count:
+                    split_pos = min(tx_overlay_transmitted_count - line_start, len(line))
+                    transmitted_part = line[:split_pos]
+                    untransmitted_part = line[split_pos:]
+
+                    if transmitted_part:
+                        result.append(('class:input.transmitted', transmitted_part))
+                    if untransmitted_part:
+                        result.append(('', untransmitted_part))
+                else:
+                    result.append(('', line))
+            else:
+                result.append(('', line))
+
+            return result
 
         return get_line_style
 
@@ -232,56 +316,60 @@ def get_rx_text_content():
 
 
 def get_commands_text():
-    text = [
-        ('class:help.title', 'TX Mode:\n'),
-        ('class:help', '  '),
-        ('class:help.cmd', 'LIVE' if live_tx_mode else 'BATCH'),
-        ('class:help', ' - '),
-        ('class:dim', 'Enter starts TX\n' if live_tx_mode else 'Enter sends all\n'),
-        ('class:help', '\n'),
-        ('class:help.title', 'Transmit:\n'),
-        ('class:help', '  Type message\n'),
-        ('class:help', '  '),
-        ('class:help.cmd', 'Enter'),
-        ('class:help', ' ' + ('to start/end TX\n' if live_tx_mode else 'to send\n')),
-        ('class:help', '  '),
-        ('class:help.cmd', 'Tab'),
-        ('class:help', ' for newline\n'),
-        ('class:dim', '  (edit live when TX)\n' if live_tx_mode else ''),
-        ('class:help', '\n'),
-        ('class:help.title', 'Navigation:\n'),
-        ('class:help.cmd', '  PgUp/PgDn'),
-        ('class:help', ' Scroll RX\n'),
-        ('class:help.cmd', '  ↑/↓'),
-        ('class:help', ' Scroll RX\n'),
-        ('class:help', '\n'),
-        ('class:help.title', 'Commands:\n'),
-        ('class:help.cmd', '  /live'),
-        ('class:help', ' Toggle TX mode\n'),
-        ('class:help.cmd', '  /m <mode>'),
-        ('class:help', ' Set modem\n'),
-        ('class:help.cmd', '  /carrier'),
-        ('class:help', ' Adjust freq\n'),
-        ('class:dim', '    /carrier 1500\n'),
-        ('class:dim', '    /carrier +50\n'),
-        ('class:help.cmd', '  /macro <#>'),
-        ('class:help', ' Send macro\n'),
-        ('class:help.cmd', '  /call <call>'),
-        ('class:help', ' Set last call\n'),
-        ('class:help.cmd', '  /config'),
-        ('class:help', ' Set info\n'),
-        ('class:help.cmd', '  /clear'),
-        ('class:help', ' Clear RX\n'),
-        ('class:help.cmd', '  /save'),
-        ('class:help', ' Save RX\n'),
-        ('class:help.cmd', '  Ctrl+C'),
-        ('class:help', ' Quit\n\n'),
-        ('class:dim', '/ = command | no / = TX\n\n'),
-    ]
+    if help_page == 1:
+        text = [
+            ('class:help.title', 'TX Mode: '),
+            ('class:help.cmd', 'LIVE' if live_tx_mode else 'BATCH'),
+            ('class:dim', ' (Enter=TX)\n'),
+            ('class:help.title', 'Keys: '),
+            ('class:help.cmd', 'Enter'),
+            ('class:help', '=TX '),
+            ('class:help.cmd', 'Tab'),
+            ('class:help', '=↵ '),
+            ('class:help.cmd', '↑↓'),
+            ('class:help', '=Scroll\n'),
+            ('class:help.title', 'Commands:\n'),
+            ('class:help.cmd', '  /live'),
+            ('class:help', ' Toggle TX '),
+            ('class:help.cmd', '/txprogress'),
+            ('class:help', ' Overlay\n'),
+            ('class:help.cmd', '  /m <mode>'),
+            ('class:help', ' Modem '),
+            ('class:help.cmd', '/modes'),
+            ('class:help', ' List\n'),
+            ('class:help.cmd', '  /carrier'),
+            ('class:help', ' Freq '),
+            ('class:help.cmd', '/txid'),
+            ('class:help', ' TXID on/off\n'),
+            ('class:help.cmd', '  /macro <#>'),
+            ('class:help', ' Run '),
+            ('class:help.cmd', '/call'),
+            ('class:help', ' Set call\n'),
+            ('class:help.cmd', '  /help 2'),
+            ('class:help', ' More commands\n'),
+        ]
+    else:
+        text = [
+            ('class:help.title', 'Commands (2/2):\n'),
+            ('class:help.cmd', '  /addmacro'),
+            ('class:help', ' Add/edit macro\n'),
+            ('class:help.cmd', '  /delmacro'),
+            ('class:help', ' Delete macro\n'),
+            ('class:help.cmd', '  /config'),
+            ('class:help', ' Set station info\n'),
+            ('class:help.cmd', '  /clear'),
+            ('class:help', ' Clear RX '),
+            ('class:help.cmd', '/save'),
+            ('class:help', ' Save RX\n'),
+            ('class:help.cmd', '  Ctrl+C'),
+            ('class:help', ' Quit '),
+            ('class:help.cmd', '/help 1'),
+            ('class:help', ' Back\n'),
+        ]
 
     if config.get('callsign') != 'NOCALL':
-        text.append(('class:help.title', 'Station:\n'))
-        text.append(('class:help', f"  {config['callsign']}"))
+        text.append(('class:help.title', '\nStation: '))
+        text.append(('class:help', f"{config['callsign']}"))
         if last_call:
             text.append(('class:dim', f" → {last_call}"))
         text.append(('class:help', '\n'))
@@ -354,22 +442,25 @@ rx_display = TextArea(
 help_window = Window(
     content=FormattedTextControl(get_commands_text),
     wrap_lines=True,
-    style='class:frame.help'
+    style='class:frame.help',
+    always_hide_cursor=True,
+    scroll_offsets=ScrollOffsets(top=0, bottom=0)
 )
 
 status_window = Window(
     content=FormattedTextControl(get_status_text),
-    height=3,
+    height=Dimension(min=2, max=3, preferred=3),
     style='class:status'
 )
 
 input_field = TextArea(
-    height=Dimension(min=4, max=10, preferred=6),
+    height=Dimension(min=2, max=10, preferred=6),
     prompt='> ',
     multiline=True,
     wrap_lines=True,
     style='class:input',
     focus_on_click=True,
+    lexer=TxInputLexer()
 )
 
 
@@ -378,9 +469,9 @@ def get_input_help_text():
         if live_tx_active:
             help_text = 'Live editing | Enter=end TX | Tab=newline | Ctrl+C=quit'
         else:
-            help_text = '/cmd for commands | Enter=TX | Tab=newline | Ctrl+C=quit'
+            help_text = 'Enter=TX | Tab=newline | Ctrl+C=quit'
     else:
-        help_text = '/cmd for commands | Enter=send | Tab=newline | Ctrl+C=quit'
+        help_text = 'Enter=send | Tab=newline | Ctrl+C=quit'
 
     return FormattedText([
         ('class:dim', help_text)
@@ -403,7 +494,7 @@ async def send_tx_text(text):
 
 
 async def handle_live_tx_change():
-    global live_tx_buffer, last_input_text
+    global live_tx_buffer, last_input_text, command_status, show_status_until
 
     if not live_tx_active or live_tx_ending:
         return
@@ -414,6 +505,13 @@ async def handle_live_tx_change():
         return
 
     if len(current_text) > len(last_input_text):
+        if not current_text.startswith(live_tx_buffer):
+            input_field.text = live_tx_buffer
+            last_input_text = live_tx_buffer
+            command_status = "⚠️ Cannot insert into transmitted text (shown in red). Type at end only."
+            show_status_until = datetime.now() + timedelta(seconds=3)
+            return
+
         new_chars = current_text[len(last_input_text):]
         try:
             success = fldigi_client.add_tx_chars(new_chars, start_tx=False)
@@ -424,6 +522,22 @@ async def handle_live_tx_change():
 
     elif len(current_text) < len(last_input_text):
         num_deleted = len(last_input_text) - len(current_text)
+        expected_after_delete = live_tx_buffer[:-num_deleted] if len(live_tx_buffer) >= num_deleted else ""
+
+        if current_text != expected_after_delete:
+            input_field.text = live_tx_buffer
+            last_input_text = live_tx_buffer
+            command_status = "⚠️ Cannot delete from middle. Backspace from end only."
+            show_status_until = datetime.now() + timedelta(seconds=3)
+            return
+
+        if len(live_tx_buffer) - num_deleted < tx_overlay_transmitted_count:
+            input_field.text = live_tx_buffer
+            last_input_text = live_tx_buffer
+            command_status = "⚠️ Cannot delete transmitted text (shown in red). Wait or press Enter to end TX."
+            show_status_until = datetime.now() + timedelta(seconds=3)
+            return
+
         try:
             for _ in range(num_deleted):
                 fldigi_client.send_backspace()
@@ -451,6 +565,20 @@ async def process_input(text):
             show_status_until = datetime.now() + timedelta(seconds=2)
             await asyncio.sleep(2)
             get_app().exit()
+
+        elif command in ['h', 'help']:
+            global help_page
+            if args and args.isdigit():
+                page = int(args)
+                if page in [1, 2]:
+                    help_page = page
+                    command_status = f"Help page {page}"
+                else:
+                    command_status = "Help: use /help 1 or /help 2"
+            else:
+                help_page = 2 if help_page == 1 else 1
+                command_status = f"Help page {help_page}"
+            show_status_until = datetime.now() + timedelta(seconds=2)
 
         elif command in ['c', 'clear']:
             rx_buffer.clear()
@@ -547,6 +675,17 @@ async def process_input(text):
             live_tx_ending = False
             mode_name = "LIVE" if live_tx_mode else "BATCH"
             command_status = f"TX mode: {mode_name}"
+            show_status_until = datetime.now() + timedelta(seconds=3)
+
+        elif command in ['txprogress', 'txp']:
+            global show_tx_progress
+            show_tx_progress = not show_tx_progress
+            config['show_tx_progress'] = show_tx_progress
+            if save_config():
+                status = "ON" if show_tx_progress else "OFF"
+                command_status = f"TX Progress: {status}"
+            else:
+                command_status = "Failed to save setting"
             show_status_until = datetime.now() + timedelta(seconds=3)
 
         elif command == 'macro':
@@ -689,7 +828,7 @@ def _(event):
 
 @kb.add('enter')
 def _(event):
-    global live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, live_tx_start_time, command_status, show_status_until
+    global live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, live_tx_start_time, command_status, show_status_until, tx_overlay_transmitted_count
     import time
 
     if event.app.layout.has_focus(input_field):
@@ -709,6 +848,7 @@ def _(event):
                             live_tx_buffer = text
                             last_input_text = text
                             live_tx_start_time = time.time()
+                            tx_overlay_transmitted_count = 0
                             command_status = "✓ TX Started - type to continue"
                             show_status_until = datetime.now() + timedelta(seconds=2)
                         except Exception:
@@ -718,6 +858,7 @@ def _(event):
                 try:
                     live_tx_ending = True
                     fldigi_client.end_tx_live()
+                    tx_overlay_transmitted_count = 0
                     command_status = "Ending TX..."
                     show_status_until = datetime.now() + timedelta(seconds=2)
                 except Exception:
@@ -803,7 +944,7 @@ root_container = HSplit([
                 height=Dimension(weight=30)
             ),
         ], width=Dimension(weight=70)),
-        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=30, max=45)),
+        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=15, max=50)),
     ]),
     status_window,
 ])
@@ -836,6 +977,7 @@ style = Style.from_dict({
     'status.other': 'bold fg:#d29922',
     'input': 'bg:#161b22 fg:#f0f6fc',
     'input.help': 'bg:#0d1117 fg:#6e7681',
+    'input.transmitted': 'bg:#161b22 fg:#f85149 bold',
     'command.status': 'bold fg:#d29922',
     'dim': 'fg:#6e7681',
     'bold': 'bold',
@@ -844,7 +986,7 @@ style = Style.from_dict({
 
 
 async def poll_fldigi():
-    global last_trx_status, live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, command_status, show_status_until
+    global last_trx_status, live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, command_status, show_status_until, tx_overlay_transmitted_count
 
     while True:
         try:
@@ -861,7 +1003,6 @@ async def poll_fldigi():
                     if len(rx_buffer) > MAX_RX_LINES:
                         rx_buffer[:] = rx_buffer[-MAX_RX_LINES:]
 
-                    # Update the RX display and scroll to bottom
                     rx_display.text = get_rx_text_content()
                     rx_display.buffer.cursor_position = len(rx_display.text)
 
@@ -881,11 +1022,11 @@ async def poll_fldigi():
                         last_input_text = ""
                         live_tx_active = False
                         live_tx_ending = False
+                        tx_overlay_transmitted_count = 0
 
                         command_status = "✓ TX Complete"
                         show_status_until = datetime.now() + timedelta(seconds=2)
 
-                        # Update display and scroll to bottom
                         rx_display.text = get_rx_text_content()
                         rx_display.buffer.cursor_position = len(rx_display.text)
 
@@ -902,6 +1043,7 @@ async def update_display():
         try:
             if live_tx_mode and fldigi_client.is_connected():
                 await handle_live_tx_change()
+                update_tx_overlay_count()
 
             app.invalidate()
             await asyncio.sleep(0.1)

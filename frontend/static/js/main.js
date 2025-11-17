@@ -7,6 +7,15 @@ import { api } from './api.js';
 import { initPresets } from './presets.js';
 
 // UI State
+const MODE_SPEEDS = {
+    'BPSK31': 65,
+    'QPSK31': 130,
+    'BPSK63': 100,
+    'QPSK63': 160,
+    'BPSK125': 200,
+    'QPSK125': 320
+};
+
 const state = {
     connected: false,
     modem: '',
@@ -22,7 +31,14 @@ const state = {
     liveTxStarting: false,
     liveTxDebounceTimer: null,
     liveTxDebounceDelay: 30,
-    liveTxInFlight: false
+    liveTxInFlight: false,
+    showTxProgress: false,
+    txOverlay: {
+        charQueue: [],
+        transmittedCount: 0,
+        animationFrame: null,
+        startTime: 0
+    }
 };
 
 // DOM Elements
@@ -49,6 +65,8 @@ const elements = {
     // Text
     rxText: document.getElementById('rx-text'),
     txText: document.getElementById('tx-text'),
+    txOverlay: null,
+    txProgressToggle: document.getElementById('tx-progress-toggle'),
     clearRxBtn: document.getElementById('clear-rx-btn'),
     clearTxBtn: document.getElementById('clear-tx-btn'),
     sendTxBtn: document.getElementById('send-tx-btn'),
@@ -66,22 +84,143 @@ const elements = {
 async function init() {
     console.log('Initializing FLDIGI Web Wrapper...');
 
-    // Setup event listeners
     setupEventListeners();
 
-    // Setup WebSocket handlers
     setupWebSocketHandlers();
 
-    // Initialize presets
+    initTxOverlay();
+
+    loadTxProgressSetting();
+
     await initPresets();
 
-    // Connect to WebSocket
     wsClient.connect();
 
-    // Check initial connection status
     await checkConnectionStatus();
 
     console.log('Application initialized');
+}
+
+function loadTxProgressSetting() {
+    const saved = localStorage.getItem('showTxProgress');
+    state.showTxProgress = saved === 'true';
+    elements.txProgressToggle.checked = state.showTxProgress;
+}
+
+function initTxOverlay() {
+    const txContainer = elements.txText.parentElement;
+    const overlay = document.createElement('div');
+    overlay.id = 'tx-overlay';
+    overlay.style.cssText = `
+        position: absolute;
+        top: calc(1.125rem + 1px);
+        left: calc(1.125rem + 1px);
+        right: calc(1.125rem + 1px);
+        bottom: calc(1.125rem + 1px);
+        pointer-events: none;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        padding: 0.875rem;
+        overflow: hidden;
+        color: transparent;
+        box-sizing: border-box;
+        letter-spacing: 0.02em;
+    `;
+    txContainer.style.position = 'relative';
+    txContainer.appendChild(overlay);
+    elements.txOverlay = overlay;
+}
+
+function getTransmitSpeed() {
+    const modemUpper = state.modem.toUpperCase();
+    for (const [mode, wpm] of Object.entries(MODE_SPEEDS)) {
+        if (modemUpper.includes(mode)) {
+            return (wpm * 5) / 60;
+        }
+    }
+    return null;
+}
+
+function isModeSupported() {
+    const modemUpper = state.modem.toUpperCase();
+    for (const mode of Object.keys(MODE_SPEEDS)) {
+        if (modemUpper.includes(mode)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function startTxOverlay() {
+    if (!state.showTxProgress || !isModeSupported()) {
+        return;
+    }
+
+    state.txOverlay.charQueue = [];
+    state.txOverlay.transmittedCount = 0;
+    state.txOverlay.startTime = Date.now();
+
+    elements.txText.classList.add('tx-transmitting');
+
+    if (state.txOverlay.animationFrame) {
+        cancelAnimationFrame(state.txOverlay.animationFrame);
+    }
+
+    updateTxOverlay();
+}
+
+function updateTxOverlay() {
+    if (!state.liveTxActive) {
+        elements.txOverlay.innerHTML = '';
+        return;
+    }
+
+    const charsPerSec = getTransmitSpeed();
+    if (charsPerSec === null) {
+        stopTxOverlay();
+        return;
+    }
+
+    const currentTime = Date.now();
+    const elapsed = (currentTime - state.txOverlay.startTime) / 1000;
+    const expectedChars = Math.floor(elapsed * charsPerSec);
+    const currentText = elements.txText.value;
+    const transmittedChars = Math.min(expectedChars, currentText.length);
+
+    if (transmittedChars > 0) {
+        const transmitted = currentText.substring(0, transmittedChars);
+        const untransmitted = currentText.substring(transmittedChars);
+
+        elements.txOverlay.innerHTML =
+            `<span style="color: rgb(239, 68, 68);">${escapeHtml(transmitted)}</span>` +
+            `<span style="color: #10b981;">${escapeHtml(untransmitted)}</span>`;
+    } else {
+        elements.txOverlay.innerHTML = `<span style="color: #10b981;">${escapeHtml(currentText)}</span>`;
+    }
+
+    state.txOverlay.transmittedCount = transmittedChars;
+    state.txOverlay.animationFrame = requestAnimationFrame(updateTxOverlay);
+}
+
+function stopTxOverlay() {
+    if (state.txOverlay.animationFrame) {
+        cancelAnimationFrame(state.txOverlay.animationFrame);
+        state.txOverlay.animationFrame = null;
+    }
+    elements.txOverlay.innerHTML = '';
+    elements.txText.classList.remove('tx-transmitting');
+    state.txOverlay.charQueue = [];
+    state.txOverlay.transmittedCount = 0;
+    state.txOverlay.startTime = 0;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 /**
@@ -109,6 +248,9 @@ function setupEventListeners() {
 
     // Live TX editing - monitor textarea changes
     elements.txText.addEventListener('input', handleLiveTxInput);
+
+    // TX Progress toggle
+    elements.txProgressToggle.addEventListener('change', handleTxProgressToggle);
 
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -290,6 +432,16 @@ function handleCarrierChange(event) {
     elements.carrierValue.textContent = frequency;
 }
 
+function handleTxProgressToggle(event) {
+    state.showTxProgress = event.target.checked;
+    localStorage.setItem('showTxProgress', state.showTxProgress);
+    console.log('[TX Progress] Toggled:', state.showTxProgress);
+
+    if (!state.showTxProgress && state.txOverlay.animationFrame) {
+        stopTxOverlay();
+    }
+}
+
 /**
  * Handle carrier frequency set (on release)
  */
@@ -366,6 +518,7 @@ async function handleLiveTxInput(event) {
 
         const currentText = elements.txText.value;
         const sentLength = state.liveTxBuffer.length;
+        const transmittedCount = state.txOverlay.transmittedCount;
 
         if (currentText.length > sentLength) {
             if (currentText.startsWith(state.liveTxBuffer)) {
@@ -389,8 +542,16 @@ async function handleLiveTxInput(event) {
             } else {
                 console.warn('[TX LIVE] Cannot edit middle of text, reverting');
                 elements.txText.value = state.liveTxBuffer;
-                showNotification('Cannot edit already-transmitted text', 'warning');
+                const cursorPos = elements.txText.selectionStart;
+                if (cursorPos < transmittedCount) {
+                    showNotification('⚠️ Cannot insert into transmitted text (shown in red). Type at the end only.', 'warning');
+                } else {
+                    showNotification('⚠️ Cannot edit queued text. Place cursor at end to continue typing.', 'warning');
+                }
                 state.lastTxText = state.liveTxBuffer;
+                setTimeout(() => {
+                    elements.txText.selectionStart = elements.txText.selectionEnd = state.liveTxBuffer.length;
+                }, 10);
                 return;
             }
         } else if (currentText.length < sentLength) {
@@ -398,6 +559,17 @@ async function handleLiveTxInput(event) {
             const expectedAfterDelete = state.liveTxBuffer.substring(0, sentLength - numDeleted);
 
             if (currentText === expectedAfterDelete) {
+                if (sentLength - numDeleted < transmittedCount) {
+                    console.warn('[TX LIVE] Cannot delete transmitted text, reverting');
+                    elements.txText.value = state.liveTxBuffer;
+                    showNotification('⚠️ Cannot delete transmitted text (shown in red). Wait for transmission to complete or press End TX.', 'warning');
+                    state.lastTxText = state.liveTxBuffer;
+                    setTimeout(() => {
+                        elements.txText.selectionStart = elements.txText.selectionEnd = state.liveTxBuffer.length;
+                    }, 10);
+                    return;
+                }
+
                 const previousBuffer = state.liveTxBuffer;
 
                 state.liveTxBuffer = currentText;
@@ -418,8 +590,16 @@ async function handleLiveTxInput(event) {
             } else {
                 console.warn('[TX LIVE] Cannot edit middle of text, reverting');
                 elements.txText.value = state.liveTxBuffer;
-                showNotification('Cannot edit already-transmitted text - backspace from END only', 'warning');
+                const cursorPos = elements.txText.selectionStart;
+                if (cursorPos < transmittedCount) {
+                    showNotification('⚠️ Cannot delete from transmitted text (shown in red). Backspace from end only.', 'warning');
+                } else {
+                    showNotification('⚠️ Cannot delete from middle of queued text. Backspace from end only.', 'warning');
+                }
                 state.lastTxText = state.liveTxBuffer;
+                setTimeout(() => {
+                    elements.txText.selectionStart = elements.txText.selectionEnd = state.liveTxBuffer.length;
+                }, 10);
                 return;
             }
         }
@@ -446,25 +626,21 @@ async function handleSendTx() {
 
                 console.log('[TX LIVE] Starting transmission with buffer');
 
-                // CRITICAL: Set flags FIRST to prevent race conditions
                 state.liveTxActive = true;
-                state.liveTxStarting = true;  // Prevent input handler during startup
-                state.liveTxStartTime = Date.now();  // Timestamp to detect new vs old TX sessions
+                state.liveTxStarting = true;
+                state.liveTxStartTime = Date.now();
 
-                // ATOMIC START: Use new endpoint that does clear+add+tx in ONE backend call
-                // This prevents async race conditions where clear and add could execute out of order
                 console.log('[TX LIVE] Calling atomic startLiveTx endpoint with', text.length, 'chars');
                 await api.startLiveTx(text);
                 console.log('[TX LIVE] Text added to buffer and TX started atomically');
 
-                // Set liveTxBuffer to what we ACTUALLY sent (not what's currently in textarea)
-                // User might have typed more during the await, and input handler will send those
-                state.liveTxBuffer = text;  // What we've sent so far
-                state.lastTxText = elements.txText.value;  // Current textarea value
-                state.liveTxStarting = false;  // Re-enable input handler
+                state.liveTxBuffer = text;
+                state.lastTxText = elements.txText.value;
+                state.liveTxStarting = false;
                 console.log('[TX LIVE] Startup complete, sent:', text.length, 'chars, current textarea:', elements.txText.value.length, 'chars');
 
-                // Update button appearance
+                startTxOverlay();
+
                 elements.sendTxBtn.innerHTML = '<i class="fas fa-stop"></i> End TX';
                 elements.sendTxBtn.classList.add('btn-danger');
                 elements.sendTxBtn.classList.remove('btn-primary');
@@ -479,6 +655,8 @@ async function handleSendTx() {
                 }
 
                 state.liveTxInFlight = false;
+
+                stopTxOverlay();
 
                 await api.endTxLive();
 
@@ -599,6 +777,8 @@ function updateTxRxStatus(status) {
         state.liveTxBuffer = '';
         state.lastTxText = '';
         state.liveTxActive = false;
+
+        stopTxOverlay();
 
         if (elements.sendTxBtn.textContent.includes('End')) {
             elements.sendTxBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
