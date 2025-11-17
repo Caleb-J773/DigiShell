@@ -221,7 +221,11 @@
                                 <i class="fas fa-upload"></i>
                                 Transmit Buffer
                             </div>
-                            <div style="display: flex; gap: 0.625rem;">
+                            <div style="display: flex; gap: 0.625rem; align-items: center;">
+                                <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
+                                    <input type="checkbox" id="tx-progress-toggle" style="cursor: pointer;">
+                                    <span>TX Progress (estimated)</span>
+                                </label>
                                 <button id="clear-tx-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -231,13 +235,6 @@
                             </div>
                         </div>
                         <div class="panel-body">
-                            <div class="toggle-item" style="margin-bottom: 0.75rem;">
-                                <span class="toggle-label">Show TX Progress</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="tx-progress-toggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
                             <textarea id="tx-text" class="terminal terminal-tx" placeholder="Type your message here..."></textarea>
                         </div>
                     </div>
