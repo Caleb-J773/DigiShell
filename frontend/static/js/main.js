@@ -113,10 +113,10 @@ function initTxOverlay() {
     overlay.id = 'tx-overlay';
     overlay.style.cssText = `
         position: absolute;
-        top: 1px;
-        left: 1px;
-        right: 1px;
-        bottom: 1px;
+        top: calc(1.125rem + 1px);
+        left: calc(1.125rem + 1px);
+        right: calc(1.125rem + 1px);
+        bottom: calc(1.125rem + 1px);
         pointer-events: none;
         white-space: pre-wrap;
         word-wrap: break-word;
