@@ -47,6 +47,7 @@ last_input_text = ""
 live_tx_start_time = 0
 tx_overlay_transmitted_count = 0
 show_tx_progress = False
+help_page = 1
 
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
@@ -315,42 +316,51 @@ def get_rx_text_content():
 
 
 def get_commands_text():
-    text = [
-        ('class:help.title', 'TX Mode: '),
-        ('class:help.cmd', 'LIVE' if live_tx_mode else 'BATCH'),
-        ('class:dim', ' (Enter=TX)\n'),
-        ('class:help.title', 'Keys:\n'),
-        ('class:help.cmd', '  Enter'),
-        ('class:help', ' TX ' if live_tx_mode else ' Send '),
-        ('class:help.cmd', 'Tab'),
-        ('class:help', ' ↵\n'),
-        ('class:help.cmd', '  ↑↓'),
-        ('class:help', ' Scroll\n'),
-        ('class:help.title', 'Commands:\n'),
-        ('class:help.cmd', '  /live'),
-        ('class:help', ' Toggle TX\n'),
-        ('class:help.cmd', '  /txprogress'),
-        ('class:help', ' TX overlay\n'),
-        ('class:help.cmd', '  /m <mode>'),
-        ('class:help', ' Modem\n'),
-        ('class:help.cmd', '  /carrier'),
-        ('class:help', ' Freq\n'),
-        ('class:help.cmd', '  /macro <#>'),
-        ('class:help', ' Macro\n'),
-        ('class:help.cmd', '  /call'),
-        ('class:help', ' Set call\n'),
-        ('class:help.cmd', '  /config'),
-        ('class:help', ' Settings\n'),
-        ('class:help.cmd', '  /clear'),
-        ('class:help', ' Clear RX\n'),
-        ('class:help.cmd', '  /save'),
-        ('class:help', ' Save RX\n'),
-        ('class:help.cmd', '  Ctrl+C'),
-        ('class:help', ' Quit\n'),
-    ]
+    if help_page == 1:
+        text = [
+            ('class:help.title', 'TX Mode: '),
+            ('class:help.cmd', 'LIVE' if live_tx_mode else 'BATCH'),
+            ('class:dim', ' (Enter=TX)\n'),
+            ('class:help.title', 'Keys: '),
+            ('class:help.cmd', 'Enter'),
+            ('class:help', '=TX '),
+            ('class:help.cmd', 'Tab'),
+            ('class:help', '=↵ '),
+            ('class:help.cmd', '↑↓'),
+            ('class:help', '=Scroll\n'),
+            ('class:help.title', 'Commands:\n'),
+            ('class:help.cmd', '  /live'),
+            ('class:help', ' Toggle TX '),
+            ('class:help.cmd', '/m'),
+            ('class:help', ' Modem\n'),
+            ('class:help.cmd', '  /carrier'),
+            ('class:help', ' Freq '),
+            ('class:help.cmd', '/macro'),
+            ('class:help', ' Run\n'),
+            ('class:help.cmd', '  /help 2'),
+            ('class:help', ' More commands\n'),
+        ]
+    else:
+        text = [
+            ('class:help.title', 'Commands (2/2):\n'),
+            ('class:help.cmd', '  /txprogress'),
+            ('class:help', ' TX overlay\n'),
+            ('class:help.cmd', '  /call'),
+            ('class:help', ' Set call '),
+            ('class:help.cmd', '/config'),
+            ('class:help', ' Info\n'),
+            ('class:help.cmd', '  /clear'),
+            ('class:help', ' Clear RX '),
+            ('class:help.cmd', '/save'),
+            ('class:help', ' Save\n'),
+            ('class:help.cmd', '  Ctrl+C'),
+            ('class:help', ' Quit '),
+            ('class:help.cmd', '/help 1'),
+            ('class:help', ' Back\n'),
+        ]
 
     if config.get('callsign') != 'NOCALL':
-        text.append(('class:help.title', 'Station: '))
+        text.append(('class:help.title', '\nStation: '))
         text.append(('class:help', f"{config['callsign']}"))
         if last_call:
             text.append(('class:dim', f" → {last_call}"))
@@ -547,6 +557,20 @@ async def process_input(text):
             show_status_until = datetime.now() + timedelta(seconds=2)
             await asyncio.sleep(2)
             get_app().exit()
+
+        elif command in ['h', 'help']:
+            global help_page
+            if args and args.isdigit():
+                page = int(args)
+                if page in [1, 2]:
+                    help_page = page
+                    command_status = f"Help page {page}"
+                else:
+                    command_status = "Help: use /help 1 or /help 2"
+            else:
+                help_page = 2 if help_page == 1 else 1
+                command_status = f"Help page {help_page}"
+            show_status_until = datetime.now() + timedelta(seconds=2)
 
         elif command in ['c', 'clear']:
             rx_buffer.clear()
