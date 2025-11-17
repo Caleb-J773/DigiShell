@@ -331,28 +331,36 @@ def get_commands_text():
             ('class:help.title', 'Commands:\n'),
             ('class:help.cmd', '  /live'),
             ('class:help', ' Toggle TX '),
-            ('class:help.cmd', '/m'),
-            ('class:help', ' Modem\n'),
+            ('class:help.cmd', '/txprogress'),
+            ('class:help', ' Overlay\n'),
+            ('class:help.cmd', '  /m <mode>'),
+            ('class:help', ' Modem '),
+            ('class:help.cmd', '/modes'),
+            ('class:help', ' List\n'),
             ('class:help.cmd', '  /carrier'),
             ('class:help', ' Freq '),
-            ('class:help.cmd', '/macro'),
-            ('class:help', ' Run\n'),
+            ('class:help.cmd', '/txid'),
+            ('class:help', ' TXID on/off\n'),
+            ('class:help.cmd', '  /macro <#>'),
+            ('class:help', ' Run '),
+            ('class:help.cmd', '/call'),
+            ('class:help', ' Set call\n'),
             ('class:help.cmd', '  /help 2'),
             ('class:help', ' More commands\n'),
         ]
     else:
         text = [
             ('class:help.title', 'Commands (2/2):\n'),
-            ('class:help.cmd', '  /txprogress'),
-            ('class:help', ' TX overlay\n'),
-            ('class:help.cmd', '  /call'),
-            ('class:help', ' Set call '),
-            ('class:help.cmd', '/config'),
-            ('class:help', ' Info\n'),
+            ('class:help.cmd', '  /addmacro'),
+            ('class:help', ' Add/edit macro\n'),
+            ('class:help.cmd', '  /delmacro'),
+            ('class:help', ' Delete macro\n'),
+            ('class:help.cmd', '  /config'),
+            ('class:help', ' Set station info\n'),
             ('class:help.cmd', '  /clear'),
             ('class:help', ' Clear RX '),
             ('class:help.cmd', '/save'),
-            ('class:help', ' Save\n'),
+            ('class:help', ' Save RX\n'),
             ('class:help.cmd', '  Ctrl+C'),
             ('class:help', ' Quit '),
             ('class:help.cmd', '/help 1'),
@@ -441,12 +449,12 @@ help_window = Window(
 
 status_window = Window(
     content=FormattedTextControl(get_status_text),
-    height=3,
+    height=Dimension(min=2, max=3, preferred=3),
     style='class:status'
 )
 
 input_field = TextArea(
-    height=Dimension(min=4, max=10, preferred=6),
+    height=Dimension(min=2, max=10, preferred=6),
     prompt='> ',
     multiline=True,
     wrap_lines=True,
@@ -936,7 +944,7 @@ root_container = HSplit([
                 height=Dimension(weight=30)
             ),
         ], width=Dimension(weight=70)),
-        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=20, max=50)),
+        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=15, max=50)),
     ]),
     status_window,
 ])
