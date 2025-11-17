@@ -14,15 +14,13 @@ This is not designed and has not been secured for the public web. It's purpose i
 
 
 ## Some notable features that is being work on.
+We only have the essentials. Currently Digishell just has the controls you need for making contacts.
 
 **Web Interface**  
 Access from any browser over a LAN or VPN (**do not expose to internet for safety reasons**), which could be good for remote stations or operating from a tablet, phone/small screen during field operations. No need to be at your main shack computer.
 
 **Terminal Ready**  
 CLI interface for headless setups, SSH sessions, and if you just prefer working in the terminal. 
-
-**Simplified Controls**  
-Only the essentials. No confusing menus or hidden settings buried somewhere. Just the controls you actually need for making contacts.
 
 **Python Powered**  
 Built with Python so it works pretty much anywhere and you can customize it if you want.
