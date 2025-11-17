@@ -32,6 +32,7 @@ const state = {
     liveTxDebounceTimer: null,
     liveTxDebounceDelay: 30,
     liveTxInFlight: false,
+    showTxProgress: false,
     txOverlay: {
         charQueue: [],
         transmittedCount: 0,
@@ -65,6 +66,7 @@ const elements = {
     rxText: document.getElementById('rx-text'),
     txText: document.getElementById('tx-text'),
     txOverlay: null,
+    txProgressToggle: document.getElementById('tx-progress-toggle'),
     clearRxBtn: document.getElementById('clear-rx-btn'),
     clearTxBtn: document.getElementById('clear-tx-btn'),
     sendTxBtn: document.getElementById('send-tx-btn'),
@@ -88,6 +90,8 @@ async function init() {
 
     initTxOverlay();
 
+    loadTxProgressSetting();
+
     await initPresets();
 
     wsClient.connect();
@@ -95,6 +99,12 @@ async function init() {
     await checkConnectionStatus();
 
     console.log('Application initialized');
+}
+
+function loadTxProgressSetting() {
+    const saved = localStorage.getItem('showTxProgress');
+    state.showTxProgress = saved === 'true';
+    elements.txProgressToggle.checked = state.showTxProgress;
 }
 
 function initTxOverlay() {
@@ -133,6 +143,10 @@ function getTransmitSpeed() {
 }
 
 function startTxOverlay() {
+    if (!state.showTxProgress) {
+        return;
+    }
+
     state.txOverlay.charQueue = [];
     state.txOverlay.transmittedCount = 0;
     state.txOverlay.startTime = Date.now();
@@ -217,6 +231,9 @@ function setupEventListeners() {
 
     // Live TX editing - monitor textarea changes
     elements.txText.addEventListener('input', handleLiveTxInput);
+
+    // TX Progress toggle
+    elements.txProgressToggle.addEventListener('change', handleTxProgressToggle);
 
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -396,6 +413,16 @@ async function handleSetModem() {
 function handleCarrierChange(event) {
     const frequency = parseInt(event.target.value);
     elements.carrierValue.textContent = frequency;
+}
+
+function handleTxProgressToggle(event) {
+    state.showTxProgress = event.target.checked;
+    localStorage.setItem('showTxProgress', state.showTxProgress);
+    console.log('[TX Progress] Toggled:', state.showTxProgress);
+
+    if (!state.showTxProgress && state.txOverlay.animationFrame) {
+        stopTxOverlay();
+    }
 }
 
 /**

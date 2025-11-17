@@ -46,6 +46,7 @@ live_tx_buffer = ""
 last_input_text = ""
 live_tx_start_time = 0
 tx_overlay_transmitted_count = 0
+show_tx_progress = False
 
 CONFIG_FILE = ".fldigi_tui.json"
 config = {
@@ -53,6 +54,7 @@ config = {
     "name": "Operator",
     "qth": "Somewhere",
     "macros": {},
+    "show_tx_progress": False,
 }
 
 COMMON_MODES = [
@@ -111,12 +113,13 @@ def first_time_setup():
 
 
 def load_config():
-    global config
+    global config, show_tx_progress
     try:
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, 'r') as f:
                 loaded = json.load(f)
                 config.update(loaded)
+                show_tx_progress = config.get('show_tx_progress', False)
         else:
             return False
     except Exception as e:
@@ -174,7 +177,7 @@ def update_tx_overlay_count():
     global tx_overlay_transmitted_count
     import time
 
-    if not live_tx_active or live_tx_start_time == 0:
+    if not show_tx_progress or not live_tx_active or live_tx_start_time == 0:
         tx_overlay_transmitted_count = 0
         return
 
@@ -633,6 +636,17 @@ async def process_input(text):
             live_tx_ending = False
             mode_name = "LIVE" if live_tx_mode else "BATCH"
             command_status = f"TX mode: {mode_name}"
+            show_status_until = datetime.now() + timedelta(seconds=3)
+
+        elif command in ['txprogress', 'txp']:
+            global show_tx_progress
+            show_tx_progress = not show_tx_progress
+            config['show_tx_progress'] = show_tx_progress
+            if save_config():
+                status = "ON" if show_tx_progress else "OFF"
+                command_status = f"TX Progress: {status}"
+            else:
+                command_status = "Failed to save setting"
             show_status_until = datetime.now() + timedelta(seconds=3)
 
         elif command == 'macro':
