@@ -6,7 +6,6 @@ import { wsClient } from './websocket.js';
 import { api } from './api.js';
 import { initPresets } from './presets.js';
 
-// UI State
 const MODE_SPEEDS = {
     'BPSK31': 65,
     'QPSK31': 130,
@@ -41,7 +40,6 @@ const state = {
     }
 };
 
-// DOM Elements
 const elements = {
     // Status
     statusIndicator: document.getElementById('status-indicator'),
@@ -227,10 +225,8 @@ function escapeHtml(text) {
  * Setup all event listeners
  */
 function setupEventListeners() {
-    // Connection
     elements.connectBtn.addEventListener('click', handleConnectClick);
 
-    // Modem control
     elements.setModemBtn.addEventListener('click', handleSetModem);
     elements.carrierFreq.addEventListener('input', handleCarrierChange);
     elements.carrierFreq.addEventListener('change', handleCarrierSet);
@@ -241,7 +237,6 @@ function setupEventListeners() {
     if (elements.tuneBtn) elements.tuneBtn.addEventListener('click', () => handleTxRxControl('tune'));
     if (elements.abortBtn) elements.abortBtn.addEventListener('click', () => handleTxRxControl('abort'));
 
-    // Text controls
     elements.clearRxBtn.addEventListener('click', handleClearRx);
     elements.clearTxBtn.addEventListener('click', handleClearTx);
     elements.sendTxBtn.addEventListener('click', handleSendTx);
@@ -249,10 +244,8 @@ function setupEventListeners() {
     // Live TX editing - monitor textarea changes
     elements.txText.addEventListener('input', handleLiveTxInput);
 
-    // TX Progress toggle
     elements.txProgressToggle.addEventListener('change', handleTxProgressToggle);
 
-    // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
 }
 
@@ -260,7 +253,6 @@ function setupEventListeners() {
  * Setup WebSocket message handlers
  */
 function setupWebSocketHandlers() {
-    // Status updates
     wsClient.on('status_update', (data) => {
         console.log('Status update:', data);
 
@@ -284,13 +276,11 @@ function setupWebSocketHandlers() {
         }
     });
 
-    // Connection status
     wsClient.on('connection_status', (data) => {
         console.log('Connection status:', data);
         updateConnectionStatus(data.connected, data);
     });
 
-    // Text updates
     wsClient.on('text_update', (data) => {
         if (data.text_type === 'rx') {
             appendRxText(data.text, 'rx');
@@ -299,7 +289,6 @@ function setupWebSocketHandlers() {
         }
     });
 
-    // Errors
     wsClient.on('error', (data) => {
         console.error('WebSocket error:', data);
         showNotification(data.error, 'error');
@@ -323,7 +312,6 @@ async function checkConnectionStatus() {
  */
 async function handleConnectClick() {
     if (state.connected) {
-        // Disconnect
         try {
             await api.disconnect();
             updateConnectionStatus(false);
@@ -332,7 +320,6 @@ async function handleConnectClick() {
             showNotification('Failed to disconnect: ' + error.message, 'error');
         }
     } else {
-        // Connect
         try {
             const result = await api.connect();
             if (result.success) {
@@ -361,7 +348,6 @@ function updateConnectionStatus(connected, details = {}) {
         elements.connectBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
         elements.connectBtn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
 
-        // Load initial data
         loadInitialData();
     } else {
         elements.statusIndicator.classList.remove('connected');
@@ -378,20 +364,16 @@ function updateConnectionStatus(connected, details = {}) {
  */
 async function loadInitialData() {
     try {
-        // Get modem info
         const modemInfo = await api.getModemInfo();
         updateModem(modemInfo.name);
         updateCarrier(modemInfo.carrier);
 
-        // Get TX/RX status
         const txrxStatus = await api.getTxRxStatus();
         updateTxRxStatus(txrxStatus.status);
 
-        // Get rig info
         const rigInfo = await api.getRigInfo();
         updateRigInfo(rigInfo);
 
-        // Get TXID state
         const txidData = await api.getTxid();
         elements.txidToggle.checked = txidData.txid || false;
 
@@ -745,7 +727,6 @@ function updateTxRxStatus(status) {
     state.txStatus = status;
     elements.trxStatus.textContent = status;
 
-    // Update color based on status
     elements.trxStatus.className = 'stat-value';
     if (status === 'RX') {
         elements.trxStatus.className += ' status-rx';
@@ -797,12 +778,10 @@ function updateTxRxStatus(status) {
  * Update rig information
  */
 function updateRigInfo(rigInfo) {
-    // Update name if provided
     if (rigInfo.name !== undefined) {
         elements.rigName.textContent = rigInfo.name || 'Not configured';
     }
 
-    // Update frequency if provided
     if (rigInfo.frequency !== undefined) {
         // Format frequency for display
         const freqText = rigInfo.frequency ? rigInfo.frequency.toLocaleString() + ' Hz' : '-';
@@ -817,7 +796,6 @@ function updateRigInfo(rigInfo) {
         }
     }
 
-    // Update mode if provided
     if (rigInfo.mode !== undefined) {
         elements.rigMode.textContent = rigInfo.mode || '-';
     }
@@ -830,7 +808,6 @@ function handleKeyboardShortcuts(event) {
     // Don't intercept shortcuts when typing in input fields (except Ctrl+Enter)
     const isInInput = event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT';
 
-    // Build key string for comparison
     const parts = [];
     if (event.ctrlKey) parts.push('Ctrl');
     if (event.altKey) parts.push('Alt');
@@ -856,7 +833,6 @@ function handleKeyboardShortcuts(event) {
     const customKeybinds = window.currentKeybinds || {};
     const macroKeybinds = window.macroKeybinds || {};
 
-    // Check macro keybinds first
     if (macroKeybinds[keyString]) {
         event.preventDefault();
         const macroKey = macroKeybinds[keyString];
@@ -875,7 +851,6 @@ function handleKeyboardShortcuts(event) {
         return;
     }
 
-    // Check default keybinds
     for (const [id, bind] of Object.entries(customKeybinds)) {
         if (bind.keys === keyString) {
             event.preventDefault();
@@ -927,7 +902,6 @@ function appendRxText(text, type = 'rx') {
     console.log(`[appendRxText] Called with type=${type}, text length=${text.length}`);
     console.log(`[appendRxText] RX element exists:`, !!elements.rxText);
 
-    // Create a span element for the text
     const span = document.createElement('span');
 
     // Only add newline for TX messages (which are complete messages)
@@ -947,7 +921,6 @@ function appendRxText(text, type = 'rx') {
     elements.rxText.appendChild(span);
     console.log(`[appendRxText] Span appended, total children: ${elements.rxText.children.length}`);
 
-    // Auto-scroll to bottom
     elements.rxText.parentElement.scrollTop = elements.rxText.parentElement.scrollHeight;
 }
 
@@ -962,7 +935,6 @@ function showNotification(message, type = 'info') {
     }
 }
 
-// Initialize app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

@@ -626,13 +626,11 @@ let currentTutorialStep = 0;
 window.addEventListener('load', async () => {
     await loadWebConfig();
 
-    // Load config to check if setup is needed
     try {
         const response = await fetch('/api/macros/config');
         const config = await response.json();
         currentConfig = config;
 
-        // Show welcome modal if haven't seen it OR if station callsign is still default
         const shouldShowWelcome = !webConfig.hasSeenWelcome || config.callsign === 'NOCALL';
 
         if (shouldShowWelcome) {
@@ -641,7 +639,6 @@ window.addEventListener('load', async () => {
             }, 500);
         }
 
-        // Now populate the UI elements
         document.getElementById('station-call').textContent = config.callsign;
         document.getElementById('station-name').textContent = config.name;
         document.getElementById('station-qth').textContent = config.qth;
@@ -650,7 +647,6 @@ window.addEventListener('load', async () => {
         document.getElementById('config-qth').value = config.qth;
         loadMacros(config.macros);
     } catch (e) {
-        // If config fails to load, show welcome modal
         setTimeout(() => {
             document.getElementById('welcome-modal').classList.add('active');
         }, 500);
@@ -765,7 +761,6 @@ async function loadStoredKeybinds() {
         }
     }
 
-    // Initialize with default macro shortcuts if macroKeybinds is empty
     if (Object.keys(macroKeybinds).length === 0) {
         macroKeybinds = {
             'Alt+1': '1',
@@ -834,7 +829,6 @@ async function loadKeybinds() {
     if (Object.keys(macroKeybinds).length === 0) {
         macroList.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No macro shortcuts configured. Click "Add Macro Shortcut" to create one.</div>';
     } else {
-        // Display all macro shortcuts
         Object.entries(macroKeybinds).forEach(([keys, macroKey]) => {
             const row = document.createElement('div');
             row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.875rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.625rem;';
@@ -902,12 +896,10 @@ function startMacroKeybindCapture(inputElement, macroKey, oldKeys) {
 
         const keyString = keyEventToString(e);
         if (keyString) {
-            // Remove old keybind
             if (macroKeybinds[oldKeys] === macroKey) {
                 delete macroKeybinds[oldKeys];
             }
 
-            // Add new keybind
             macroKeybinds[keyString] = macroKey;
 
             inputElement.value = keyString;
@@ -918,7 +910,6 @@ function startMacroKeybindCapture(inputElement, macroKey, oldKeys) {
             capturingElement = null;
             window.capturingElement = null;
 
-            // Reload to show updated keybinds
             loadKeybinds();
         }
     };

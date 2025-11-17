@@ -1063,7 +1063,6 @@ async def run_app_async():
 
     connection_time = datetime.now()
 
-    # Initialize RX display
     rx_display.text = 'Waiting for data...'
 
     if config.get('callsign') != 'NOCALL':
