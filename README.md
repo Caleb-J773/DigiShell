@@ -5,30 +5,30 @@ A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal
 
 **This isn't meant to replace FLDIGI at all**, it's just a wrapper around FLDIGI's XML-RPC interface that also uses a library of pyFldigi that gives you a cleaner way to control it. FLDIGI still does all the actual work with the modems and signal processing. I built this because I wanted something simpler to interact with during portable operations and field day setups, and figured it might be useful for others too.
 
-It doesn't have all the bells and whistles that FLDIGI has, that's by design and also because of XML-RPC limitations. This is just the essentials for making contacts: modem control, TX/RX, and it's own macro system. If you need FLDIGI's advanced features (waterfall,  waterfall clicking, macro editing in the app, adjust config/ modes, etc.), you'll still use FLDIGI directly for those.
+It doesn't have all the bells and whistles that FLDIGI has, that's by design and also because of XML-RPC limitations. This is just the essentials for making contacts: modem control, TX/RX, and its own macro system. If you need FLDIGI's advanced features (waterfall, waterfall clicking, macro editing in the app, adjust config/modes, etc.), you'll still use FLDIGI directly for those.
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![FastAPI](https://img.shields.io/badge/fastapi-0.104+-green.svg) ![Claude](https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white)
 
 ## !! DO NOT EXPOSE DIGISHELL TO THE INTERNET !!
-This is not designed and has not been secured for the public web. It's purpose is not to be that way either. It's meant for local devices, a LAN or when it comes to remote operations, via secured VPN tunnel. **Do not expose the port to the web and or port forward.** If you need remote operations, use tailscale, OpenVPN or other services.
+This is not designed and has not been secured for the public web. Its purpose is for local devices, LAN, or remote operations via a secured VPN tunnel. **Do not expose the port to the web or port forward.** If you need remote operations, use Tailscale, OpenVPN, or similar services.
 
 
-## Some notable features that is being work on.
+## Features
 
-**Web Interface**  
-Access from any browser over a LAN or VPN (**do not expose to internet for safety reasons**), which could be good for remote stations or operating from a tablet, phone/small screen during field operations. No need to be at your main shack computer.
+**Web Interface**
+Access from any browser over a LAN or VPN (**do not expose to internet for safety reasons**). Good for remote stations or operating from a tablet/phone during field operations.
 
-**Terminal Ready**  
-CLI interface for headless setups, SSH sessions, and if you just prefer working in the terminal. 
+**Terminal Interface**
+CLI interface for headless setups, SSH sessions, and terminal users.
 
-**Simplified Controls**  
-Only the essentials. No confusing menus or hidden settings buried somewhere. Just the controls you actually need for making contacts.
+**Simplified Controls**
+Only the essentials. No confusing menus or hidden settings. Just the controls you need for making contacts.
 
-**Python Powered**  
-Built with Python so it works pretty much anywhere and you can customize it if you want.
+**Python Powered**
+Built with Python so it works on most platforms and you can customize it if you want.
 
-**Portable Friendly**  
-Lightweight and responsive. Works great on small computers, (testing Raspberry Pi's though atm), and field operations 
+**Portable Friendly**
+Lightweight and responsive. Works on small computers and field setups. 
 
 ## Other Info About This Project
 This is also a personal research and learning project for fun to understand how Large Language Models (LLMs) work to develop projects like this. The majority of the code was written by Claude Code (Anthropic's AI coding assistant), and then I went through it, tested everything, fixed issues, and adjusted things to work properly.
@@ -80,7 +80,7 @@ That's it. Pretty straightforward.
 4. After that, it'll just start right up and you can use the IP's it gives to go to the interface. 
 
 ### Linux (Shell Script)
-This might work, but I hadn't had the chance just yet to test it, but you can test out the digishell.sh that is included. 
+Run `./digishell.sh` - should work but hasn't been fully tested yet. 
 
 
 ### Manual way (all platforms)
@@ -112,7 +112,7 @@ python run_tui.py
 2. Start DigiShell: `python -m backend.main`
 3. Open browser to `http://localhost:8000`
 4. Pick your modem mode, adjust the carrier frequency if needed
-5. Type in the TX box and hit the TX button to transmit, while it is transmitting, you can also type to add more to the TX buffer, though due to current limits, this will not allow you to edit / remove text in between, you can only backspace.
+5. Type in the TX box and hit Send to transmit. While transmitting, you can add more text but can only backspace from the end.
 
 **Keyboard shortcuts:**
 - You can rebind anything or create shortcuts for macros
@@ -212,7 +212,6 @@ digishell/
 3. Verify port 7362 isn't being blocked
 4. Check your firewall if you're still having issues
 
-5. 
 **TUI looks weird:**
 1. Your terminal might not support colors - try a different terminal
 2. Try resizing the window
