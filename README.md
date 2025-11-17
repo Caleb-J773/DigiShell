@@ -1,6 +1,9 @@
 # DigiShell
 
 A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal. This is a work in progress project and it is possibly unstable and has bugs and other issues.
+
+**Website:** [digishell.kc3vpb.com](https://digishell.kc3vpb.com)
+
 ![Image](https://iili.io/KygYH5x.png)
 
 **This isn't meant to replace FLDIGI at all**, it's just a wrapper around FLDIGI's XML-RPC interface that also uses a library of pyFldigi that gives you a cleaner way to control it. FLDIGI still does all the actual work with the modems and signal processing. I built this because I wanted something simpler to interact with during portable operations and field day setups, and figured it might be useful for others too.
@@ -203,19 +206,6 @@ digishell/
 
 **Terminal:**
 - prompt_toolkit - terminal UI library
-
-## Common Issues
-
-**Can't connect to FLDIGI:**
-1. Make sure FLDIGI is actually running
-2. Check that XML-RPC is enabled in FLDIGI settings
-3. Verify port 7362 isn't being blocked
-4. Check your firewall if you're still having issues
-
-**TUI looks weird:**
-1. Your terminal might not support colors - try a different terminal
-2. Try resizing the window
-3. Make sure you're using Python 3.10 or newer
 
 ## Want to contribute?
 
