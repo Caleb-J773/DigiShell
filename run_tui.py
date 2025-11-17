@@ -9,7 +9,7 @@ from backend.fldigi_client import fldigi_client
 import re
 
 from prompt_toolkit import Application
-from prompt_toolkit.layout import Layout, HSplit, VSplit, Window, FormattedTextControl, Dimension, BufferControl
+from prompt_toolkit.layout import Layout, HSplit, VSplit, Window, FormattedTextControl, Dimension, BufferControl, ScrollOffsets
 from prompt_toolkit.layout.containers import WindowAlign
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.widgets import TextArea, Frame
@@ -440,7 +440,9 @@ rx_display = TextArea(
 help_window = Window(
     content=FormattedTextControl(get_commands_text),
     wrap_lines=True,
-    style='class:frame.help'
+    style='class:frame.help',
+    always_hide_cursor=True,
+    scroll_offsets=ScrollOffsets(top=0, bottom=0)
 )
 
 status_window = Window(
@@ -926,7 +928,7 @@ root_container = HSplit([
                 height=Dimension(weight=30)
             ),
         ], width=Dimension(weight=70)),
-        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=30, max=45)),
+        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=20, max=50)),
     ]),
     status_window,
 ])
