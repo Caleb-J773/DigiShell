@@ -469,9 +469,9 @@ def get_input_help_text():
         if live_tx_active:
             help_text = 'Live editing | Enter=end TX | Tab=newline | Ctrl+C=quit'
         else:
-            help_text = '/cmd for commands | Enter=TX | Tab=newline | Ctrl+C=quit'
+            help_text = 'Enter=TX | Tab=newline | Ctrl+C=quit'
     else:
-        help_text = '/cmd for commands | Enter=send | Tab=newline | Ctrl+C=quit'
+        help_text = 'Enter=send | Tab=newline | Ctrl+C=quit'
 
     return FormattedText([
         ('class:dim', help_text)
