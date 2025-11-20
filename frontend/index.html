@@ -191,11 +191,25 @@
                     <!-- RX -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-download"></i>
-                                Receive Window
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="rx">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-download"></i>
+                                    Receive Window
+                                </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div class="font-size-controls">
+                                    <button class="font-size-btn" data-target="rx" data-action="decrease">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="font-size-label" id="rx-font-size-label">13px</span>
+                                    <button class="font-size-btn" data-target="rx" data-action="increase">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
                                 <button id="save-rx-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
                                     <i class="fas fa-save"></i> Save
                                 </button>
@@ -214,11 +228,25 @@
                     <!-- TX -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-upload"></i>
-                                Transmit Buffer
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="tx">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-upload"></i>
+                                    Transmit Buffer
+                                </div>
                             </div>
                             <div style="display: flex; gap: 0.625rem; align-items: center;">
+                                <div class="font-size-controls">
+                                    <button class="font-size-btn" data-target="tx" data-action="decrease">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="font-size-label" id="tx-font-size-label">13px</span>
+                                    <button class="font-size-btn" data-target="tx" data-action="increase">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
                                 <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
                                     <input type="checkbox" id="tx-progress-toggle" style="cursor: pointer;">
                                     <span>TX Progress (estimated)</span>
@@ -239,9 +267,14 @@
                     <!-- Macros -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-keyboard"></i>
-                                Macros & Station
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="macros">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-keyboard"></i>
+                                    Macros & Station
+                                </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button id="edit-macros-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
@@ -831,6 +864,7 @@
     <script type="module" src="/static/js/main.js?v=3.4-fast-typing-fix"></script>
     <script src="/static/js/themes.js"></script>
     <script src="/static/js/theme-ui.js"></script>
+    <script src="/static/js/ui-controls.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
 </html>

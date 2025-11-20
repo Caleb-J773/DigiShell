@@ -110,6 +110,60 @@ const THEME_PRESETS = {
             '--terminal-tx': '#ff0000'
         }
     },
+    'light-soft': {
+        name: 'Light Soft',
+        base: 'light',
+        colors: {
+            '--bg-primary': '#fdfcfb',
+            '--bg-secondary': '#f7f5f3',
+            '--bg-tertiary': '#efeae6',
+            '--bg-hover': '#e3ddd7',
+            '--text-primary': '#3c3836',
+            '--text-secondary': '#665c54',
+            '--text-muted': '#928374',
+            '--border-light': '#e3ddd7',
+            '--border-medium': '#d5cdc5',
+            '--accent': '#4a9eff',
+            '--accent-hover': '#2478cc',
+            '--accent-light': '#d4e8ff',
+            '--success': '#16a765',
+            '--success-light': '#d1f4e0',
+            '--warning': '#f5a623',
+            '--warning-light': '#ffeacc',
+            '--danger': '#e53e3e',
+            '--danger-light': '#ffd4d4',
+            '--terminal-bg': '#282828',
+            '--terminal-text': '#16a765',
+            '--terminal-tx': '#e53e3e'
+        }
+    },
+    'light-paper': {
+        name: 'Light Paper',
+        base: 'light',
+        colors: {
+            '--bg-primary': '#f9f8f6',
+            '--bg-secondary': '#f4f2ee',
+            '--bg-tertiary': '#e8e5df',
+            '--bg-hover': '#ddd9d1',
+            '--text-primary': '#2e2d2a',
+            '--text-secondary': '#5f5d58',
+            '--text-muted': '#918e88',
+            '--border-light': '#ddd9d1',
+            '--border-medium': '#cac6bc',
+            '--accent': '#0077cc',
+            '--accent-hover': '#005fa3',
+            '--accent-light': '#cce7ff',
+            '--success': '#0d9488',
+            '--success-light': '#ccf3ef',
+            '--warning': '#d97706',
+            '--warning-light': '#fef3c7',
+            '--danger': '#dc2626',
+            '--danger-light': '#fecaca',
+            '--terminal-bg': '#3a3836',
+            '--terminal-text': '#0d9488',
+            '--terminal-tx': '#dc2626'
+        }
+    },
 
     // Dark Mode Themes
     'dark': {
@@ -299,6 +353,33 @@ const THEME_PRESETS = {
             '--terminal-bg': '#0f0505',
             '--terminal-text': '#ef4444',
             '--terminal-tx': '#f87171'
+        }
+    },
+    'dark-midnight': {
+        name: 'Dark Midnight',
+        base: 'dark',
+        colors: {
+            '--bg-primary': '#0a0e1a',
+            '--bg-secondary': '#151b2e',
+            '--bg-tertiary': '#1f2937',
+            '--bg-hover': '#374151',
+            '--text-primary': '#f9fafb',
+            '--text-secondary': '#9ca3af',
+            '--text-muted': '#6b7280',
+            '--border-light': '#1f2937',
+            '--border-medium': '#374151',
+            '--accent': '#60a5fa',
+            '--accent-hover': '#3b82f6',
+            '--accent-light': '#1e3a8a',
+            '--success': '#10b981',
+            '--success-light': '#064e3b',
+            '--warning': '#f59e0b',
+            '--warning-light': '#78350f',
+            '--danger': '#ef4444',
+            '--danger-light': '#7f1d1d',
+            '--terminal-bg': '#030712',
+            '--terminal-text': '#60a5fa',
+            '--terminal-tx': '#ef4444'
         }
     }
 };

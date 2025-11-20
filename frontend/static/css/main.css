@@ -401,6 +401,76 @@
 
         .panel-body {
             padding: 1.125rem;
+            transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+            max-height: 10000px;
+            overflow: hidden;
+            opacity: 1;
+        }
+
+        .panel.collapsed .panel-body {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+        }
+
+        .panel-collapse-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .panel-collapse-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .panel-collapse-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .panel.collapsed .panel-collapse-btn i {
+            transform: rotate(-90deg);
+        }
+
+        .font-size-controls {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+
+        .font-size-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        .font-size-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+        }
+
+        .font-size-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 40px;
+            text-align: center;
         }
 
         .sidebar {
