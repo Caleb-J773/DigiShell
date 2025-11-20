@@ -56,6 +56,221 @@ config = {
     "qth": "Somewhere",
     "macros": {},
     "show_tx_progress": False,
+    "theme": "default",
+}
+
+# Terminal Theme Definitions
+TERMINAL_THEMES = {
+    'default': {
+        'name': 'Default Dark',
+        'colors': {
+            'header': 'bg:#0d1117 fg:#58a6ff',
+            'header.title': 'bold fg:#58a6ff',
+            'header.status': 'bold fg:#3fb950',
+            'header.time': 'fg:#f0f6fc',
+            'header.version': 'fg:#8b949e',
+            'header.uptime': 'fg:#8b949e',
+            'frame': 'bg:#0d1117',
+            'frame.label': 'bold fg:#58a6ff',
+            'frame.rx': 'bg:#0d1117',
+            'frame.help': 'bg:#0d1117',
+            'rx': 'fg:#7ee787',
+            'rx.timestamp': 'fg:#6e7681',
+            'tx': 'bold fg:#ff6b6b',
+            'tx.text': 'fg:#ff9999',
+            'help': 'fg:#c9d1d9',
+            'help.title': 'bold fg:#58a6ff',
+            'help.cmd': 'fg:#f0883e',
+            'status': 'bg:#161b22 fg:#c9d1d9',
+            'status.label': 'fg:#58a6ff',
+            'status.value': 'bold fg:#f0f6fc',
+            'status.rx': 'bold fg:#3fb950',
+            'status.tx': 'bold fg:#f85149',
+            'status.other': 'bold fg:#d29922',
+            'input': 'bg:#161b22 fg:#f0f6fc',
+            'input.help': 'bg:#0d1117 fg:#6e7681',
+            'input.transmitted': 'bg:#161b22 fg:#f85149 bold',
+            'command.status': 'bold fg:#d29922',
+            'dim': 'fg:#6e7681',
+            'bold': 'bold',
+            'warning': 'fg:#f0883e',
+        }
+    },
+    'midnight': {
+        'name': 'Dark Midnight',
+        'colors': {
+            'header': 'bg:#0a0e1a fg:#60a5fa',
+            'header.title': 'bold fg:#60a5fa',
+            'header.status': 'bold fg:#10b981',
+            'header.time': 'fg:#f9fafb',
+            'header.version': 'fg:#9ca3af',
+            'header.uptime': 'fg:#9ca3af',
+            'frame': 'bg:#0a0e1a',
+            'frame.label': 'bold fg:#60a5fa',
+            'frame.rx': 'bg:#0a0e1a',
+            'frame.help': 'bg:#0a0e1a',
+            'rx': 'fg:#93c5fd',
+            'rx.timestamp': 'fg:#6b7280',
+            'tx': 'bold fg:#ef4444',
+            'tx.text': 'fg:#fca5a5',
+            'help': 'fg:#e5e7eb',
+            'help.title': 'bold fg:#60a5fa',
+            'help.cmd': 'fg:#fbbf24',
+            'status': 'bg:#151b2e fg:#e5e7eb',
+            'status.label': 'fg:#60a5fa',
+            'status.value': 'bold fg:#f9fafb',
+            'status.rx': 'bold fg:#10b981',
+            'status.tx': 'bold fg:#ef4444',
+            'status.other': 'bold fg:#fbbf24',
+            'input': 'bg:#151b2e fg:#f9fafb',
+            'input.help': 'bg:#0a0e1a fg:#6b7280',
+            'input.transmitted': 'bg:#151b2e fg:#ef4444 bold',
+            'command.status': 'bold fg:#fbbf24',
+            'dim': 'fg:#6b7280',
+            'bold': 'bold',
+            'warning': 'fg:#fbbf24',
+        }
+    },
+    'dark-red': {
+        'name': 'Dark Red',
+        'colors': {
+            'header': 'bg:#1a0d0d fg:#ef4444',
+            'header.title': 'bold fg:#ef4444',
+            'header.status': 'bold fg:#10b981',
+            'header.time': 'fg:#fef2f2',
+            'header.version': 'fg:#fca5a5',
+            'header.uptime': 'fg:#fca5a5',
+            'frame': 'bg:#1a0d0d',
+            'frame.label': 'bold fg:#ef4444',
+            'frame.rx': 'bg:#1a0d0d',
+            'frame.help': 'bg:#1a0d0d',
+            'rx': 'fg:#fca5a5',
+            'rx.timestamp': 'fg:#dc2626',
+            'tx': 'bold fg:#f87171',
+            'tx.text': 'fg:#fecaca',
+            'help': 'fg:#fee2e2',
+            'help.title': 'bold fg:#ef4444',
+            'help.cmd': 'fg:#f59e0b',
+            'status': 'bg:#2d1414 fg:#fee2e2',
+            'status.label': 'fg:#ef4444',
+            'status.value': 'bold fg:#fef2f2',
+            'status.rx': 'bold fg:#10b981',
+            'status.tx': 'bold fg:#f87171',
+            'status.other': 'bold fg:#f59e0b',
+            'input': 'bg:#2d1414 fg:#fef2f2',
+            'input.help': 'bg:#1a0d0d fg:#dc2626',
+            'input.transmitted': 'bg:#2d1414 fg:#f87171 bold',
+            'command.status': 'bold fg:#f59e0b',
+            'dim': 'fg:#dc2626',
+            'bold': 'bold',
+            'warning': 'fg:#f59e0b',
+        }
+    },
+    'ocean': {
+        'name': 'Dark Ocean',
+        'colors': {
+            'header': 'bg:#0c1821 fg:#06b6d4',
+            'header.title': 'bold fg:#06b6d4',
+            'header.status': 'bold fg:#14b8a6',
+            'header.time': 'fg:#e8f0f7',
+            'header.version': 'fg:#8fa9c4',
+            'header.uptime': 'fg:#8fa9c4',
+            'frame': 'bg:#0c1821',
+            'frame.label': 'bold fg:#06b6d4',
+            'frame.rx': 'bg:#0c1821',
+            'frame.help': 'bg:#0c1821',
+            'rx': 'fg:#67e8f9',
+            'rx.timestamp': 'fg:#5e7a94',
+            'tx': 'bold fg:#f43f5e',
+            'tx.text': 'fg:#fda4af',
+            'help': 'fg:#cfe9f3',
+            'help.title': 'bold fg:#06b6d4',
+            'help.cmd': 'fg:#f59e0b',
+            'status': 'bg:#1b2838 fg:#cfe9f3',
+            'status.label': 'fg:#06b6d4',
+            'status.value': 'bold fg:#e8f0f7',
+            'status.rx': 'bold fg:#14b8a6',
+            'status.tx': 'bold fg:#f43f5e',
+            'status.other': 'bold fg:#f59e0b',
+            'input': 'bg:#1b2838 fg:#e8f0f7',
+            'input.help': 'bg:#0c1821 fg:#5e7a94',
+            'input.transmitted': 'bg:#1b2838 fg:#f43f5e bold',
+            'command.status': 'bold fg:#f59e0b',
+            'dim': 'fg:#5e7a94',
+            'bold': 'bold',
+            'warning': 'fg:#f59e0b',
+        }
+    },
+    'purple': {
+        'name': 'Dark Purple',
+        'colors': {
+            'header': 'bg:#1e1b2e fg:#a78bfa',
+            'header.title': 'bold fg:#a78bfa',
+            'header.status': 'bold fg:#10b981',
+            'header.time': 'fg:#e9e7f0',
+            'header.version': 'fg:#b4b1c4',
+            'header.uptime': 'fg:#b4b1c4',
+            'frame': 'bg:#1e1b2e',
+            'frame.label': 'bold fg:#a78bfa',
+            'frame.rx': 'bg:#1e1b2e',
+            'frame.help': 'bg:#1e1b2e',
+            'rx': 'fg:#c4b5fd',
+            'rx.timestamp': 'fg:#8580a0',
+            'tx': 'bold fg:#f87171',
+            'tx.text': 'fg:#fca5a5',
+            'help': 'fg:#ddd9ec',
+            'help.title': 'bold fg:#a78bfa',
+            'help.cmd': 'fg:#fbbf24',
+            'status': 'bg:#2d2a40 fg:#ddd9ec',
+            'status.label': 'fg:#a78bfa',
+            'status.value': 'bold fg:#e9e7f0',
+            'status.rx': 'bold fg:#10b981',
+            'status.tx': 'bold fg:#f87171',
+            'status.other': 'bold fg:#fbbf24',
+            'input': 'bg:#2d2a40 fg:#e9e7f0',
+            'input.help': 'bg:#1e1b2e fg:#8580a0',
+            'input.transmitted': 'bg:#2d2a40 fg:#f87171 bold',
+            'command.status': 'bold fg:#fbbf24',
+            'dim': 'fg:#8580a0',
+            'bold': 'bold',
+            'warning': 'fg:#fbbf24',
+        }
+    },
+    'green': {
+        'name': 'Dark Green',
+        'colors': {
+            'header': 'bg:#0a1f1a fg:#34d399',
+            'header.title': 'bold fg:#34d399',
+            'header.status': 'bold fg:#22c55e',
+            'header.time': 'fg:#e6f4f1',
+            'header.version': 'fg:#9fc5ba',
+            'header.uptime': 'fg:#9fc5ba',
+            'frame': 'bg:#0a1f1a',
+            'frame.label': 'bold fg:#34d399',
+            'frame.rx': 'bg:#0a1f1a',
+            'frame.help': 'bg:#0a1f1a',
+            'rx': 'fg:#6ee7b7',
+            'rx.timestamp': 'fg:#6b9688',
+            'tx': 'bold fg:#ef4444',
+            'tx.text': 'fg:#fca5a5',
+            'help': 'fg:#d1fae5',
+            'help.title': 'bold fg:#34d399',
+            'help.cmd': 'fg:#fbbf24',
+            'status': 'bg:#0f2e26 fg:#d1fae5',
+            'status.label': 'fg:#34d399',
+            'status.value': 'bold fg:#e6f4f1',
+            'status.rx': 'bold fg:#22c55e',
+            'status.tx': 'bold fg:#ef4444',
+            'status.other': 'bold fg:#fbbf24',
+            'input': 'bg:#0f2e26 fg:#e6f4f1',
+            'input.help': 'bg:#0a1f1a fg:#6b9688',
+            'input.transmitted': 'bg:#0f2e26 fg:#ef4444 bold',
+            'command.status': 'bold fg:#fbbf24',
+            'dim': 'fg:#6b9688',
+            'bold': 'bold',
+            'warning': 'fg:#fbbf24',
+        }
+    },
 }
 
 COMMON_MODES = [
@@ -121,12 +336,25 @@ def load_config():
                 loaded = json.load(f)
                 config.update(loaded)
                 show_tx_progress = config.get('show_tx_progress', False)
+                # Ensure theme is valid
+                if config.get('theme') not in TERMINAL_THEMES:
+                    config['theme'] = 'default'
         else:
             return False
     except Exception as e:
         print(f"WARNING: Failed to load config from {CONFIG_FILE}: {e}")
         print("Using default configuration.")
     return True
+
+
+def get_theme_style():
+    """Generate a Style object from the current theme"""
+    theme_id = config.get('theme', 'default')
+    if theme_id not in TERMINAL_THEMES:
+        theme_id = 'default'
+
+    theme = TERMINAL_THEMES[theme_id]
+    return Style.from_dict(theme['colors'])
 
 
 def save_config():
@@ -341,12 +569,14 @@ def get_commands_text():
             ('class:help', ' Freq '),
             ('class:help.cmd', '/txid'),
             ('class:help', ' TXID on/off\n'),
-            ('class:help.cmd', '  /macro <#>'),
-            ('class:help', ' Run '),
-            ('class:help.cmd', '/call'),
-            ('class:help', ' Set call\n'),
-            ('class:help.cmd', '  /help 2'),
-            ('class:help', ' More commands\n'),
+            ('class:help.cmd', '  /theme'),
+            ('class:help', ' Change theme '),
+            ('class:help.cmd', '/macro <#>'),
+            ('class:help', ' Run\n'),
+            ('class:help.cmd', '  /call'),
+            ('class:help', ' Set call '),
+            ('class:help.cmd', '/help 2'),
+            ('class:help', ' More\n'),
         ]
     else:
         text = [
@@ -688,6 +918,29 @@ async def process_input(text):
                 command_status = "Failed to save setting"
             show_status_until = datetime.now() + timedelta(seconds=3)
 
+        elif command == 'theme':
+            if not args:
+                # List available themes
+                theme_list = ', '.join([f"{k} ({v['name']})" for k, v in TERMINAL_THEMES.items()])
+                current_theme = config.get('theme', 'default')
+                current_name = TERMINAL_THEMES[current_theme]['name']
+                command_status = f"Current: {current_name} | Available: {theme_list}"
+                show_status_until = datetime.now() + timedelta(seconds=8)
+            else:
+                theme_id = args.lower().strip()
+                if theme_id in TERMINAL_THEMES:
+                    config['theme'] = theme_id
+                    if save_config():
+                        theme_name = TERMINAL_THEMES[theme_id]['name']
+                        command_status = f"✓ Theme set to {theme_name}. Restart TUI to apply."
+                        show_status_until = datetime.now() + timedelta(seconds=4)
+                    else:
+                        command_status = "✗ Failed to save theme"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
+                else:
+                    command_status = f"Theme '{theme_id}' not found. Use /theme to list."
+                    show_status_until = datetime.now() + timedelta(seconds=4)
+
         elif command == 'macro':
             if not args:
                 macros = config.get('macros', {})
@@ -951,39 +1204,6 @@ root_container = HSplit([
 
 layout = Layout(root_container, focused_element=input_field)
 
-style = Style.from_dict({
-    'header': 'bg:#0d1117 fg:#58a6ff',
-    'header.title': 'bold fg:#58a6ff',
-    'header.status': 'bold fg:#3fb950',
-    'header.time': 'fg:#f0f6fc',
-    'header.version': 'fg:#8b949e',
-    'header.uptime': 'fg:#8b949e',
-    'frame': 'bg:#0d1117',
-    'frame.label': 'bold fg:#58a6ff',
-    'frame.rx': 'bg:#0d1117',
-    'frame.help': 'bg:#0d1117',
-    'rx': 'fg:#7ee787',
-    'rx.timestamp': 'fg:#6e7681',
-    'tx': 'bold fg:#ff6b6b',
-    'tx.text': 'fg:#ff9999',
-    'help': 'fg:#c9d1d9',
-    'help.title': 'bold fg:#58a6ff',
-    'help.cmd': 'fg:#f0883e',
-    'status': 'bg:#161b22 fg:#c9d1d9',
-    'status.label': 'fg:#58a6ff',
-    'status.value': 'bold fg:#f0f6fc',
-    'status.rx': 'bold fg:#3fb950',
-    'status.tx': 'bold fg:#f85149',
-    'status.other': 'bold fg:#d29922',
-    'input': 'bg:#161b22 fg:#f0f6fc',
-    'input.help': 'bg:#0d1117 fg:#6e7681',
-    'input.transmitted': 'bg:#161b22 fg:#f85149 bold',
-    'command.status': 'bold fg:#d29922',
-    'dim': 'fg:#6e7681',
-    'bold': 'bold',
-    'warning': 'fg:#f0883e',
-})
-
 
 async def poll_fldigi():
     global last_trx_status, live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, command_status, show_status_until, tx_overlay_transmitted_count
@@ -1069,10 +1289,13 @@ async def run_app_async():
         print(f"Station: {config['callsign']} ({config['name']})")
         print(f"Macros: {len(config.get('macros', {}))} available")
 
+    # Generate style based on current theme
+    current_style = get_theme_style()
+
     app = Application(
         layout=layout,
         key_bindings=kb,
-        style=style,
+        style=current_style,
         full_screen=True,
         mouse_support=True,
     )
