@@ -51,23 +51,16 @@ async function loadWebConfig() {
 
 async function saveWebConfig() {
     try {
-        console.log('[saveWebConfig] Saving config:', window.webConfig);
         const response = await fetch('/api/settings/web-config', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(window.webConfig)
         });
-        console.log('[saveWebConfig] Response status:', response.status);
         if (response.ok) {
             const data = await response.json();
-            console.log('[saveWebConfig] Save result:', data);
             return data.success;
-        } else {
-            const errorText = await response.text();
-            console.error('[saveWebConfig] Save failed:', errorText);
         }
     } catch (e) {
-        console.error('[saveWebConfig] Exception:', e);
     }
     return false;
 }

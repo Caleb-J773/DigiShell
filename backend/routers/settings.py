@@ -32,6 +32,8 @@ class FloatSettingResponse(BaseModel):
 
 
 class WebConfig(BaseModel):
+    model_config = {"extra": "allow"}
+
     theme: Optional[str] = "dark"
     hasSeenWelcome: Optional[bool] = False
     custom_keybinds: Optional[Dict[str, Any]] = None
@@ -50,18 +52,18 @@ def load_web_config() -> WebConfig:
             with open(WEB_CONFIG_FILE, 'r') as f:
                 data = json.load(f)
                 return WebConfig(**data)
-        except Exception as e:
+        except Exception:
             return WebConfig()
     return WebConfig()
 
 
 def save_web_config(config: WebConfig) -> bool:
     try:
+        WEB_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(WEB_CONFIG_FILE, 'w') as f:
             json.dump(config.model_dump(), f, indent=2)
         return True
-    except Exception as e:
-        print(f"Error saving web config: {e}")
+    except Exception:
         return False
 
 
@@ -85,6 +87,8 @@ async def save_web_config_endpoint(config: WebConfig):
             )
         else:
             raise HTTPException(status_code=500, detail="Failed to save configuration")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save web config: {str(e)}")
 
