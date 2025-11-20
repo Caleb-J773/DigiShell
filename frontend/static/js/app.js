@@ -28,7 +28,7 @@ window.showToast = function(message, type = 'info', duration = 4000) {
     }, duration);
 };
 
-let webConfig = {
+window.webConfig = {
     theme: 'dark',
     hasSeenWelcome: false,
     custom_keybinds: null
@@ -40,13 +40,13 @@ async function loadWebConfig() {
         if (response.ok) {
             const data = await response.json();
             if (data.success && data.config) {
-                webConfig = data.config;
-                return webConfig;
+                window.webConfig = data.config;
+                return window.webConfig;
             }
         }
     } catch (e) {
     }
-    return webConfig;
+    return window.webConfig;
 }
 
 async function saveWebConfig() {
@@ -54,7 +54,7 @@ async function saveWebConfig() {
         const response = await fetch('/api/settings/web-config', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(webConfig)
+            body: JSON.stringify(window.webConfig)
         });
         if (response.ok) {
             const data = await response.json();
@@ -65,6 +65,8 @@ async function saveWebConfig() {
     return false;
 }
 
+window.saveWebConfig = saveWebConfig;
+
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = themeToggle.querySelector('i');
 const html = document.documentElement;
@@ -73,13 +75,13 @@ async function initTheme() {
     await loadWebConfig();
 
     // If theme manager is available and has a saved theme, use it
-    if (window.themeManager && webConfig.themes && webConfig.themes.current) {
+    if (window.themeManager && window.webConfig.themes && window.webConfig.themes.current) {
         // Theme manager will handle initialization
         return;
     }
 
     // Fallback to old theme system for backward compatibility
-    const savedTheme = webConfig.theme ||
+    const savedTheme = window.webConfig.theme ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
     if (savedTheme === 'dark') {
@@ -112,7 +114,7 @@ themeToggle.addEventListener('click', async () => {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
     html.setAttribute('data-theme', newTheme);
-    webConfig.theme = newTheme;
+    window.webConfig.theme = newTheme;
     await saveWebConfig();
 
     if (newTheme === 'dark') {
@@ -660,7 +662,7 @@ window.addEventListener('load', async () => {
         const config = await response.json();
         currentConfig = config;
 
-        const shouldShowWelcome = !webConfig.hasSeenWelcome || config.callsign === 'NOCALL';
+        const shouldShowWelcome = !window.webConfig.hasSeenWelcome || config.callsign === 'NOCALL';
 
         if (shouldShowWelcome) {
             setTimeout(() => {
@@ -705,7 +707,7 @@ document.getElementById('welcome-continue-btn').onclick = async () => {
     } catch (e) {
     }
 
-    webConfig.hasSeenWelcome = true;
+    window.webConfig.hasSeenWelcome = true;
     await saveWebConfig();
     document.getElementById('welcome-modal').classList.remove('active');
 
@@ -782,10 +784,10 @@ window.capturingElement = null;
 
 async function loadStoredKeybinds() {
     await loadWebConfig();
-    if (webConfig.custom_keybinds) {
+    if (window.webConfig.custom_keybinds) {
         try {
-            currentKeybinds = {...DEFAULT_KEYBINDS, ...webConfig.custom_keybinds.default};
-            macroKeybinds = webConfig.custom_keybinds.macros || {};
+            currentKeybinds = {...DEFAULT_KEYBINDS, ...window.webConfig.custom_keybinds.default};
+            macroKeybinds = window.webConfig.custom_keybinds.macros || {};
         } catch (e) {
         }
     }
@@ -805,7 +807,7 @@ async function loadStoredKeybinds() {
 }
 
 async function saveKeybinds() {
-    webConfig.custom_keybinds = {
+    window.webConfig.custom_keybinds = {
         default: currentKeybinds,
         macros: macroKeybinds
     };

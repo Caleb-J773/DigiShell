@@ -325,7 +325,7 @@ class ThemeManager {
 
     async saveThemes() {
         if (!window.webConfig) {
-            window.webConfig = {};
+            return;
         }
         window.webConfig.themes = {
             current: this.currentTheme,
