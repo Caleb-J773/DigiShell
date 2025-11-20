@@ -67,7 +67,7 @@ It took multiple iterations, planning it out step by step, a lot of testing, deb
 ### Windows (easiest way)
 
 1. Make sure FLDIGI is running with XML-RPC enabled
-2. Double-click `start.bat`
+2. Double-click `DigiShell.bat`
 3. First time it'll set up the virtual environment and install everything (takes a couple minutes)
 4. After that, it'll just start right up and you can use the IP's it gives to go to the interface. 
 
