@@ -167,6 +167,8 @@ function initTxOverlay() {
     `;
     txContainer.style.position = 'relative';
 
+    elements.txText.style.caretColor = '#38bdf8';
+
     txContainer.appendChild(overlay);
     elements.txOverlay = overlay;
 }
