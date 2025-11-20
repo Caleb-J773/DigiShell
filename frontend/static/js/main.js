@@ -7,12 +7,49 @@ import { api } from './api.js';
 import { initPresets } from './presets.js';
 
 const MODE_SPEEDS = {
-    'BPSK31': 65,
-    'QPSK31': 130,
-    'BPSK63': 100,
+    'PSK31': 50,
+    'BPSK31': 50,
+    'QPSK31': 100,
+    'PSK63': 80,
+    'BPSK63': 80,
     'QPSK63': 160,
-    'BPSK125': 200,
-    'QPSK125': 320
+    'PSK125': 120,
+    'BPSK125': 120,
+    'QPSK125': 240,
+    '8PSK125': 240,
+    '8PSK250': 320,
+    'RTTY': 60,
+    'OLIVIA-4': 15,
+    'OLIVIA-8': 20,
+    'OLIVIA-16': 38,
+    'OLIVIA-32': 75,
+    'CONTESTIA-4': 25,
+    'CONTESTIA-8': 40,
+    'CONTESTIA-16': 75,
+    'CONTESTIA-32': 150,
+    'MT63-500': 40,
+    'MT63-1000': 75,
+    'MT63-2000': 150,
+    'THOR-4': 30,
+    'THOR-8': 40,
+    'THOR-11': 50,
+    'THOR-16': 65,
+    'THOR-22': 85,
+    'DOMINOEX-4': 30,
+    'DOMINOEX-5': 35,
+    'DOMINOEX-8': 45,
+    'DOMINOEX-11': 60,
+    'DOMINOEX-16': 80,
+    'DOMINOEX-22': 100,
+    'MFSK-8': 25,
+    'MFSK-16': 40,
+    'MFSK-32': 80,
+    'MFSK-64': 125,
+    'THROB': 45,
+    'THROBX': 45,
+    'HELL': 60,
+    'CW': 60,
+    'PACKET': 120
 };
 
 const state = {
@@ -126,8 +163,14 @@ function initTxOverlay() {
         color: transparent;
         box-sizing: border-box;
         letter-spacing: 0.02em;
+        z-index: 1;
     `;
     txContainer.style.position = 'relative';
+
+    elements.txText.style.caretColor = 'var(--text-primary)';
+    elements.txText.style.position = 'relative';
+    elements.txText.style.zIndex = '2';
+
     txContainer.appendChild(overlay);
     elements.txOverlay = overlay;
 }
