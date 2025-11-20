@@ -65,6 +65,49 @@ DEFAULT_PRESETS = [
     PresetFrequency(id="default-cw-20m", name="20m CW", modem="CW", rig_frequency=14050000, carrier_frequency=700, is_default=True, band="20m"),
     PresetFrequency(id="default-cw-15m", name="15m CW", modem="CW", rig_frequency=21050000, carrier_frequency=700, is_default=True, band="15m"),
     PresetFrequency(id="default-cw-10m", name="10m CW", modem="CW", rig_frequency=28050000, carrier_frequency=700, is_default=True, band="10m"),
+
+    PresetFrequency(id="default-qpsk31-40m", name="40m QPSK31", modem="QPSK31", rig_frequency=7080150, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-qpsk31-20m", name="20m QPSK31", modem="QPSK31", rig_frequency=14070150, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-qpsk31-17m", name="17m QPSK31", modem="QPSK31", rig_frequency=18100000, carrier_frequency=1500, is_default=True, band="17m"),
+    PresetFrequency(id="default-qpsk31-15m", name="15m QPSK31", modem="QPSK31", rig_frequency=21080000, carrier_frequency=1500, is_default=True, band="15m"),
+
+    PresetFrequency(id="default-qpsk63-40m", name="40m QPSK63", modem="QPSK63", rig_frequency=7080150, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-qpsk63-20m", name="20m QPSK63", modem="QPSK63", rig_frequency=14070150, carrier_frequency=1500, is_default=True, band="20m"),
+
+    PresetFrequency(id="default-8psk125-40m", name="40m 8PSK125", modem="8PSK125", rig_frequency=7080150, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-8psk125-20m", name="20m 8PSK125", modem="8PSK125", rig_frequency=14070150, carrier_frequency=1500, is_default=True, band="20m"),
+
+    PresetFrequency(id="default-olivia-8-250-40m", name="40m Olivia 8/250", modem="Olivia-8-250", rig_frequency=7073000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-olivia-8-250-20m", name="20m Olivia 8/250", modem="Olivia-8-250", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-olivia-8-500-40m", name="40m Olivia 8/500", modem="Olivia-8-500", rig_frequency=7073000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-olivia-8-500-20m", name="20m Olivia 8/500", modem="Olivia-8-500", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-olivia-16-500-15m", name="15m Olivia 16/500", modem="Olivia-16-500", rig_frequency=21073000, carrier_frequency=1500, is_default=True, band="15m"),
+    PresetFrequency(id="default-olivia-32-1000-20m", name="20m Olivia 32/1000", modem="Olivia-32-1000", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+
+    PresetFrequency(id="default-contestia-4-125-40m", name="40m Contestia 4/125", modem="Contestia-4-125", rig_frequency=7073000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-contestia-8-250-15m", name="15m Contestia 8/250", modem="Contestia-8-250", rig_frequency=21073000, carrier_frequency=1500, is_default=True, band="15m"),
+    PresetFrequency(id="default-contestia-16-500-20m", name="20m Contestia 16/500", modem="Contestia-16-500", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-contestia-32-1000-20m", name="20m Contestia 32/1000", modem="Contestia-32-1000", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+
+    PresetFrequency(id="default-mfsk32-40m", name="40m MFSK32", modem="MFSK-32", rig_frequency=7070000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-mfsk32-20m", name="20m MFSK32", modem="MFSK-32", rig_frequency=14070000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-mfsk64-20m", name="20m MFSK64", modem="MFSK-64", rig_frequency=14070000, carrier_frequency=1500, is_default=True, band="20m"),
+
+    PresetFrequency(id="default-thor-8-40m", name="40m Thor-8", modem="Thor-8", rig_frequency=7043000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-thor-11-20m", name="20m Thor-11", modem="Thor-11", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-thor-22-20m", name="20m Thor-22", modem="Thor-22", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+
+    PresetFrequency(id="default-dominoex-8-40m", name="40m DominoEX-8", modem="DominoEX-8", rig_frequency=7073000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-dominoex-11-20m", name="20m DominoEX-11", modem="DominoEX-11", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-dominoex-22-20m", name="20m DominoEX-22", modem="DominoEX-22", rig_frequency=14073000, carrier_frequency=1500, is_default=True, band="20m"),
+
+    PresetFrequency(id="default-hell-fm-40m", name="40m Hell-FM", modem="Hell-FM", rig_frequency=7040000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-hell-fm-20m", name="20m Hell-FM", modem="Hell-FM", rig_frequency=14063000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-hell-sl-40m", name="40m Hell-SL", modem="Hell-SL", rig_frequency=7040000, carrier_frequency=1500, is_default=True, band="40m"),
+
+    PresetFrequency(id="default-throb-x1-40m", name="40m ThrobX-1", modem="ThrobX-1", rig_frequency=7070000, carrier_frequency=1500, is_default=True, band="40m"),
+    PresetFrequency(id="default-throb-x1-20m", name="20m ThrobX-1", modem="ThrobX-1", rig_frequency=14070000, carrier_frequency=1500, is_default=True, band="20m"),
+    PresetFrequency(id="default-throb-x2-20m", name="20m ThrobX-2", modem="ThrobX-2", rig_frequency=14070000, carrier_frequency=1500, is_default=True, band="20m"),
 ]
 
 

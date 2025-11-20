@@ -273,6 +273,33 @@ const THEME_PRESETS = {
             '--terminal-text': '#06b6d4',
             '--terminal-tx': '#f43f5e'
         }
+    },
+    'dark-red': {
+        name: 'Dark Red',
+        base: 'dark',
+        colors: {
+            '--bg-primary': '#1a0d0d',
+            '--bg-secondary': '#2d1414',
+            '--bg-tertiary': '#4a1f1f',
+            '--bg-hover': '#5c2828',
+            '--text-primary': '#fef2f2',
+            '--text-secondary': '#fca5a5',
+            '--text-muted': '#dc2626',
+            '--border-light': '#4a1f1f',
+            '--border-medium': '#5c2828',
+            '--accent': '#ef4444',
+            '--accent-hover': '#dc2626',
+            '--accent-light': '#7f1d1d',
+            '--success': '#10b981',
+            '--success-light': '#064e3b',
+            '--warning': '#f59e0b',
+            '--warning-light': '#78350f',
+            '--danger': '#f87171',
+            '--danger-light': '#991b1b',
+            '--terminal-bg': '#0f0505',
+            '--terminal-text': '#ef4444',
+            '--terminal-tx': '#f87171'
+        }
     }
 };
 
