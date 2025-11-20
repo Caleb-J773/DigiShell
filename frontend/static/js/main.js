@@ -7,12 +7,49 @@ import { api } from './api.js';
 import { initPresets } from './presets.js';
 
 const MODE_SPEEDS = {
-    'BPSK31': 65,
+    'PSK31': 65,
+    'BPSK31': 60,
     'QPSK31': 130,
+    'PSK63': 100,
     'BPSK63': 100,
     'QPSK63': 160,
+    'PSK125': 200,
     'BPSK125': 200,
-    'QPSK125': 320
+    'QPSK125': 320,
+    '8PSK125': 320,
+    '8PSK250': 480,
+    'RTTY': 75,
+    'OLIVIA-4': 20,
+    'OLIVIA-8': 30,
+    'OLIVIA-16': 50,
+    'OLIVIA-32': 100,
+    'CONTESTIA-4': 35,
+    'CONTESTIA-8': 55,
+    'CONTESTIA-16': 100,
+    'CONTESTIA-32': 180,
+    'MT63-500': 55,
+    'MT63-1000': 100,
+    'MT63-2000': 180,
+    'THOR-4': 40,
+    'THOR-8': 55,
+    'THOR-11': 70,
+    'THOR-16': 90,
+    'THOR-22': 110,
+    'DOMINOEX-4': 40,
+    'DOMINOEX-5': 50,
+    'DOMINOEX-8': 65,
+    'DOMINOEX-11': 80,
+    'DOMINOEX-16': 105,
+    'DOMINOEX-22': 130,
+    'MFSK-8': 35,
+    'MFSK-16': 55,
+    'MFSK-32': 105,
+    'MFSK-64': 160,
+    'THROB': 60,
+    'THROBX': 60,
+    'HELL': 80,
+    'CW': 80,
+    'PACKET': 150
 };
 
 const state = {
@@ -126,8 +163,12 @@ function initTxOverlay() {
         color: transparent;
         box-sizing: border-box;
         letter-spacing: 0.02em;
+        z-index: 1;
     `;
     txContainer.style.position = 'relative';
+
+    elements.txText.style.caretColor = '#38bdf8';
+
     txContainer.appendChild(overlay);
     elements.txOverlay = overlay;
 }
@@ -493,8 +534,9 @@ async function handleLiveTxInput(event) {
         clearTimeout(state.liveTxDebounceTimer);
     }
 
-    state.liveTxDebounceTimer = setTimeout(async () => {
+    const processTxInput = async () => {
         if (state.liveTxInFlight) {
+            state.liveTxDebounceTimer = setTimeout(processTxInput, 50);
             return;
         }
 
@@ -587,7 +629,9 @@ async function handleLiveTxInput(event) {
         }
 
         state.lastTxText = elements.txText.value;
-    }, state.liveTxDebounceDelay);
+    };
+
+    state.liveTxDebounceTimer = setTimeout(processTxInput, state.liveTxDebounceDelay);
 }
 
 /**

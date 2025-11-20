@@ -401,6 +401,76 @@
 
         .panel-body {
             padding: 1.125rem;
+            transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+            max-height: 10000px;
+            overflow: hidden;
+            opacity: 1;
+        }
+
+        .panel.collapsed .panel-body {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+        }
+
+        .panel-collapse-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .panel-collapse-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .panel-collapse-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .panel.collapsed .panel-collapse-btn i {
+            transform: rotate(-90deg);
+        }
+
+        .font-size-controls {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+
+        .font-size-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        .font-size-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+        }
+
+        .font-size-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 40px;
+            text-align: center;
         }
 
         .sidebar {
@@ -617,7 +687,7 @@
 
         .terminal-tx {
             min-height: 100px;
-            max-height: 250px;
+            max-height: 800px;
             resize: vertical;
             font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
             color: var(--terminal-text);
@@ -1160,6 +1230,150 @@
                 padding: 0.75rem 0;
                 margin-bottom: 1.75rem;
             }
+        }
+
+        .settings-tab {
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-secondary);
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .settings-tab:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .settings-tab.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .settings-tab-content {
+            display: none;
+        }
+
+        .settings-tab-content.active {
+            display: block;
+        }
+
+        .theme-card {
+            position: relative;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--bg-secondary);
+        }
+
+        .theme-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .theme-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .theme-card.active::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .theme-preview {
+            height: 60px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .theme-preview-header {
+            height: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem;
+            gap: 0.25rem;
+        }
+
+        .theme-preview-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .theme-preview-body {
+            flex: 1;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .theme-preview-line {
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .theme-name {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .theme-delete {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            width: 24px;
+            height: 24px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .theme-card:hover .theme-delete {
+            display: flex;
+        }
+
+        .theme-delete:hover {
+            background: #dc2626;
+            transform: scale(1.1);
         }
 
         @media (max-width: 480px) {

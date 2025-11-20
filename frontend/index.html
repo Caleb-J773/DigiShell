@@ -13,9 +13,6 @@
         <header class="header">
             <div class="header-content">
                 <div class="brand">
-                    <div class="brand-icon">
-                        <i class="fas fa-broadcast-tower"></i>
-                    </div>
                     <h1 class="brand-title">DigiShell</h1>
                 </div>
 
@@ -74,9 +71,14 @@
                     <!-- Modem -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-wave-square"></i>
-                                Modem
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="modem">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-wave-square"></i>
+                                    Modem
+                                </div>
                             </div>
                         </div>
                         <div class="panel-body">
@@ -95,9 +97,14 @@
                     <!-- Control -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-tower-broadcast"></i>
-                                Control
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="control">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-tower-broadcast"></i>
+                                    Control
+                                </div>
                             </div>
                         </div>
                         <div class="panel-body">
@@ -118,9 +125,14 @@
                     <!-- Settings -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-sliders-h"></i>
-                                Quick Settings
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="settings">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-sliders-h"></i>
+                                    Quick Settings
+                                </div>
                             </div>
                         </div>
                         <div class="panel-body">
@@ -143,9 +155,14 @@
                     <!-- Preset Frequencies -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-bookmark"></i>
-                                Preset Frequencies
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="presets">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-bookmark"></i>
+                                    Preset Frequencies
+                                </div>
                             </div>
                             <button id="manage-presets-btn" class="btn btn-icon" title="Manage Presets">
                                 <i class="fas fa-cog"></i>
@@ -167,9 +184,14 @@
                     <!-- Rig -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-radio"></i>
-                                Rig Status
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="rig">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-radio"></i>
+                                    Rig Status
+                                </div>
                             </div>
                         </div>
                         <div class="panel-body">
@@ -198,7 +220,16 @@
                                 <i class="fas fa-download"></i>
                                 Receive Window
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div class="font-size-controls">
+                                    <button class="font-size-btn" data-target="rx" data-action="decrease">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="font-size-label" id="rx-font-size-label">13px</span>
+                                    <button class="font-size-btn" data-target="rx" data-action="increase">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
                                 <button id="save-rx-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
                                     <i class="fas fa-save"></i> Save
                                 </button>
@@ -222,6 +253,15 @@
                                 Transmit Buffer
                             </div>
                             <div style="display: flex; gap: 0.625rem; align-items: center;">
+                                <div class="font-size-controls">
+                                    <button class="font-size-btn" data-target="tx" data-action="decrease">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="font-size-label" id="tx-font-size-label">13px</span>
+                                    <button class="font-size-btn" data-target="tx" data-action="increase">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
                                 <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
                                     <input type="checkbox" id="tx-progress-toggle" style="cursor: pointer;">
                                     <span>TX Progress (estimated)</span>
@@ -242,9 +282,14 @@
                     <!-- Macros -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div class="panel-title">
-                                <i class="fas fa-keyboard"></i>
-                                Macros & Station
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="panel-collapse-btn" data-panel="macros">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="panel-title">
+                                    <i class="fas fa-keyboard"></i>
+                                    Macros & Station
+                                </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button id="edit-macros-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
@@ -500,47 +545,87 @@
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
-                <h2 class="modal-title">Advanced Settings</h2>
+                <h2 class="modal-title">Settings</h2>
                 <button id="close-settings-btn" class="modal-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <h3 style="margin-bottom: 1.25rem; font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Modem Configuration</h3>
-                <div class="form-group">
-                    <label class="form-label">Bandwidth (Hz)</label>
-                    <div style="display: flex; gap: 0.75rem; margin-bottom: 0.75rem;">
-                        <input type="number" id="settings-bandwidth-value" min="31" max="2000" style="width: 120px;">
-                        <span style="align-self: center; color: var(--text-secondary);">Hz</span>
+                <!-- Settings Tabs -->
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem;">
+                    <button id="tab-themes" class="settings-tab active" data-tab="themes">
+                        <i class="fas fa-palette"></i> Themes
+                    </button>
+                    <button id="tab-modem" class="settings-tab" data-tab="modem">
+                        <i class="fas fa-wave-square"></i> Modem
+                    </button>
+                </div>
+
+                <!-- Themes Tab -->
+                <div id="settings-content-themes" class="settings-tab-content active">
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-sun" style="color: var(--accent);"></i>
+                        Light Themes
+                    </h3>
+                    <div id="light-themes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 2rem;">
                     </div>
-                    <input type="range" id="settings-bandwidth" min="31" max="2000" style="width: 100%;">
+
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-moon" style="color: var(--accent);"></i>
+                        Dark Themes
+                    </h3>
+                    <div id="dark-themes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 2rem;">
+                    </div>
+
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-paint-brush" style="color: var(--accent);"></i>
+                        Custom Themes
+                    </h3>
+                    <div id="custom-themes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+                    </div>
+                    <button id="create-custom-theme-btn" class="btn-primary btn-block">
+                        <i class="fas fa-plus"></i> Create Custom Theme
+                    </button>
                 </div>
-                <div class="toggle-item">
-                    <span class="toggle-label">AFC (Auto Frequency Control)</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="settings-afc">
-                        <span class="toggle-slider"></span>
-                    </label>
+
+                <!-- Modem Tab -->
+                <div id="settings-content-modem" class="settings-tab-content">
+                    <h3 style="margin-bottom: 1.25rem; font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Modem Configuration</h3>
+                    <div class="form-group">
+                        <label class="form-label">Bandwidth (Hz)</label>
+                        <div style="display: flex; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <input type="number" id="settings-bandwidth-value" min="31" max="2000" style="width: 120px;">
+                            <span style="align-self: center; color: var(--text-secondary);">Hz</span>
+                        </div>
+                        <input type="range" id="settings-bandwidth" min="31" max="2000" style="width: 100%;">
+                    </div>
+                    <div class="toggle-item">
+                        <span class="toggle-label">AFC (Auto Frequency Control)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settings-afc">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span class="toggle-label">Squelch</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settings-squelch">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span class="toggle-label">Reverse Sideband</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settings-reverse">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button id="save-settings-btn" class="btn-primary btn-block" style="margin-top: 1.5rem;">
+                        <i class="fas fa-check"></i> Apply Settings
+                    </button>
                 </div>
-                <div class="toggle-item">
-                    <span class="toggle-label">Squelch</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="settings-squelch">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="toggle-item">
-                    <span class="toggle-label">Reverse Sideband</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="settings-reverse">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <button id="save-settings-btn" class="btn-primary btn-block" style="margin-top: 1.5rem;">
-                    <i class="fas fa-check"></i> Apply Settings
-                </button>
             </div>
         </div>
     </div>
@@ -699,6 +784,90 @@
         </div>
     </div>
 
+    <!-- Custom Theme Editor Modal -->
+    <div id="custom-theme-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="custom-theme-title">Create Custom Theme</h2>
+                <button id="close-custom-theme-btn" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Theme Name</label>
+                    <input type="text" id="custom-theme-name" placeholder="My Custom Theme" maxlength="30">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Base Theme</label>
+                    <select id="custom-theme-base" style="width: 100%;">
+                        <option value="dark">Dark Mode</option>
+                        <option value="light">Light Mode</option>
+                    </select>
+                </div>
+
+                <h3 style="margin: 1.5rem 0 1rem; font-size: 0.9375rem; font-weight: 600; color: var(--text-primary);">
+                    <i class="fas fa-palette"></i> Customize Colors
+                </h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Accent Color</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="color" id="custom-accent" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="text" id="custom-accent-hex" placeholder="#0ea5e9" style="flex: 1; font-family: monospace;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Background Primary</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="color" id="custom-bg-primary" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="text" id="custom-bg-primary-hex" placeholder="#0f172a" style="flex: 1; font-family: monospace;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Background Secondary</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="color" id="custom-bg-secondary" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="text" id="custom-bg-secondary-hex" placeholder="#1e293b" style="flex: 1; font-family: monospace;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Text Primary</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="color" id="custom-text-primary" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="text" id="custom-text-primary-hex" placeholder="#f1f5f9" style="flex: 1; font-family: monospace;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md); margin: 1.5rem 0; border-left: 4px solid var(--accent);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Theme Preview:</div>
+                    <div id="theme-preview" style="padding: 1rem; border-radius: var(--radius-md); background: var(--bg-primary); border: 2px solid var(--accent);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">Sample Panel</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">This is how your theme will look</div>
+                        <button class="btn-primary" style="margin-top: 0.75rem; padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                            Sample Button
+                        </button>
+                    </div>
+                </div>
+
+                <div class="btn-grid">
+                    <button id="cancel-custom-theme-btn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button id="save-custom-theme-btn" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Theme
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
 
@@ -708,6 +877,9 @@
     </footer>
 
     <script type="module" src="/static/js/main.js?v=3.4-fast-typing-fix"></script>
+    <script src="/static/js/themes.js"></script>
+    <script src="/static/js/theme-ui.js"></script>
+    <script src="/static/js/ui-controls.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
 </html>
