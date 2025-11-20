@@ -2,7 +2,7 @@
 
 A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal. This is a work in progress project and it is possibly unstable and has bugs and other issues.
 
-**Website:** [digishell.kc3vpb.com](https://digishell.kc3vpb.com)
+**Website:** [digishell.kc3vpb.com](https://digishell.kc3vpb.com) - link don't work lol, still setting it up.
 
 ![Image](https://iili.io/KygYH5x.png)
 
