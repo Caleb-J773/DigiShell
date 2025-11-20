@@ -167,10 +167,6 @@ function initTxOverlay() {
     `;
     txContainer.style.position = 'relative';
 
-    elements.txText.style.caretColor = 'var(--text-primary)';
-    elements.txText.style.position = 'relative';
-    elements.txText.style.zIndex = '2';
-
     txContainer.appendChild(overlay);
     elements.txOverlay = overlay;
 }
