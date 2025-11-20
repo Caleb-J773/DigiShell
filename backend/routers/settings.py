@@ -35,6 +35,7 @@ class WebConfig(BaseModel):
     theme: Optional[str] = "dark"
     hasSeenWelcome: Optional[bool] = False
     custom_keybinds: Optional[Dict[str, Any]] = None
+    themes: Optional[Dict[str, Any]] = None
 
 
 class WebConfigResponse(BaseModel):
@@ -57,9 +58,10 @@ def load_web_config() -> WebConfig:
 def save_web_config(config: WebConfig) -> bool:
     try:
         with open(WEB_CONFIG_FILE, 'w') as f:
-            json.dump(config.model_dump(exclude_none=True), f, indent=2)
+            json.dump(config.model_dump(), f, indent=2)
         return True
     except Exception as e:
+        print(f"Error saving web config: {e}")
         return False
 
 
