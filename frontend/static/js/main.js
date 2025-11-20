@@ -8,7 +8,7 @@ import { initPresets } from './presets.js';
 
 const MODE_SPEEDS = {
     'PSK31': 65,
-    'BPSK31': 65,
+    'BPSK31': 60,
     'QPSK31': 130,
     'PSK63': 100,
     'BPSK63': 100,
