@@ -493,8 +493,9 @@ async function handleLiveTxInput(event) {
         clearTimeout(state.liveTxDebounceTimer);
     }
 
-    state.liveTxDebounceTimer = setTimeout(async () => {
+    const processTxInput = async () => {
         if (state.liveTxInFlight) {
+            state.liveTxDebounceTimer = setTimeout(processTxInput, 50);
             return;
         }
 
@@ -587,7 +588,9 @@ async function handleLiveTxInput(event) {
         }
 
         state.lastTxText = elements.txText.value;
-    }, state.liveTxDebounceDelay);
+    };
+
+    state.liveTxDebounceTimer = setTimeout(processTxInput, state.liveTxDebounceDelay);
 }
 
 /**
