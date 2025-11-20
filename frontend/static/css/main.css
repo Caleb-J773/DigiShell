@@ -617,7 +617,7 @@
 
         .terminal-tx {
             min-height: 100px;
-            max-height: 250px;
+            max-height: 800px;
             resize: vertical;
             font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
             color: var(--terminal-text);
