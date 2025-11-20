@@ -17,18 +17,13 @@ This is not designed and has not been secured for the public web. Its purpose is
 
 
 ## Features
+DigiShell only has the essentials. Built with Python so it works on most platforms
 
 **Web Interface**
 Access from any browser over a LAN or VPN (**do not expose to internet for safety reasons**). Good for remote stations or operating from a tablet/phone during field operations.
 
 **Terminal Interface**
 CLI interface for headless setups, SSH sessions, and terminal users.
-
-**Simplified Controls**
-Only the essentials. No confusing menus or hidden settings. Just the controls you need for making contacts.
-
-**Python Powered**
-Built with Python so it works on most platforms and you can customize it if you want.
 
 **Portable Friendly**
 Lightweight and responsive. Works on small computers and field setups. 
@@ -63,7 +58,7 @@ It took multiple iterations, planning it out step by step, a lot of testing, deb
 
 ## You'll need
 
-1. **FLDIGI** installed with XML-RPC enabled (it should by default)
+1. **FLDIGI** installed with XML-RPC enabled (it should be by default)
 
 2. **Python 3.10 or newer**
 
