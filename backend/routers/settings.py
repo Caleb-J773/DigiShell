@@ -38,6 +38,7 @@ class WebConfig(BaseModel):
     hasSeenWelcome: Optional[bool] = False
     custom_keybinds: Optional[Dict[str, Any]] = None
     themes: Optional[Dict[str, Any]] = None
+    uiPreferences: Optional[Dict[str, Any]] = None
 
 
 class WebConfigResponse(BaseModel):
