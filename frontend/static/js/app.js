@@ -74,9 +74,9 @@ const html = document.documentElement;
 async function initTheme() {
     await loadWebConfig();
 
-    // If theme manager is available and has a saved theme, use it
-    if (window.themeManager && window.webConfig.themes && window.webConfig.themes.current) {
-        // Theme manager will handle initialization
+    // Initialize theme manager after config is loaded
+    if (window.themeManager) {
+        await window.themeManager.init();
         return;
     }
 

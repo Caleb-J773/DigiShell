@@ -475,12 +475,3 @@ class ThemeManager {
 
 // Create global instance
 window.themeManager = new ThemeManager();
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.themeManager.init();
-    });
-} else {
-    window.themeManager.init();
-}
