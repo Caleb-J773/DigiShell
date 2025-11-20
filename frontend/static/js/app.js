@@ -71,6 +71,14 @@ const html = document.documentElement;
 
 async function initTheme() {
     await loadWebConfig();
+
+    // If theme manager is available and has a saved theme, use it
+    if (window.themeManager && webConfig.themes && webConfig.themes.current) {
+        // Theme manager will handle initialization
+        return;
+    }
+
+    // Fallback to old theme system for backward compatibility
     const savedTheme = webConfig.theme ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
@@ -83,6 +91,23 @@ async function initTheme() {
 }
 
 themeToggle.addEventListener('click', async () => {
+    // If theme manager is available, use it for smarter toggling
+    if (window.themeManager) {
+        const currentTheme = window.themeManager.getTheme(window.themeManager.currentTheme);
+        const currentBase = currentTheme ? currentTheme.base : 'dark';
+        const newBase = currentBase === 'dark' ? 'light' : 'dark';
+
+        // Find a default theme with the opposite base
+        const themes = window.themeManager.getAllThemes();
+        const newThemeId = Object.keys(themes).find(id =>
+            !id.startsWith('custom-') && themes[id].base === newBase
+        ) || newBase;
+
+        await window.themeManager.applyTheme(newThemeId, false);
+        return;
+    }
+
+    // Fallback to old theme toggle
     const currentTheme = html.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
@@ -281,6 +306,10 @@ document.getElementById('tutorial-btn').onclick = () => {
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-modal').classList.add('active');
     loadSettings();
+    // Load theme grids if theme UI is available
+    if (window.loadThemeGrids) {
+        window.loadThemeGrids();
+    }
 };
 document.getElementById('close-settings-btn').onclick = () => document.getElementById('settings-modal').classList.remove('active');
 
