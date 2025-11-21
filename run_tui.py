@@ -555,56 +555,67 @@ def get_commands_text():
         text = [
             ('class:help.title', 'TX Mode: '),
             ('class:help.cmd', 'LIVE' if live_tx_mode else 'BATCH'),
-            ('class:dim', ' (Enter=TX)\n'),
-            ('class:help.title', 'Keys: '),
-            ('class:help.cmd', 'Enter'),
-            ('class:help', '=TX '),
-            ('class:help.cmd', 'Tab'),
-            ('class:help', '=↵ '),
-            ('class:help.cmd', '↑↓'),
-            ('class:help', '=Scroll\n'),
+            ('class:dim', ' (Enter=TX)\n\n'),
+            ('class:help.title', 'Keys:\n'),
+            ('class:help.cmd', '  Enter'),
+            ('class:help', ' - TX\n'),
+            ('class:help.cmd', '  Tab'),
+            ('class:help', ' - Newline\n'),
+            ('class:help.cmd', '  ↑↓'),
+            ('class:help', ' - Scroll\n\n'),
             ('class:help.title', 'Commands:\n'),
-            ('class:help.cmd', '  /live'),
-            ('class:help', ' Toggle TX '),
-            ('class:help.cmd', '/txprogress'),
-            ('class:help', ' Overlay\n'),
-            ('class:help.cmd', '  /m <mode>'),
-            ('class:help', ' Modem '),
-            ('class:help.cmd', '/modes'),
-            ('class:help', ' List\n'),
+            ('class:help.cmd', '  /m'),
+            ('class:help', ' <mode> - Set modem\n'),
+            ('class:help.cmd', '  /modes'),
+            ('class:help', ' - List modes\n'),
             ('class:help.cmd', '  /carrier'),
-            ('class:help', ' Freq '),
-            ('class:help.cmd', '/txid'),
-            ('class:help', ' TXID on/off\n'),
+            ('class:help', ' - Set freq\n'),
+            ('class:help.cmd', '  /txid'),
+            ('class:help', ' - Toggle TXID\n'),
+            ('class:help.cmd', '  /live'),
+            ('class:help', ' - Toggle TX mode\n'),
             ('class:help.cmd', '  /theme'),
-            ('class:help', ' Change theme '),
-            ('class:help.cmd', '/layout'),
-            ('class:help', ' Layout\n'),
-            ('class:help.cmd', '  /macro <#>'),
-            ('class:help', ' Run '),
+            ('class:help', ' - Change theme\n'),
+            ('class:help.cmd', '  /layout'),
+            ('class:help', ' - Change layout\n'),
+            ('class:help.cmd', '  /macro'),
+            ('class:help', ' <#> - Run macro\n'),
             ('class:help.cmd', '  /call'),
-            ('class:help', ' Set call '),
-            ('class:help.cmd', '/help 2'),
-            ('class:help', ' More\n'),
+            ('class:help', ' - Set call\n'),
+            ('class:help.cmd', '  /help 2'),
+            ('class:help', ' - More\n'),
         ]
     else:
         text = [
             ('class:help.title', 'Commands (2/2):\n'),
             ('class:help.cmd', '  /addmacro'),
-            ('class:help', ' Add/edit macro\n'),
+            ('class:help', ' - Add/edit\n'),
             ('class:help.cmd', '  /delmacro'),
-            ('class:help', ' Delete macro\n'),
+            ('class:help', ' - Delete\n'),
             ('class:help.cmd', '  /config'),
-            ('class:help', ' Set station info\n'),
+            ('class:help', ' - Station info\n'),
             ('class:help.cmd', '  /clear'),
-            ('class:help', ' Clear RX '),
-            ('class:help.cmd', '/save'),
-            ('class:help', ' Save RX\n'),
+            ('class:help', ' - Clear RX\n'),
+            ('class:help.cmd', '  /save'),
+            ('class:help', ' - Save RX\n'),
+            ('class:help.cmd', '  /txprogress'),
+            ('class:help', ' - TX overlay\n'),
             ('class:help.cmd', '  Ctrl+C'),
-            ('class:help', ' Quit '),
-            ('class:help.cmd', '/help 1'),
-            ('class:help', ' Back\n'),
+            ('class:help', ' - Quit\n'),
+            ('class:help.cmd', '  /help 1'),
+            ('class:help', ' - Back\n'),
         ]
+
+    # Add signal metrics info
+    signal_metrics = fldigi_client.get_signal_metrics()
+    if signal_metrics.get('snr') is not None or signal_metrics.get('rst_estimate'):
+        text.append(('class:help.title', '\nSignal:\n'))
+        if signal_metrics.get('snr') is not None:
+            text.append(('class:help', f"  S/N: "))
+            text.append(('class:help.cmd', f"{signal_metrics['snr']:.1f} dB\n"))
+        if signal_metrics.get('rsq_estimate'):
+            text.append(('class:help', f"  RSQ: "))
+            text.append(('class:help.cmd', f"{signal_metrics['rsq_estimate']}\n"))
 
     if config.get('callsign') != 'NOCALL':
         text.append(('class:help.title', '\nStation: '))
