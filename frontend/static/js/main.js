@@ -142,8 +142,14 @@ async function init() {
 
 function loadTxProgressSetting() {
     const saved = localStorage.getItem('showTxProgress');
+    // Default to false if not set
     state.showTxProgress = saved === 'true';
     elements.txProgressToggle.checked = state.showTxProgress;
+
+    // If no saved preference, ensure localStorage is set to false
+    if (saved === null) {
+        localStorage.setItem('showTxProgress', 'false');
+    }
 }
 
 function initTxOverlay() {

@@ -71,6 +71,7 @@ window.saveWebConfig = saveWebConfig;
 function applyBetaFeatures(enabled) {
     const modemTab = document.getElementById('tab-modem');
     const txProgressContainer = document.getElementById('tx-progress-container');
+    const txProgressToggle = document.getElementById('tx-progress-toggle');
 
     if (enabled) {
         modemTab.style.display = '';
@@ -78,6 +79,14 @@ function applyBetaFeatures(enabled) {
     } else {
         modemTab.style.display = 'none';
         txProgressContainer.style.display = 'none';
+
+        // Turn off TX progress when beta features are disabled
+        if (txProgressToggle && txProgressToggle.checked) {
+            txProgressToggle.checked = false;
+            localStorage.setItem('showTxProgress', 'false');
+            // Trigger change event to update state
+            txProgressToggle.dispatchEvent(new Event('change'));
+        }
     }
 }
 
@@ -327,7 +336,6 @@ document.getElementById('tutorial-btn').onclick = () => {
 
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-modal').classList.add('active');
-    loadSettings();
     // Load and apply beta features setting
     document.getElementById('beta-features-toggle').checked = window.webConfig.betaFeatures || false;
     applyBetaFeatures(window.webConfig.betaFeatures || false);
@@ -406,7 +414,7 @@ document.getElementById('settings-bandwidth-value').oninput = (e) => {
     document.getElementById('settings-bandwidth').value = e.target.value;
 };
 
-async function loadSettings() {
+async function loadModemSettings() {
     try {
         const modem = await fetch('/api/modem/info').then(r => r.json());
         if (modem.bandwidth) {
@@ -417,8 +425,12 @@ async function loadSettings() {
         document.getElementById('settings-squelch').checked = (await fetch('/api/settings/squelch').then(r => r.json())).enabled;
         document.getElementById('settings-reverse').checked = (await fetch('/api/settings/reverse').then(r => r.json())).enabled;
     } catch (e) {
+        console.error('Failed to load modem settings:', e);
     }
 }
+
+// Make it globally accessible
+window.loadModemSettings = loadModemSettings;
 
 document.getElementById('save-settings-btn').onclick = async () => {
     try {

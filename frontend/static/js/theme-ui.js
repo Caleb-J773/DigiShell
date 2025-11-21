@@ -18,7 +18,7 @@ function initThemeUI() {
 function setupSettingsTabs() {
     const tabs = document.querySelectorAll('.settings-tab');
     tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
+        tab.addEventListener('click', async () => {
             const targetTab = tab.dataset.tab;
 
             // Update active tab
@@ -30,6 +30,11 @@ function setupSettingsTabs() {
                 content.classList.remove('active');
             });
             document.getElementById(`settings-content-${targetTab}`).classList.add('active');
+
+            // Load modem settings when modem tab is clicked
+            if (targetTab === 'modem' && typeof window.loadModemSettings === 'function') {
+                await window.loadModemSettings();
+            }
         });
     });
 }
