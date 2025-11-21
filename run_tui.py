@@ -1298,14 +1298,14 @@ def build_layout(layout_type="default"):
         # Minimal: Full screen RX with small TX at bottom, no sidebar
         return HSplit([
             header_window,
-            Frame(rx_display, title='Receive Buffer', height=Dimension(weight=85)),
+            Frame(rx_display, title='Receive Buffer', height=Dimension(weight=75)),
             Frame(
                 HSplit([
                     input_help_window,
                     input_field,
                 ]),
                 title='Input / TX Window',
-                height=Dimension(weight=15)
+                height=Dimension(weight=25, min=5)
             ),
             status_window,
         ])
