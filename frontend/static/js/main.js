@@ -91,6 +91,10 @@ const elements = {
     carrierValue: document.getElementById('carrier-value'),
     txidToggle: document.getElementById('txid-toggle'),
 
+    // Signal metrics
+    snrValue: document.getElementById('snr-value'),
+    rstValue: document.getElementById('rst-value'),
+
     // TX/RX
     trxStatus: document.getElementById('trx-status'),
     rxBtn: document.getElementById('rx-btn'),
@@ -314,6 +318,10 @@ function setupWebSocketHandlers() {
                 name: data.rig_name
             };
             updateRigInfo(rigInfo);
+        }
+        // Update signal metrics if present
+        if (data.snr !== undefined || data.rst_estimate !== undefined || data.rsq_estimate !== undefined) {
+            updateSignalMetrics(data);
         }
     });
 
@@ -842,6 +850,26 @@ function updateRigInfo(rigInfo) {
 
     if (rigInfo.mode !== undefined) {
         elements.rigMode.textContent = rigInfo.mode || '-';
+    }
+}
+
+/**
+ * Update signal metrics display (SNR, RST/RSQ)
+ */
+function updateSignalMetrics(metrics) {
+    // Update S/N display
+    if (metrics.snr !== undefined && metrics.snr !== null) {
+        elements.snrValue.textContent = `${metrics.snr.toFixed(1)}`;
+    } else {
+        elements.snrValue.textContent = '-';
+    }
+
+    // Update RST/RSQ display (prefer RSQ for digital modes)
+    const signalReport = metrics.rsq_estimate || metrics.rst_estimate;
+    if (signalReport) {
+        elements.rstValue.textContent = signalReport;
+    } else {
+        elements.rstValue.textContent = '-';
     }
 }
 

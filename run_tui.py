@@ -57,7 +57,10 @@ config = {
     "macros": {},
     "show_tx_progress": False,
     "theme": "default",
+    "layout": "default",
 }
+
+current_layout = "default"
 
 # Terminal Theme Definitions
 TERMINAL_THEMES = {
@@ -329,7 +332,7 @@ def first_time_setup():
 
 
 def load_config():
-    global config, show_tx_progress
+    global config, show_tx_progress, current_layout
     try:
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, 'r') as f:
@@ -339,6 +342,10 @@ def load_config():
                 # Ensure theme is valid
                 if config.get('theme') not in TERMINAL_THEMES:
                     config['theme'] = 'default'
+                # Load layout preference
+                current_layout = config.get('layout', 'default')
+                if current_layout not in ['default', 'compact', 'wide', 'minimal']:
+                    current_layout = 'default'
         else:
             return False
     except Exception as e:
@@ -571,8 +578,10 @@ def get_commands_text():
             ('class:help', ' TXID on/off\n'),
             ('class:help.cmd', '  /theme'),
             ('class:help', ' Change theme '),
-            ('class:help.cmd', '/macro <#>'),
-            ('class:help', ' Run\n'),
+            ('class:help.cmd', '/layout'),
+            ('class:help', ' Layout\n'),
+            ('class:help.cmd', '  /macro <#>'),
+            ('class:help', ' Run '),
             ('class:help.cmd', '  /call'),
             ('class:help', ' Set call '),
             ('class:help.cmd', '/help 2'),
@@ -618,6 +627,11 @@ def get_status_text():
     frequency = fldigi_client.get_rig_frequency() or 0
     trx_status = fldigi_client.get_trx_status() or "Unknown"
 
+    # Get signal metrics
+    signal_metrics = fldigi_client.get_signal_metrics()
+    snr = signal_metrics.get('snr')
+    rst = signal_metrics.get('rsq_estimate') or signal_metrics.get('rst_estimate')
+
     if trx_status == "RX":
         status_class = 'class:status.rx'
     elif trx_status == "TX":
@@ -640,6 +654,17 @@ def get_status_text():
         ('class:status.label', 'Status: '),
         (status_class, trx_status),
     ]
+
+    # Add signal metrics if available
+    if snr is not None:
+        text.append(('', '  '))
+        text.append(('class:status.label', 'S/N: '))
+        text.append(('class:status.value', f'{snr:.1f}dB'))
+
+    if rst:
+        text.append(('', '  '))
+        text.append(('class:status.label', 'RST: '))
+        text.append(('class:status.value', rst))
 
     now = datetime.now()
     if command_status and show_status_until and now < show_status_until:
@@ -941,6 +966,33 @@ async def process_input(text):
                     command_status = f"Theme '{theme_id}' not found. Use /theme to list."
                     show_status_until = datetime.now() + timedelta(seconds=4)
 
+        elif command == 'layout':
+            global current_layout
+            available_layouts = ['default', 'compact', 'wide', 'minimal']
+            if not args:
+                # List available layouts
+                layout_list = ', '.join(available_layouts)
+                command_status = f"Current: {current_layout} | Available: {layout_list}"
+                show_status_until = datetime.now() + timedelta(seconds=6)
+            else:
+                layout_id = args.lower().strip()
+                if layout_id in available_layouts:
+                    current_layout = layout_id
+                    config['layout'] = layout_id
+                    # Rebuild layout
+                    new_container = build_layout(layout_id)
+                    get_app().layout.container = new_container
+                    get_app().layout.focus(input_field)
+                    if save_config():
+                        command_status = f"✓ Layout set to {layout_id}"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
+                    else:
+                        command_status = f"✓ Layout set to {layout_id} (not saved)"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
+                else:
+                    command_status = f"Layout '{layout_id}' not found. Available: {', '.join(available_layouts)}"
+                    show_status_until = datetime.now() + timedelta(seconds=4)
+
         elif command == 'macro':
             if not args:
                 macros = config.get('macros', {})
@@ -1183,10 +1235,12 @@ def _(event):
             window.vertical_scroll += 1
 
 
-root_container = HSplit([
-    header_window,
-    VSplit([
-        HSplit([
+def build_layout(layout_type="default"):
+    """Build the TUI layout based on layout type"""
+    if layout_type == "compact":
+        # Compact: No sidebar, just RX/TX vertical
+        return HSplit([
+            header_window,
             Frame(rx_display, title='Receive Buffer', height=Dimension(weight=70)),
             Frame(
                 HSplit([
@@ -1196,13 +1250,66 @@ root_container = HSplit([
                 title='Input / TX Window',
                 height=Dimension(weight=30)
             ),
-        ], width=Dimension(weight=70)),
-        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=15, max=50)),
-    ]),
-    status_window,
-])
+            status_window,
+        ])
+    elif layout_type == "wide":
+        # Wide: All horizontal - RX | TX | Commands
+        return HSplit([
+            header_window,
+            VSplit([
+                Frame(rx_display, title='Receive Buffer', width=Dimension(weight=40)),
+                Frame(
+                    HSplit([
+                        input_help_window,
+                        input_field,
+                    ]),
+                    title='Input / TX Window',
+                    width=Dimension(weight=35)
+                ),
+                Frame(help_window, title='Commands & Info', width=Dimension(weight=25, min=15)),
+            ]),
+            status_window,
+        ])
+    elif layout_type == "minimal":
+        # Minimal: Full screen RX with small TX at bottom, no sidebar
+        return HSplit([
+            header_window,
+            Frame(rx_display, title='Receive Buffer', height=Dimension(weight=85)),
+            Frame(
+                HSplit([
+                    input_help_window,
+                    input_field,
+                ]),
+                title='Input / TX Window',
+                height=Dimension(weight=15)
+            ),
+            status_window,
+        ])
+    else:
+        # Default: Standard 3-panel with sidebar
+        return HSplit([
+            header_window,
+            VSplit([
+                HSplit([
+                    Frame(rx_display, title='Receive Buffer', height=Dimension(weight=70)),
+                    Frame(
+                        HSplit([
+                            input_help_window,
+                            input_field,
+                        ]),
+                        title='Input / TX Window',
+                        height=Dimension(weight=30)
+                    ),
+                ], width=Dimension(weight=70)),
+                Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=15, max=50)),
+            ]),
+            status_window,
+        ])
 
-layout = Layout(root_container, focused_element=input_field)
+
+root_container = None  # Will be built later after config is loaded
+
+layout = None  # Will be created later
 
 
 async def poll_fldigi():
@@ -1272,7 +1379,7 @@ async def update_display():
 
 
 async def run_app_async():
-    global connection_time
+    global connection_time, layout
 
     load_config()
 
@@ -1288,6 +1395,10 @@ async def run_app_async():
     if config.get('callsign') != 'NOCALL':
         print(f"Station: {config['callsign']} ({config['name']})")
         print(f"Macros: {len(config.get('macros', {}))} available")
+
+    # Build layout based on saved preference
+    root_container = build_layout(current_layout)
+    layout = Layout(root_container, focused_element=input_field)
 
     # Generate style based on current theme
     current_style = get_theme_style()

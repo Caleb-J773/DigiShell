@@ -151,3 +151,29 @@ async def set_txid(enabled: bool):
         success=True,
         message=f"TXID {'enabled' if enabled else 'disabled'}"
     )
+
+
+@router.get("/quality")
+async def get_quality():
+    """Get modem signal quality (0-100)"""
+    if not fldigi_client.is_connected():
+        raise HTTPException(status_code=503, detail="Not connected to FLDIGI")
+
+    quality = fldigi_client.get_quality()
+    if quality is None:
+        raise HTTPException(status_code=500, detail="Failed to get quality")
+
+    return {"quality": quality}
+
+
+@router.get("/signal-metrics")
+async def get_signal_metrics():
+    """Get comprehensive signal metrics including quality, SNR, and calculated RST/RSQ"""
+    if not fldigi_client.is_connected():
+        raise HTTPException(status_code=503, detail="Not connected to FLDIGI")
+
+    try:
+        metrics = fldigi_client.get_signal_metrics()
+        return metrics
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get signal metrics: {e}")
