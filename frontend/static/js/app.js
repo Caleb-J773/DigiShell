@@ -31,7 +31,8 @@ window.showToast = function(message, type = 'info', duration = 4000) {
 window.webConfig = {
     theme: 'dark',
     hasSeenWelcome: false,
-    custom_keybinds: null
+    custom_keybinds: null,
+    betaFeatures: false
 };
 
 async function loadWebConfig() {
@@ -67,12 +68,30 @@ async function saveWebConfig() {
 
 window.saveWebConfig = saveWebConfig;
 
+function applyBetaFeatures(enabled) {
+    const modemTab = document.getElementById('tab-modem');
+    const txProgressContainer = document.getElementById('tx-progress-container');
+
+    if (enabled) {
+        modemTab.style.display = '';
+        txProgressContainer.style.display = 'flex';
+    } else {
+        modemTab.style.display = 'none';
+        txProgressContainer.style.display = 'none';
+    }
+}
+
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = themeToggle.querySelector('i');
 const html = document.documentElement;
 
 async function initTheme() {
     await loadWebConfig();
+
+    // Apply beta features setting on load
+    if (typeof applyBetaFeatures === 'function') {
+        applyBetaFeatures(window.webConfig.betaFeatures || false);
+    }
 
     // Initialize theme manager after config is loaded
     if (window.themeManager) {
@@ -305,15 +324,37 @@ document.getElementById('close-keybinds-btn').onclick = () => document.getElemen
 document.getElementById('tutorial-btn').onclick = () => {
     startTutorial();
 };
+
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-modal').classList.add('active');
     loadSettings();
+    // Load and apply beta features setting
+    document.getElementById('beta-features-toggle').checked = window.webConfig.betaFeatures || false;
+    applyBetaFeatures(window.webConfig.betaFeatures || false);
     // Load theme grids if theme UI is available
     if (window.loadThemeGrids) {
         window.loadThemeGrids();
     }
 };
 document.getElementById('close-settings-btn').onclick = () => document.getElementById('settings-modal').classList.remove('active');
+
+document.getElementById('beta-features-toggle').onchange = async function() {
+    const enabled = this.checked;
+    window.webConfig.betaFeatures = enabled;
+    applyBetaFeatures(enabled);
+
+    // Save to backend
+    try {
+        await fetch('/api/settings/web-config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(window.webConfig)
+        });
+        showToast(`Beta features ${enabled ? 'enabled' : 'disabled'}`, 'success');
+    } catch (e) {
+        showToast('Failed to save setting', 'error');
+    }
+};
 
 document.getElementById('save-config-btn').onclick = async () => {
     try {
