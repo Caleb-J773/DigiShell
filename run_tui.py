@@ -979,10 +979,14 @@ async def process_input(text):
                 theme_id = args.lower().strip()
                 if theme_id in TERMINAL_THEMES:
                     config['theme'] = theme_id
+                    # Apply theme dynamically
+                    new_style = get_theme_style()
+                    get_app().style = new_style
+                    get_app().layout.focus(input_field)
                     if save_config():
                         theme_name = TERMINAL_THEMES[theme_id]['name']
-                        command_status = f"✓ Theme set to {theme_name}. Restart TUI to apply."
-                        show_status_until = datetime.now() + timedelta(seconds=4)
+                        command_status = f"✓ Theme set to {theme_name}"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
                     else:
                         command_status = "✗ Failed to save theme"
                         show_status_until = datetime.now() + timedelta(seconds=3)
