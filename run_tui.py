@@ -555,14 +555,14 @@ def get_commands_text():
         text = [
             ('class:help.title', 'TX Mode: '),
             ('class:help.cmd', 'LIVE' if live_tx_mode else 'BATCH'),
-            ('class:dim', ' (Enter=TX)\n\n'),
+            ('class:dim', ' (Enter=TX)\n'),
             ('class:help.title', 'Keys:\n'),
             ('class:help.cmd', '  Enter'),
             ('class:help', ' - TX\n'),
             ('class:help.cmd', '  Tab'),
             ('class:help', ' - Newline\n'),
             ('class:help.cmd', '  ↑↓'),
-            ('class:help', ' - Scroll\n\n'),
+            ('class:help', ' - Scroll\n'),
             ('class:help.title', 'Commands:\n'),
             ('class:help.cmd', '  /m'),
             ('class:help', ' <mode> - Set modem\n'),
@@ -585,9 +585,9 @@ def get_commands_text():
             ('class:help.cmd', '  /help 2'),
             ('class:help', ' - More\n'),
         ]
-    else:
+    elif help_page == 2:
         text = [
-            ('class:help.title', 'Commands (2/2):\n'),
+            ('class:help.title', 'Commands (2/3):\n'),
             ('class:help.cmd', '  /addmacro'),
             ('class:help', ' - Add/edit\n'),
             ('class:help.cmd', '  /delmacro'),
@@ -602,27 +602,39 @@ def get_commands_text():
             ('class:help', ' - TX overlay\n'),
             ('class:help.cmd', '  Ctrl+C'),
             ('class:help', ' - Quit\n'),
-            ('class:help.cmd', '  /help 1'),
-            ('class:help', ' - Back\n'),
+            ('class:help.cmd', '  /help 3'),
+            ('class:help', ' - Next\n'),
+        ]
+    else:  # help_page == 3
+        text = [
+            ('class:help.title', 'Status (3/3):\n'),
         ]
 
-    # Add signal metrics info
-    signal_metrics = fldigi_client.get_signal_metrics()
-    if signal_metrics.get('snr') is not None or signal_metrics.get('rst_estimate'):
-        text.append(('class:help.title', '\nSignal:\n'))
-        if signal_metrics.get('snr') is not None:
-            text.append(('class:help', f"  S/N: "))
-            text.append(('class:help.cmd', f"{signal_metrics['snr']:.1f} dB\n"))
-        if signal_metrics.get('rsq_estimate'):
-            text.append(('class:help', f"  RSQ: "))
-            text.append(('class:help.cmd', f"{signal_metrics['rsq_estimate']}\n"))
+        # Signal metrics
+        signal_metrics = fldigi_client.get_signal_metrics()
+        if signal_metrics.get('snr') is not None or signal_metrics.get('rst_estimate'):
+            text.append(('class:help.title', 'Signal:\n'))
+            if signal_metrics.get('snr') is not None:
+                text.append(('class:help', f"  S/N: "))
+                text.append(('class:help.cmd', f"{signal_metrics['snr']:.1f} dB\n"))
+            if signal_metrics.get('rsq_estimate'):
+                text.append(('class:help', f"  RSQ: "))
+                text.append(('class:help.cmd', f"{signal_metrics['rsq_estimate']}\n"))
+        else:
+            text.append(('class:dim', '  No signal data\n'))
 
-    if config.get('callsign') != 'NOCALL':
-        text.append(('class:help.title', '\nStation: '))
-        text.append(('class:help', f"{config['callsign']}"))
-        if last_call:
-            text.append(('class:dim', f" → {last_call}"))
-        text.append(('class:help', '\n'))
+        # Station info
+        if config.get('callsign') != 'NOCALL':
+            text.append(('class:help.title', 'Station:\n'))
+            text.append(('class:help', f"  {config['callsign']}\n"))
+            text.append(('class:help', f"  {config['name']}\n"))
+            text.append(('class:help', f"  {config['qth']}\n"))
+            if last_call:
+                text.append(('class:help.title', 'Last Call:\n'))
+                text.append(('class:help', f"  {last_call}\n"))
+
+        text.append(('class:help.cmd', '\n  /help 1'))
+        text.append(('class:help', ' - Back\n'))
 
     return FormattedText(text)
 
@@ -836,13 +848,14 @@ async def process_input(text):
             global help_page
             if args and args.isdigit():
                 page = int(args)
-                if page in [1, 2]:
+                if page in [1, 2, 3]:
                     help_page = page
                     command_status = f"Help page {page}"
                 else:
-                    command_status = "Help: use /help 1 or /help 2"
+                    command_status = "Help: use /help 1, /help 2, or /help 3"
             else:
-                help_page = 2 if help_page == 1 else 1
+                # Cycle through pages
+                help_page = help_page % 3 + 1
                 command_status = f"Help page {help_page}"
             show_status_until = datetime.now() + timedelta(seconds=2)
 
