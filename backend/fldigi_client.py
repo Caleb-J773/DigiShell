@@ -49,6 +49,25 @@ class FldigiClient:
     def is_connected(self) -> bool:
         return self._connected
 
+    def check_connection_health(self) -> bool:
+        """Check if the connection is actually alive by making a simple API call."""
+        if not self._connected:
+            return False
+        try:
+            # Try a lightweight operation to verify connection
+            _ = self.client.name
+            return True
+        except Exception as e:
+            logger.warning(f"Connection health check failed: {e}")
+            self._connected = False
+            return False
+
+    def reconnect(self) -> tuple[bool, Optional[str]]:
+        """Attempt to reconnect to FlDigi."""
+        logger.info("Attempting to reconnect to FLDIGI...")
+        self.disconnect()
+        return self.connect()
+
     def get_version(self) -> Optional[str]:
         if not self.is_connected():
             return None

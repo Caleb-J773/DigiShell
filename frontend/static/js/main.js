@@ -403,6 +403,11 @@ function updateConnectionStatus(connected, details = {}) {
         elements.connectBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
         elements.connectBtn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
 
+        // Show reconnection success notification if we were previously disconnected
+        if (details.version) {
+            showNotification(`Connected to FlDigi (${details.version})`, 'success');
+        }
+
         loadInitialData();
     } else {
         elements.statusIndicator.classList.remove('connected');
@@ -411,6 +416,10 @@ function updateConnectionStatus(connected, details = {}) {
         // Reset to primary button style when disconnected (to connect)
         elements.connectBtn.style.background = 'linear-gradient(135deg, var(--accent), var(--accent-hover))';
         elements.connectBtn.style.boxShadow = '0 4px 12px rgba(14, 165, 233, 0.25)';
+
+        // Show disconnection notification with error details if available
+        const errorMsg = details.error || 'Not connected to FlDigi';
+        showNotification(`FlDigi Disconnected: ${errorMsg}. Attempting to reconnect...`, 'warning');
     }
 }
 

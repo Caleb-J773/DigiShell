@@ -1343,9 +1343,24 @@ layout = None  # Will be created later
 async def poll_fldigi():
     global last_trx_status, live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, command_status, show_status_until, tx_overlay_transmitted_count
 
+    consecutive_failures = 0
+    reconnect_attempt_counter = 0
+    connection_check_counter = 0
+
     while True:
         try:
             if fldigi_client.is_connected():
+                # Periodically check connection health
+                connection_check_counter += 1
+                if connection_check_counter >= 50:  # Check every 5 seconds (50 * 0.1s)
+                    connection_check_counter = 0
+                    if not fldigi_client.check_connection_health():
+                        command_status = "⚠ FlDigi connection lost, reconnecting..."
+                        show_status_until = datetime.now() + timedelta(seconds=5)
+                        consecutive_failures = 0
+                        await asyncio.sleep(0.1)
+                        continue
+
                 new_rx = fldigi_client.get_rx_text()
                 if new_rx:
                     new_rx = new_rx.replace('\r\n', '\n').replace('\r', '\n')
@@ -1360,6 +1375,7 @@ async def poll_fldigi():
 
                     rx_display.text = get_rx_text_content()
                     rx_display.buffer.cursor_position = len(rx_display.text)
+                    consecutive_failures = 0  # Reset on successful operation
 
                 current_trx_status = fldigi_client.get_trx_status()
                 if last_trx_status == 'TX' and current_trx_status == 'RX':
@@ -1387,8 +1403,32 @@ async def poll_fldigi():
 
                 last_trx_status = current_trx_status
 
+            else:
+                # Not connected, attempt reconnection
+                reconnect_attempt_counter += 1
+                if reconnect_attempt_counter >= 30:  # Try every 3 seconds (30 * 0.1s)
+                    reconnect_attempt_counter = 0
+                    command_status = "⚠ Reconnecting to FlDigi..."
+                    show_status_until = datetime.now() + timedelta(seconds=5)
+                    success, error = fldigi_client.reconnect()
+                    if success:
+                        command_status = "✓ Reconnected to FlDigi"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
+                        consecutive_failures = 0
+                    else:
+                        command_status = f"⚠ FlDigi disconnected - retrying..."
+                        show_status_until = datetime.now() + timedelta(seconds=5)
+
             await asyncio.sleep(0.1)
         except Exception as e:
+            consecutive_failures += 1
+            # If we have multiple consecutive failures, mark as disconnected
+            if consecutive_failures >= 10:
+                if fldigi_client.is_connected():
+                    fldigi_client.disconnect()
+                    command_status = "⚠ FlDigi connection lost - reconnecting..."
+                    show_status_until = datetime.now() + timedelta(seconds=5)
+                consecutive_failures = 0
             await asyncio.sleep(1)
 
 
@@ -1411,14 +1451,17 @@ async def run_app_async():
 
     load_config()
 
-    if not fldigi_client.connect():
-        print("Failed to connect to FLDIGI!")
-        print("Make sure FLDIGI is running with XML-RPC enabled on port 7362")
-        sys.exit(1)
-
-    connection_time = datetime.now()
-
-    rx_display.text = 'Waiting for data...'
+    success, error = fldigi_client.connect()
+    if not success:
+        print("⚠ Warning: Could not connect to FLDIGI on startup")
+        print(f"   Reason: {error}")
+        print("   DigiShell will continue and attempt to reconnect automatically.")
+        print("   Make sure FLDIGI is running with XML-RPC enabled on port 7362")
+        print()
+        rx_display.text = '⚠ FlDigi not connected - waiting for connection...'
+    else:
+        connection_time = datetime.now()
+        rx_display.text = 'Waiting for data...'
 
     if config.get('callsign') != 'NOCALL':
         print(f"Station: {config['callsign']} ({config['name']})")
