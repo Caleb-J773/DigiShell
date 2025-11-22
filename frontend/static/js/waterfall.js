@@ -281,11 +281,12 @@ class WaterfallViewer {
 }
 
 // Initialize waterfall viewer when DOM is ready
-let waterfallViewer = null;
-
 document.addEventListener('DOMContentLoaded', () => {
-    waterfallViewer = new WaterfallViewer();
-});
+    window.waterfallViewer = new WaterfallViewer();
 
-// Export for use in other modules
-window.waterfallViewer = waterfallViewer;
+    // Apply settings after initialization if config is already loaded
+    if (window._applyWaterfallSettingsOnReady || (window.webConfig && window.webConfig.waterfallStreamingEnabled)) {
+        window.waterfallViewer.applySettings();
+        window._applyWaterfallSettingsOnReady = false;
+    }
+});

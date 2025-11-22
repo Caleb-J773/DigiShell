@@ -124,12 +124,27 @@ async def waterfall_websocket(websocket: WebSocket):
 
                 # Handle different message types
                 if message.get("type") == "mouse_click":
-                    # Future: Implement mouse click handling to send to FlDigi
-                    # For now, just acknowledge
-                    await websocket.send_json({
-                        "type": "ack",
-                        "message": "Mouse click received (not yet implemented)"
-                    })
+                    # Send click to FlDigi window
+                    x = message.get("x")
+                    y = message.get("y")
+                    canvas_width = message.get("canvasWidth")
+                    canvas_height = message.get("canvasHeight")
+
+                    if x is not None and y is not None and canvas_width and canvas_height:
+                        success = waterfall_service.send_mouse_click(
+                            int(x), int(y), int(canvas_width), int(canvas_height)
+                        )
+                        await websocket.send_json({
+                            "type": "click_ack",
+                            "success": success,
+                            "x": x,
+                            "y": y
+                        })
+                    else:
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Invalid click coordinates"
+                        })
 
             except WebSocketDisconnect:
                 break

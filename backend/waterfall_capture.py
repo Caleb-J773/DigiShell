@@ -31,6 +31,7 @@ if sys.platform == "win32":
         import win32gui
         import win32ui
         import win32con
+        import win32api
         from ctypes import windll
         WIN32_AVAILABLE = True
     except ImportError:
@@ -63,6 +64,7 @@ class WaterfallCaptureService:
         self.subscribers = set()  # WebSocket connections to stream to
         self.fps = 15  # Target frames per second (conservative for waterfall)
         self.jpeg_quality = 75  # Balance between quality and bandwidth
+        self.last_window_size = None  # Cache window size for coordinate conversion
 
     def is_available(self) -> bool:
         """Check if waterfall capture is available on this system."""
@@ -273,6 +275,9 @@ class WaterfallCaptureService:
             mfc_dc.DeleteDC()
             win32gui.ReleaseDC(hwnd, hwnd_dc)
 
+            # Cache window size for click coordinate conversion
+            self.last_window_size = (width, height)
+
             # Encode as JPEG
             buffer = io.BytesIO()
             image.save(buffer, format="JPEG", quality=self.jpeg_quality, optimize=True)
@@ -333,6 +338,9 @@ class WaterfallCaptureService:
                 "BGRX"
             )
 
+            # Cache window size for click coordinate conversion
+            self.last_window_size = (width, height)
+
             # Encode as JPEG
             buffer = io.BytesIO()
             image.save(buffer, format="JPEG", quality=self.jpeg_quality, optimize=True)
@@ -345,6 +353,126 @@ class WaterfallCaptureService:
             self.window = None
             self.window_id = None
             return None
+
+    def send_mouse_click(self, canvas_x: int, canvas_y: int, canvas_width: int, canvas_height: int) -> bool:
+        """
+        Send a mouse click to the FlDigi window at the specified coordinates.
+
+        Args:
+            canvas_x: X coordinate on the canvas
+            canvas_y: Y coordinate on the canvas
+            canvas_width: Width of the canvas element
+            canvas_height: Height of the canvas element
+
+        Returns:
+            True if click was sent successfully, False otherwise
+        """
+        if sys.platform == "linux":
+            return self._send_click_linux(canvas_x, canvas_y, canvas_width, canvas_height)
+        elif sys.platform == "win32":
+            return self._send_click_windows(canvas_x, canvas_y, canvas_width, canvas_height)
+        else:
+            return False
+
+    def _send_click_windows(self, canvas_x: int, canvas_y: int, canvas_width: int, canvas_height: int) -> bool:
+        """Send mouse click to FlDigi window on Windows."""
+        if sys.platform != "win32" or not WIN32_AVAILABLE:
+            return False
+
+        try:
+            if not self.window_id or not self.last_window_size:
+                return False
+
+            hwnd = self.window_id
+            window_width, window_height = self.last_window_size
+
+            # Convert canvas coordinates to window coordinates
+            # Canvas might be scaled differently than actual window
+            scale_x = window_width / canvas_width
+            scale_y = window_height / canvas_height
+
+            window_x = int(canvas_x * scale_x)
+            window_y = int(canvas_y * scale_y)
+
+            # Convert window-relative coordinates to screen coordinates
+            rect = win32gui.GetWindowRect(hwnd)
+            screen_x = rect[0] + window_x
+            screen_y = rect[1] + window_y
+
+            # Create the click position parameter (LPARAM)
+            # LPARAM = MAKELONG(x, y) for WM_LBUTTONDOWN/UP
+            lparam = win32api.MAKELONG(window_x, window_y)
+
+            # Send mouse down then mouse up to simulate click
+            win32gui.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lparam)
+            time.sleep(0.01)  # Small delay between down and up
+            win32gui.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, lparam)
+
+            print(f"Sent click to FlDigi at window coords ({window_x}, {window_y})")
+            return True
+
+        except Exception as e:
+            print(f"Error sending click to FlDigi window on Windows: {e}")
+            return False
+
+    def _send_click_linux(self, canvas_x: int, canvas_y: int, canvas_width: int, canvas_height: int) -> bool:
+        """Send mouse click to FlDigi window on Linux/X11."""
+        if sys.platform != "linux" or not XLIB_AVAILABLE:
+            return False
+
+        try:
+            if not self.display or not self.window or not self.last_window_size:
+                return False
+
+            window_width, window_height = self.last_window_size
+
+            # Convert canvas coordinates to window coordinates
+            scale_x = window_width / canvas_width
+            scale_y = window_height / canvas_height
+
+            window_x = int(canvas_x * scale_x)
+            window_y = int(canvas_y * scale_y)
+
+            # Send mouse button press event
+            event = xdisplay.protocol.event.ButtonPress(
+                time=int(time.time()),
+                root=self.display.screen().root,
+                window=self.window,
+                same_screen=1,
+                child=X.NONE,
+                root_x=0,
+                root_y=0,
+                event_x=window_x,
+                event_y=window_y,
+                state=0,
+                detail=1  # Button 1 (left mouse button)
+            )
+            self.window.send_event(event, propagate=False)
+
+            # Send mouse button release event
+            event = xdisplay.protocol.event.ButtonRelease(
+                time=int(time.time()),
+                root=self.display.screen().root,
+                window=self.window,
+                same_screen=1,
+                child=X.NONE,
+                root_x=0,
+                root_y=0,
+                event_x=window_x,
+                event_y=window_y,
+                state=0x100,  # Button1Mask
+                detail=1  # Button 1
+            )
+            self.window.send_event(event, propagate=False)
+
+            self.display.sync()
+
+            print(f"Sent click to FlDigi at window coords ({window_x}, {window_y})")
+            return True
+
+        except Exception as e:
+            print(f"Error sending click to FlDigi window on Linux: {e}")
+            return False
 
     async def _capture_loop(self):
         """

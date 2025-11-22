@@ -119,9 +119,13 @@ async function initTheme() {
         applyBetaFeatures(window.webConfig.betaFeatures || false);
     }
 
-    // Apply waterfall streaming settings on load
+    // Apply waterfall streaming settings on load (if viewer is ready)
+    // If not ready yet, it will apply settings when it initializes
     if (window.waterfallViewer) {
         window.waterfallViewer.applySettings();
+    } else {
+        // Store flag to apply settings when viewer is ready
+        window._applyWaterfallSettingsOnReady = true;
     }
 
     // Initialize theme manager after config is loaded
