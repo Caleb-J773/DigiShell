@@ -23,6 +23,31 @@ export const LAYOUTS = {
         description: 'Just essentials, maximum communication area',
         cssClass: 'layout-minimal'
     },
+    widescreen: {
+        name: 'Widescreen',
+        description: '3-column layout for ultrawide monitors',
+        cssClass: 'layout-widescreen'
+    },
+    focus: {
+        name: 'Focus Mode',
+        description: 'Distraction-free RX with quick-access controls',
+        cssClass: 'layout-focus'
+    },
+    contest: {
+        name: 'Contest',
+        description: 'Fast operation with prominent macros',
+        cssClass: 'layout-contest'
+    },
+    monitor: {
+        name: 'Monitor',
+        description: 'Large RX display for passive monitoring',
+        cssClass: 'layout-monitor'
+    },
+    dashboard: {
+        name: 'Dashboard',
+        description: 'All-in-one overview grid',
+        cssClass: 'layout-dashboard'
+    },
     mobile: {
         name: 'Mobile',
         description: 'Optimized for phones and tablets',
