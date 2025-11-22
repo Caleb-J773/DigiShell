@@ -120,7 +120,6 @@ def is_waterfall_streaming_enabled():
         try:
             with open(config_file, 'r') as f:
                 config = json.load(f)
-                # Only use --wfall-only if waterfall streaming is explicitly enabled
                 return config.get('waterfallStreamingEnabled', False) is True
         except (json.JSONDecodeError, OSError, KeyError):
             return False
@@ -138,13 +137,12 @@ def start_fldigi():
     if fldigi_path:
         print(f"[OK] Found FlDigi at: {fldigi_path}")
 
-        # Check if waterfall streaming is enabled (Linux only)
-        use_waterfall_mode = False
-        if sys.platform != "win32" and is_waterfall_streaming_enabled():
-            use_waterfall_mode = True
-            print("[INFO] Waterfall streaming enabled - launching FlDigi in minimal mode")
+        # Check if waterfall streaming is enabled
+        use_waterfall_mode = is_waterfall_streaming_enabled()
+        if use_waterfall_mode:
+            print("[INFO] Waterfall streaming enabled - launching FlDigi in waterfall-only mode")
 
-        # Build command with optional --wfall-only parameter
+        # Start FlDigi with optional --wfall-only parameter
         if sys.platform == "win32":
             if use_waterfall_mode:
                 subprocess.Popen([fldigi_path, "--wfall-only"], shell=True)
@@ -156,10 +154,7 @@ def start_fldigi():
             else:
                 subprocess.Popen([fldigi_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        if use_waterfall_mode:
-            print("[OK] FlDigi started in waterfall-only mode, waiting for initialization...")
-        else:
-            print("[OK] FlDigi started, waiting for initialization...")
+        print("[OK] FlDigi started, waiting for initialization...")
         time.sleep(5)
         print()
         return True
