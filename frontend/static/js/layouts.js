@@ -43,11 +43,6 @@ export const LAYOUTS = {
         description: 'Large RX display for passive monitoring',
         cssClass: 'layout-monitor'
     },
-    dashboard: {
-        name: 'Dashboard',
-        description: 'All-in-one overview grid',
-        cssClass: 'layout-dashboard'
-    },
     mobile: {
         name: 'Mobile',
         description: 'Optimized for phones and tablets',
