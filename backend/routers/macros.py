@@ -42,7 +42,7 @@ def load_config() -> Config:
             with open(CONFIG_FILE, 'r') as f:
                 data = json.load(f)
                 return Config(**data)
-        except Exception:
+        except (json.JSONDecodeError, OSError, ValueError):
             pass
 
     return Config(
@@ -64,7 +64,7 @@ def save_config(config: Config) -> bool:
         with open(CONFIG_FILE, 'w') as f:
             json.dump(config.dict(), f, indent=2)
         return True
-    except Exception:
+    except (OSError, TypeError):
         return False
 
 

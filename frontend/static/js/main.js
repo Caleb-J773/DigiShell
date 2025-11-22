@@ -122,61 +122,109 @@ const elements = {
  * Setup layout UI elements
  */
 function setupLayoutUI() {
-    // Populate layouts grid in settings
     const layoutsGrid = document.getElementById('layouts-grid');
-    if (layoutsGrid) {
-        layoutsGrid.innerHTML = '';
-        Object.entries(LAYOUTS).forEach(([id, layout]) => {
+    if (!layoutsGrid) return;
+
+    const layoutCategories = {
+        standard: {
+            title: 'Standard Layouts',
+            icon: 'fa-layer-group',
+            description: 'Versatile layouts for everyday use',
+            layouts: ['default', 'compact', 'split', 'minimal', 'mobile']
+        },
+        specialized: {
+            title: 'Specialized Layouts',
+            icon: 'fa-sliders-h',
+            description: 'Purpose-built for specific workflows',
+            layouts: ['widescreen', 'focus', 'contest', 'monitor']
+        }
+    };
+
+    layoutsGrid.innerHTML = '';
+    layoutsGrid.style.cssText = 'display: flex; flex-direction: column; gap: 2rem;';
+
+    Object.entries(layoutCategories).forEach(([categoryId, category]) => {
+        const categorySection = document.createElement('div');
+        categorySection.className = 'layout-category';
+
+        const categoryHeader = document.createElement('div');
+        categoryHeader.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-light);
+        `;
+        categoryHeader.innerHTML = `
+            <i class="fas ${category.icon}" style="color: var(--accent); font-size: 1.25rem;"></i>
+            <div style="flex: 1;">
+                <div style="font-weight: 700; font-size: 1.125rem; color: var(--text-primary);">${category.title}</div>
+                <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.125rem;">${category.description}</div>
+            </div>
+        `;
+
+        const categoryGrid = document.createElement('div');
+        categoryGrid.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+        `;
+
+        category.layouts.forEach(id => {
+            if (!LAYOUTS[id]) return;
+
+            const layout = LAYOUTS[id];
+            const isActive = getCurrentLayout() === id;
+
             const layoutCard = document.createElement('div');
             layoutCard.className = 'layout-card';
             layoutCard.style.cssText = `
                 padding: 1rem;
-                border: 2px solid var(--border-light);
+                border: 2px solid ${isActive ? 'var(--accent)' : 'var(--border-light)'};
                 border-radius: var(--radius-md);
                 cursor: pointer;
                 transition: all 0.2s ease;
-                background: var(--bg-secondary);
+                background: ${isActive ? 'var(--accent-light)' : 'var(--bg-secondary)'};
             `;
 
-            const isActive = getCurrentLayout() === id;
-            if (isActive) {
-                layoutCard.style.borderColor = 'var(--accent)';
-                layoutCard.style.background = 'var(--accent-light)';
-            }
-
             layoutCard.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                    <i class="fas fa-${isActive ? 'check-circle' : 'circle'}" style="color: ${isActive ? 'var(--accent)' : 'var(--text-secondary)'}; font-size: 1.25rem;"></i>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-${isActive ? 'check-circle' : 'circle'}"
+                       style="color: ${isActive ? 'var(--accent)' : 'var(--text-secondary)'}; font-size: 1.125rem;"></i>
                     <div style="flex: 1;">
-                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">${layout.name}</div>
-                        <div style="font-size: 0.8125rem; color: var(--text-secondary);">${layout.description}</div>
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9375rem;">${layout.name}</div>
+                        <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.4;">${layout.description}</div>
                     </div>
                 </div>
             `;
 
             layoutCard.addEventListener('click', () => {
                 applyLayout(id);
-                // Refresh UI
                 setupLayoutUI();
             });
 
             layoutCard.addEventListener('mouseenter', () => {
                 if (!isActive) {
                     layoutCard.style.borderColor = 'var(--accent-hover)';
-                    layoutCard.style.transform = 'translateX(4px)';
+                    layoutCard.style.transform = 'scale(1.02)';
                 }
             });
 
             layoutCard.addEventListener('mouseleave', () => {
                 if (!isActive) {
                     layoutCard.style.borderColor = 'var(--border-light)';
-                    layoutCard.style.transform = 'translateX(0)';
+                    layoutCard.style.transform = 'scale(1)';
                 }
             });
 
-            layoutsGrid.appendChild(layoutCard);
+            categoryGrid.appendChild(layoutCard);
         });
-    }
+
+        categorySection.appendChild(categoryHeader);
+        categorySection.appendChild(categoryGrid);
+        layoutsGrid.appendChild(categorySection);
+    });
 
     // Setup sidebar toggle for minimal layout
     const sidebarToggle = document.getElementById('sidebar-toggle');

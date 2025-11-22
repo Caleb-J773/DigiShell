@@ -2,25 +2,16 @@ import sys
 import os
 import subprocess
 import time
-import socket
 import glob
 from pathlib import Path
+from backend.utils import check_port_available
+
 
 def print_header(title):
     print("\n" + "=" * 44)
     print(title)
     print("=" * 44)
     print()
-
-def check_port_available(port):
-    """Check if a port is available for binding."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.bind(('0.0.0.0', port))
-        sock.close()
-        return True
-    except OSError:
-        return False
 
 def check_python():
     print(f"[OK] Python detected")
@@ -181,7 +172,7 @@ def check_xmlrpc_port():
             return True
         else:
             raise ConnectionRefusedError
-    except:
+    except (ConnectionRefusedError, OSError):
         print("[ERROR] Cannot connect to XML-RPC port 7362")
         print()
         print("FlDigi must be running with XML-RPC enabled:")
