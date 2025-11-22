@@ -634,22 +634,27 @@ const TUTORIAL_STEPS = [
                 <i class="fas fa-plug" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
             <p style="margin-bottom: 1rem;">First, make sure <strong>FLDIGI is running</strong> on your computer with <strong>XML-RPC enabled</strong> (port 7362).</p>
+            <p style="margin-bottom: 1rem;">DigiShell will automatically detect and connect to FLDIGI when available. The connection status is shown in the top-right corner of the interface.</p>
             <div style="background: var(--success-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--success);">
-                <strong>Tip:</strong> The status indicator will turn green when connected!
+                <strong>Tip:</strong> The status indicator will turn green when connected! You can click it to manually reconnect if needed.
             </div>
         `
     },
     {
-        title: "Selecting a Modem",
+        title: "Selecting Modes & Frequencies",
         content: `
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <i class="fas fa-wave-square" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
-            <p style="margin-bottom: 1rem;">Use the <strong>Modem</strong> panel on the left to select your digital mode:</p>
+            <p style="margin-bottom: 1rem;"><strong>Two ways to get started:</strong></p>
+            <p style="margin-bottom: 1rem;"><strong>1. Quick Presets:</strong> Click the <strong>"Presets"</strong> button for 45+ pre-configured frequency/mode combinations. Perfect for jumping to popular bands like 20m PSK31, 40m RTTY, or 10m Olivia.</p>
+            <p style="margin-bottom: 1rem;"><strong>2. Manual Selection:</strong> Use the <strong>Modem</strong> panel to select from 50+ digital modes including:</p>
             <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
-                <li>BPSK31 - Most popular, good for beginners</li>
-                <li>RTTY - Classic teletype mode</li>
-                <li>Olivia - Excellent for weak signals</li>
+                <li><strong>PSK/BPSK</strong> - Most popular, excellent for beginners (PSK31, PSK63, PSK125)</li>
+                <li><strong>RTTY</strong> - Classic teletype mode, great for contests</li>
+                <li><strong>Olivia</strong> - Outstanding weak-signal performance</li>
+                <li><strong>MFSK</strong> - Robust multi-tone modes (MFSK16, MFSK32)</li>
+                <li><strong>Contestia</strong> - Enhanced Olivia for contesting</li>
             </ul>
             <p>Search for modes or browse by category, then click <strong>"Apply Mode"</strong>.</p>
         `
@@ -660,11 +665,12 @@ const TUTORIAL_STEPS = [
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <i class="fas fa-satellite-dish" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
-            <p style="margin-bottom: 1rem;"><strong>Receive Window:</strong> Shows incoming text from other stations in real-time (green text). You can resize the window by dragging the bottom-right corner.</p>
-            <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>. You can continue typing while your message is being transmitted, but you can only backspace—you cannot edit prior lines. This window is also resizable.</p>
-            <p style="margin-bottom: 1rem;"><strong>Auto-Stop:</strong> The program automatically ends transmission when you stop typing—no need to manually press Ctrl+R or stop the transmission!</p>
-            <div style="background: var(--warning-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--warning);">
-                <strong>Note:</strong> TX text appears in red in the RX buffer to show what you've sent!
+            <p style="margin-bottom: 1rem;"><strong>Receive Window:</strong> Shows incoming text from other stations in real-time with color coding - green for received text, red for your transmitted text. The window is resizable for your comfort.</p>
+            <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>. The intelligent buffer lets you continue typing while transmitting - you can backspace but cannot edit previous lines.</p>
+            <p style="margin-bottom: 1rem;"><strong>Smart Auto-Stop:</strong> DigiShell automatically ends transmission when you stop typing - no manual intervention needed!</p>
+            <p style="margin-bottom: 1rem;"><strong>Signal Monitoring:</strong> Watch real-time signal metrics including SNR (Signal-to-Noise Ratio), signal strength, and quality percentage.</p>
+            <div style="background: var(--info-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--info);">
+                <strong>Pro Tip:</strong> Use the carrier frequency slider to fine-tune your signal for optimal decoding!
             </div>
         `
     },
@@ -674,14 +680,59 @@ const TUTORIAL_STEPS = [
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <i class="fas fa-keyboard" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
-            <p style="margin-bottom: 1rem;"><strong>Macros</strong> are pre-written messages with placeholders for quick communication:</p>
+            <p style="margin-bottom: 1rem;"><strong>Macros</strong> are powerful pre-written messages with automatic variable substitution for error-free, professional communication:</p>
+            <p style="margin-bottom: 1rem;"><strong>Available Placeholders:</strong></p>
             <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
-                <li>&lt;MYCALL&gt; - Your callsign</li>
-                <li>&lt;CALL&gt; - Last contacted station</li>
-                <li>&lt;TIME&gt;, &lt;DATE&gt; - Current time/date</li>
+                <li><strong>&lt;MYCALL&gt;</strong> - Your callsign</li>
+                <li><strong>&lt;MYNAME&gt;</strong> - Your name</li>
+                <li><strong>&lt;MYQTH&gt;</strong> - Your location/QTH</li>
+                <li><strong>&lt;CALL&gt;</strong> - Last contacted station (set via Station Info panel)</li>
+                <li><strong>&lt;DATE&gt;</strong> - Current date (YYYY-MM-DD format)</li>
+                <li><strong>&lt;TIME&gt;</strong> - Current local time (HH:MM)</li>
+                <li><strong>&lt;UTC&gt;</strong> - Current UTC time (HH:MMZ)</li>
             </ul>
-            <p style="margin-bottom: 1rem;">Click <strong>"Edit Macros"</strong> to create custom macros!</p>
-            <p>Use keyboard shortcuts <strong>Alt+1</strong> through <strong>Alt+5</strong> for quick macro access.</p>
+            <p style="margin-bottom: 1rem;">Click <strong>"Edit Macros"</strong> to create custom macros for CQ calls, greetings, signal reports, and sign-offs!</p>
+            <div style="background: var(--warning-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--warning);">
+                <strong>Keyboard Shortcuts:</strong> Press <strong>Alt+1</strong> through <strong>Alt+5</strong> to instantly send your first 5 macros!
+            </div>
+        `
+    },
+    {
+        title: "Customizing Your Interface",
+        content: `
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <i class="fas fa-palette" style="font-size: 4rem; color: var(--accent);"></i>
+            </div>
+            <p style="margin-bottom: 1rem;"><strong>DigiShell is highly customizable!</strong> Access settings via the gear icon in the top-right corner.</p>
+            <p style="margin-bottom: 1rem;"><strong>Themes:</strong> Choose from 8 light themes and multiple dark themes, or create custom themes with your own color schemes. Themes include Light Mint, Light Lavender, Solarized Light, Nord Dark, Dracula, and more!</p>
+            <p style="margin-bottom: 1rem;"><strong>Layouts:</strong> Select from 9 specialized layouts optimized for different workflows:</p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                <li><strong>Standard:</strong> Default, Compact, Split Screen, Minimal, Mobile</li>
+                <li><strong>Specialized:</strong> Widescreen (3-column for ultrawides), Focus Mode (distraction-free RX), Contest (fast operations), Monitor (RX-only display)</li>
+            </ul>
+            <div style="background: var(--accent-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent);">
+                <strong>Try it now:</strong> Experiment with different layouts to find what works best for your screen and operating style!
+            </div>
+        `
+    },
+    {
+        title: "Advanced Features",
+        content: `
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <i class="fas fa-sliders-h" style="font-size: 4rem; color: var(--accent);"></i>
+            </div>
+            <p style="margin-bottom: 1rem;"><strong>Frequency Presets:</strong> Save your favorite frequency/mode combinations for instant access. DigiShell includes 45+ default presets for popular bands and modes, plus you can create unlimited custom presets.</p>
+            <p style="margin-bottom: 1rem;"><strong>Signal Metrics:</strong> Monitor comprehensive signal quality indicators:</p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                <li><strong>RST</strong> - Readability, Signal strength, Tone quality (1-5, 1-9, 9)</li>
+                <li><strong>RSQ</strong> - Readability, Signal, Quality (for digital modes)</li>
+                <li><strong>SNR</strong> - Signal-to-Noise Ratio in dB</li>
+            </ul>
+            <p style="margin-bottom: 1rem;"><strong>Rig Control:</strong> Control your radio directly from the interface if FLDIGI is configured for rig control (frequency, mode, PTT).</p>
+            <p style="margin-bottom: 1rem;"><strong>Modem Settings:</strong> Fine-tune AFC (Automatic Frequency Control), squelch level, and reverse sideband for optimal performance.</p>
+            <div style="background: var(--info-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--info);">
+                <strong>Beta Features:</strong> Enable experimental features in Settings → Features for early access to new capabilities!
+            </div>
         `
     },
     {
@@ -690,13 +741,24 @@ const TUTORIAL_STEPS = [
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success);"></i>
             </div>
-            <p style="margin-bottom: 1rem;"><strong>Congratulations!</strong> You're ready to use DigiShell.</p>
-            <p style="margin-bottom: 1rem;"><strong>Quick Tips:</strong></p>
+            <p style="margin-bottom: 1rem;"><strong>Congratulations!</strong> You're ready to use DigiShell like a pro.</p>
+            <p style="margin-bottom: 1rem;"><strong>Essential Keyboard Shortcuts:</strong></p>
             <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
-                <li>Click the keyboard icon for all shortcuts</li>
-                <li>Adjust carrier frequency with the slider for optimal signal</li>
-                <li>Use macros (Alt+1-5) for quick, error-free communication</li>
-                <li>Monitor your rig frequency in the status bar</li>
+                <li><strong>Ctrl+Enter</strong> - Send TX message</li>
+                <li><strong>Ctrl+K</strong> - Clear RX buffer</li>
+                <li><strong>Ctrl+R</strong> - Start RX mode</li>
+                <li><strong>Ctrl+D</strong> - Connect/Disconnect FLDIGI</li>
+                <li><strong>Escape</strong> - Abort transmission</li>
+                <li><strong>Alt+1 through Alt+5</strong> - Send macros 1-5</li>
+            </ul>
+            <p style="margin-bottom: 1rem;"><strong>Pro Tips:</strong></p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                <li>Click the keyboard icon in the header to view all shortcuts</li>
+                <li>Double-click the help icon to restart this tutorial anytime</li>
+                <li>Use presets for instant band/mode switching</li>
+                <li>Customize your layout and theme for optimal comfort</li>
+                <li>Set "Last Call" in Station Info before using &lt;CALL&gt; macros</li>
+                <li>Watch signal metrics to optimize your station setup</li>
             </ul>
             <div style="background: var(--accent-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent); text-align: center;">
                 <strong>73 and good DX! 📡</strong>
