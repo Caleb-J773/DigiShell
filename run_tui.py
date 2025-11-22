@@ -1123,6 +1123,21 @@ async def process_input(text):
                     command_status = f"Macro '{key}' not found"
                     show_status_until = datetime.now() + timedelta(seconds=3)
 
+        elif command in ['reconnect', 'r']:
+            if fldigi_client.is_connected():
+                command_status = "Already connected to FlDigi"
+                show_status_until = datetime.now() + timedelta(seconds=2)
+            else:
+                command_status = "Attempting to reconnect..."
+                show_status_until = datetime.now() + timedelta(seconds=2)
+                success, error = fldigi_client.reconnect()
+                if success:
+                    command_status = "✓ Reconnected to FlDigi"
+                    show_status_until = datetime.now() + timedelta(seconds=3)
+                else:
+                    command_status = f"✗ Failed to reconnect: {error or 'Unknown error'}"
+                    show_status_until = datetime.now() + timedelta(seconds=5)
+
         else:
             command_status = f"Unknown: /{command}"
             show_status_until = datetime.now() + timedelta(seconds=3)
@@ -1344,8 +1359,8 @@ async def poll_fldigi():
     global last_trx_status, live_tx_buffer, last_input_text, live_tx_active, live_tx_ending, command_status, show_status_until, tx_overlay_transmitted_count
 
     consecutive_failures = 0
-    reconnect_attempt_counter = 0
     connection_check_counter = 0
+    disconnection_notified = False
 
     while True:
         try:
@@ -1355,9 +1370,10 @@ async def poll_fldigi():
                 if connection_check_counter >= 50:  # Check every 5 seconds (50 * 0.1s)
                     connection_check_counter = 0
                     if not fldigi_client.check_connection_health():
-                        command_status = "⚠ FlDigi connection lost, reconnecting..."
-                        show_status_until = datetime.now() + timedelta(seconds=5)
+                        command_status = "⚠ FlDigi disconnected - use /reconnect to reconnect"
+                        show_status_until = None  # Show permanently
                         consecutive_failures = 0
+                        disconnection_notified = True
                         await asyncio.sleep(0.1)
                         continue
 
@@ -1402,22 +1418,14 @@ async def poll_fldigi():
                         rx_display.buffer.cursor_position = len(rx_display.text)
 
                 last_trx_status = current_trx_status
+                disconnection_notified = False  # Reset when connected
 
             else:
-                # Not connected, attempt reconnection
-                reconnect_attempt_counter += 1
-                if reconnect_attempt_counter >= 30:  # Try every 3 seconds (30 * 0.1s)
-                    reconnect_attempt_counter = 0
-                    command_status = "⚠ Reconnecting to FlDigi..."
-                    show_status_until = datetime.now() + timedelta(seconds=5)
-                    success, error = fldigi_client.reconnect()
-                    if success:
-                        command_status = "✓ Reconnected to FlDigi"
-                        show_status_until = datetime.now() + timedelta(seconds=3)
-                        consecutive_failures = 0
-                    else:
-                        command_status = f"⚠ FlDigi disconnected - retrying..."
-                        show_status_until = datetime.now() + timedelta(seconds=5)
+                # Not connected - just show status once
+                if not disconnection_notified:
+                    command_status = "⚠ FlDigi disconnected - use /reconnect to reconnect"
+                    show_status_until = None  # Show permanently
+                    disconnection_notified = True
 
             await asyncio.sleep(0.1)
         except Exception as e:
@@ -1426,8 +1434,10 @@ async def poll_fldigi():
             if consecutive_failures >= 10:
                 if fldigi_client.is_connected():
                     fldigi_client.disconnect()
-                    command_status = "⚠ FlDigi connection lost - reconnecting..."
-                    show_status_until = datetime.now() + timedelta(seconds=5)
+                    if not disconnection_notified:
+                        command_status = "⚠ FlDigi connection lost - use /reconnect to reconnect"
+                        show_status_until = None  # Show permanently
+                        disconnection_notified = True
                 consecutive_failures = 0
             await asyncio.sleep(1)
 

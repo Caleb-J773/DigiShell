@@ -226,11 +226,16 @@ Max retries exceeded... Failed to establish a new connection
 **Possible causes:**
 1. **FlDigi is not running** - Start FlDigi before starting DigiShell
 2. **XML-RPC is disabled** - In FlDigi: Configure → Misc → XML-RPC Server, make sure "Enable XML-RPC server" is checked
-3. **FlDigi crashed** - Restart FlDigi and DigiShell will automatically reconnect
+3. **FlDigi crashed** - Restart FlDigi and use the reconnect option (web: Connect button, TUI: `/reconnect` command)
 
 ### FlDigi Closes While DigiShell is Running
 
-DigiShell will automatically attempt to reconnect to FlDigi if it closes or crashes. You'll see a connection status indicator that shows when FlDigi is disconnected. Simply restart FlDigi and DigiShell will reconnect within a few seconds.
+DigiShell will detect when FlDigi closes and stop the cascading errors. You'll see a clear disconnection status:
+
+- **Web Interface**: The status indicator shows "Disconnected". Click the "Connect" button to reconnect after restarting FlDigi.
+- **Terminal UI**: Shows "⚠ FlDigi disconnected" status. Use `/reconnect` (or `/r`) command to reconnect after restarting FlDigi.
+
+No more error spam in the logs!
 
 ### Can't Connect on Web Interface
 

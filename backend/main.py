@@ -31,7 +31,6 @@ async def poll_fldigi_status():
     connection_check_counter = 0
     last_connection_state = None
     consecutive_failures = 0
-    reconnect_attempt_counter = 0
 
     while True:
         try:
@@ -41,11 +40,11 @@ async def poll_fldigi_status():
                 if connection_check_counter >= 50:  # Check every 5 seconds (50 * 0.1s)
                     connection_check_counter = 0
                     if not fldigi_client.check_connection_health():
-                        logger.warning("FlDigi connection lost, will attempt reconnection")
+                        logger.warning("FlDigi connection lost")
                         consecutive_failures = 0
                         await manager.broadcast_connection_status(
                             connected=False,
-                            details={"error": "Connection lost to FlDigi"}
+                            details={"error": "FlDigi disconnected. Use the Connect button to reconnect."}
                         )
                         last_connection_state = False
                         await asyncio.sleep(0.1)
@@ -84,7 +83,7 @@ async def poll_fldigi_status():
                         await manager.broadcast_status(status_dict)
                         last_status = status_dict
 
-                    # Broadcast connection status if it changed
+                    # Broadcast connection status if it changed to connected
                     if last_connection_state != True:
                         await manager.broadcast_connection_status(
                             connected=True,
@@ -95,39 +94,24 @@ async def poll_fldigi_status():
                         )
                         last_connection_state = True
                         consecutive_failures = 0
-                        reconnect_attempt_counter = 0
 
             else:
-                # Not connected, attempt reconnection
-                reconnect_attempt_counter += 1
-                if reconnect_attempt_counter >= 30:  # Try every 3 seconds (30 * 0.1s)
-                    reconnect_attempt_counter = 0
-                    logger.info("Attempting to reconnect to FlDigi...")
-                    success, error = fldigi_client.reconnect()
-                    if success:
-                        logger.info("Successfully reconnected to FlDigi")
-                        await manager.broadcast_connection_status(
-                            connected=True,
-                            details={
-                                "version": fldigi_client.get_version(),
-                                "name": fldigi_client.get_name()
-                            }
-                        )
-                        last_connection_state = True
-                        consecutive_failures = 0
-                    else:
-                        if last_connection_state != False:
-                            await manager.broadcast_connection_status(
-                                connected=False,
-                                details={"error": error or "Not connected to FlDigi"}
-                            )
-                            last_connection_state = False
+                # Not connected - just notify once if state changed
+                if last_connection_state != False:
+                    await manager.broadcast_connection_status(
+                        connected=False,
+                        details={"error": "Not connected to FlDigi. Use the Connect button to reconnect."}
+                    )
+                    last_connection_state = False
 
             await asyncio.sleep(0.1)
 
         except Exception as e:
             consecutive_failures += 1
-            logger.error(f"Error in status polling: {e}")
+
+            # Only log occasionally to avoid spam
+            if consecutive_failures == 1 or consecutive_failures % 50 == 0:
+                logger.error(f"Error in status polling: {e}")
 
             # If we have multiple consecutive failures, mark as disconnected
             if consecutive_failures >= 10:
@@ -137,7 +121,7 @@ async def poll_fldigi_status():
                     if last_connection_state != False:
                         await manager.broadcast_connection_status(
                             connected=False,
-                            details={"error": "Connection errors occurred"}
+                            details={"error": "Connection to FlDigi lost. Use the Connect button to reconnect."}
                         )
                         last_connection_state = False
                 consecutive_failures = 0

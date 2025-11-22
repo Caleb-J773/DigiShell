@@ -419,7 +419,7 @@ function updateConnectionStatus(connected, details = {}) {
 
         // Show disconnection notification with error details if available
         const errorMsg = details.error || 'Not connected to FlDigi';
-        showNotification(`FlDigi Disconnected: ${errorMsg}. Attempting to reconnect...`, 'warning');
+        showNotification(`FlDigi Disconnected: ${errorMsg}`, 'warning');
     }
 }
 
