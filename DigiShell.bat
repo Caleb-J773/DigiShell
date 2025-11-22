@@ -116,25 +116,11 @@ if !FLDIGI_RUNNING! EQU 0 (
     if !FLDIGI_FOUND! EQU 1 (
         echo [OK] Found FlDigi at: !FLDIGI_PATH!
 
-        REM Check if waterfall streaming is enabled
-        set "USE_WATERFALL_MODE=0"
-        set "CONFIG_FILE=%USERPROFILE%\.fldigi_web.json"
-        if exist "!CONFIG_FILE!" (
-            findstr /C:"\"waterfallStreamingEnabled\"" "!CONFIG_FILE!" | findstr /C:"true" >nul 2>&1
-            if !ERRORLEVEL! EQU 0 (
-                set "USE_WATERFALL_MODE=1"
-                echo [INFO] Waterfall streaming enabled - launching FlDigi in minimal mode
-            )
-        )
-
-        REM Launch FlDigi with optional --wfall-only parameter
-        if !USE_WATERFALL_MODE! EQU 1 (
-            start "" "!FLDIGI_PATH!" --wfall-only
-            echo [OK] FlDigi started in waterfall-only mode, waiting for initialization...
-        ) else (
-            start "" "!FLDIGI_PATH!"
-            echo [OK] FlDigi started, waiting for initialization...
-        )
+        REM Start FlDigi in normal mode
+        REM NOTE: We DON'T use --wfall-only because it disables rig control subsystems
+        REM which causes FlDigi to crash when trying to key PTT via Hamlib/Flrig
+        start "" "!FLDIGI_PATH!"
+        echo [OK] FlDigi started, waiting for initialization...
         timeout /t 5 /nobreak >nul
         echo.
     ) else (

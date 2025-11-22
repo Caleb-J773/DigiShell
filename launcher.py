@@ -113,18 +113,6 @@ def find_fldigi_linux():
 
     return None
 
-def is_waterfall_streaming_enabled():
-    """Check if waterfall streaming is enabled in the web config."""
-    config_file = Path.home() / ".fldigi_web.json"
-    if config_file.exists():
-        try:
-            with open(config_file, 'r') as f:
-                config = json.load(f)
-                return config.get('waterfallStreamingEnabled', False) is True
-        except (json.JSONDecodeError, OSError, KeyError):
-            return False
-    return False
-
 def start_fldigi():
     print("[INFO] Attempting to start FlDigi...")
     print()
@@ -137,22 +125,13 @@ def start_fldigi():
     if fldigi_path:
         print(f"[OK] Found FlDigi at: {fldigi_path}")
 
-        # Check if waterfall streaming is enabled
-        use_waterfall_mode = is_waterfall_streaming_enabled()
-        if use_waterfall_mode:
-            print("[INFO] Waterfall streaming enabled - launching FlDigi in waterfall-only mode")
-
-        # Start FlDigi with optional --wfall-only parameter
+        # Start FlDigi in normal mode
+        # NOTE: We DON'T use --wfall-only because it disables rig control subsystems
+        # which causes FlDigi to crash when trying to key PTT via Hamlib/Flrig
         if sys.platform == "win32":
-            if use_waterfall_mode:
-                subprocess.Popen([fldigi_path, "--wfall-only"], shell=True)
-            else:
-                subprocess.Popen([fldigi_path], shell=True)
+            subprocess.Popen([fldigi_path], shell=True)
         else:
-            if use_waterfall_mode:
-                subprocess.Popen([fldigi_path, "--wfall-only"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            else:
-                subprocess.Popen([fldigi_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen([fldigi_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         print("[OK] FlDigi started, waiting for initialization...")
         time.sleep(5)
