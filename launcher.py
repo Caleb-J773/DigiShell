@@ -3,6 +3,7 @@ import os
 import subprocess
 import time
 import glob
+import json
 from pathlib import Path
 from backend.utils import check_port_available
 
@@ -112,6 +113,19 @@ def find_fldigi_linux():
 
     return None
 
+def is_waterfall_streaming_enabled():
+    """Check if waterfall streaming is enabled in the web config."""
+    config_file = Path.home() / ".fldigi_web.json"
+    if config_file.exists():
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+                # Only use --wfall-only if waterfall streaming is explicitly enabled
+                return config.get('waterfallStreamingEnabled', False) is True
+        except (json.JSONDecodeError, OSError, KeyError):
+            return False
+    return False
+
 def start_fldigi():
     print("[INFO] Attempting to start FlDigi...")
     print()
@@ -124,12 +138,28 @@ def start_fldigi():
     if fldigi_path:
         print(f"[OK] Found FlDigi at: {fldigi_path}")
 
-        if sys.platform == "win32":
-            subprocess.Popen([fldigi_path], shell=True)
-        else:
-            subprocess.Popen([fldigi_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # Check if waterfall streaming is enabled (Linux only)
+        use_waterfall_mode = False
+        if sys.platform != "win32" and is_waterfall_streaming_enabled():
+            use_waterfall_mode = True
+            print("[INFO] Waterfall streaming enabled - launching FlDigi in minimal mode")
 
-        print("[OK] FlDigi started, waiting for initialization...")
+        # Build command with optional --wfall-only parameter
+        if sys.platform == "win32":
+            if use_waterfall_mode:
+                subprocess.Popen([fldigi_path, "--wfall-only"], shell=True)
+            else:
+                subprocess.Popen([fldigi_path], shell=True)
+        else:
+            if use_waterfall_mode:
+                subprocess.Popen([fldigi_path, "--wfall-only"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                subprocess.Popen([fldigi_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        if use_waterfall_mode:
+            print("[OK] FlDigi started in waterfall-only mode, waiting for initialization...")
+        else:
+            print("[OK] FlDigi started, waiting for initialization...")
         time.sleep(5)
         print()
         return True
