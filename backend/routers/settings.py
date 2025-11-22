@@ -42,6 +42,7 @@ class WebConfig(BaseModel):
     uiPreferences: Optional[Dict[str, Any]] = None
     betaFeatures: Optional[bool] = False
     waterfallStreamingEnabled: Optional[bool] = False  # BETA: FlDigi waterfall streaming (disabled by default)
+    panelOrder: Optional[list[str]] = None  # Custom panel ordering (waterfall, macros, etc.)
 
 
 class WebConfigResponse(BaseModel):

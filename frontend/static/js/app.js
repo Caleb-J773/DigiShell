@@ -128,6 +128,14 @@ async function initTheme() {
         window._applyWaterfallSettingsOnReady = true;
     }
 
+    // Apply saved panel order (if applyPanelOrder function is available)
+    if (typeof applyPanelOrder === 'function') {
+        applyPanelOrder();
+    } else {
+        // Store flag to apply panel order when function is available
+        window._applyPanelOrderOnReady = true;
+    }
+
     // Initialize theme manager after config is loaded
     if (window.themeManager) {
         await window.themeManager.init();
@@ -1182,6 +1190,149 @@ document.getElementById('save-keybinds-btn').onclick = async () => {
     document.getElementById('keybinds-modal').classList.remove('active');
     showToast('Keybinds saved successfully!', 'success');
 };
+
+// Panel Reordering
+const REORDERABLE_PANELS = ['macros-panel', 'waterfall-panel'];
+
+function getPanelOrder() {
+    // Get the current order of panels in the DOM
+    const container = document.getElementById('macros-panel')?.parentElement;
+    if (!container) return REORDERABLE_PANELS;
+
+    const order = [];
+    for (const panelId of REORDERABLE_PANELS) {
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            order.push({
+                id: panelId,
+                element: panel
+            });
+        }
+    }
+
+    // Sort by actual DOM position
+    order.sort((a, b) => {
+        const posA = Array.from(container.children).indexOf(a.element);
+        const posB = Array.from(container.children).indexOf(b.element);
+        return posA - posB;
+    });
+
+    return order.map(item => item.id);
+}
+
+async function savePanelOrder() {
+    const order = getPanelOrder();
+    window.webConfig.panelOrder = order;
+    await saveWebConfig();
+}
+
+function updatePanelMoveButtons() {
+    const order = getPanelOrder();
+
+    order.forEach((panelId, index) => {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+
+        const upBtn = panel.querySelector('.panel-move-up');
+        const downBtn = panel.querySelector('.panel-move-down');
+
+        if (upBtn) {
+            upBtn.disabled = index === 0;
+            upBtn.style.opacity = index === 0 ? '0.3' : '1';
+            upBtn.style.cursor = index === 0 ? 'not-allowed' : 'pointer';
+        }
+
+        if (downBtn) {
+            downBtn.disabled = index === order.length - 1;
+            downBtn.style.opacity = index === order.length - 1 ? '0.3' : '1';
+            downBtn.style.cursor = index === order.length - 1 ? 'not-allowed' : 'pointer';
+        }
+    });
+}
+
+async function movePanelUp(panelId) {
+    const order = getPanelOrder();
+    const index = order.indexOf(panelId);
+
+    if (index <= 0) return; // Already at top or not found
+
+    const panel = document.getElementById(panelId);
+    const previousPanel = document.getElementById(order[index - 1]);
+
+    if (panel && previousPanel && panel.parentElement) {
+        panel.parentElement.insertBefore(panel, previousPanel);
+        await savePanelOrder();
+        updatePanelMoveButtons();
+    }
+}
+
+async function movePanelDown(panelId) {
+    const order = getPanelOrder();
+    const index = order.indexOf(panelId);
+
+    if (index < 0 || index >= order.length - 1) return; // Already at bottom or not found
+
+    const panel = document.getElementById(panelId);
+    const nextPanel = document.getElementById(order[index + 1]);
+
+    if (panel && nextPanel && panel.parentElement) {
+        panel.parentElement.insertBefore(nextPanel, panel);
+        await savePanelOrder();
+        updatePanelMoveButtons();
+    }
+}
+
+window.applyPanelOrder = function applyPanelOrder() {
+    const savedOrder = window.webConfig?.panelOrder;
+    if (!savedOrder || !Array.isArray(savedOrder)) {
+        updatePanelMoveButtons();
+        return;
+    }
+
+    // Get the container
+    const firstPanel = document.getElementById(REORDERABLE_PANELS[0]);
+    if (!firstPanel || !firstPanel.parentElement) return;
+
+    const container = firstPanel.parentElement;
+
+    // Reorder panels according to saved order
+    for (let i = savedOrder.length - 1; i >= 0; i--) {
+        const panelId = savedOrder[i];
+        const panel = document.getElementById(panelId);
+
+        if (panel) {
+            // Move to the beginning of the container (reverse order since we're iterating backwards)
+            container.insertBefore(panel, container.firstChild);
+        }
+    }
+
+    updatePanelMoveButtons();
+};
+
+// Set up event listeners for panel move buttons
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.panel-move-up').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const panelId = btn.getAttribute('data-panel');
+            await movePanelUp(panelId);
+        });
+    });
+
+    document.querySelectorAll('.panel-move-down').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const panelId = btn.getAttribute('data-panel');
+            await movePanelDown(panelId);
+        });
+    });
+
+    // Apply panel order if config was loaded before DOM ready
+    if (window._applyPanelOrderOnReady || (window.webConfig && window.webConfig.panelOrder)) {
+        applyPanelOrder();
+        window._applyPanelOrderOnReady = false;
+    }
+});
 
 (async () => {
     await loadStoredKeybinds();

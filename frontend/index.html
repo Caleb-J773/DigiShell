@@ -294,7 +294,7 @@
                     </div>
 
                     <!-- Macros -->
-                    <div class="panel">
+                    <div id="macros-panel" class="panel">
                         <div class="panel-header">
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                 <button class="panel-collapse-btn" data-panel="macros">
@@ -305,7 +305,15 @@
                                     Macros & Station
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div class="panel-order-controls" style="display: flex; flex-direction: column; gap: 2px;">
+                                    <button class="panel-move-btn panel-move-up" data-panel="macros-panel" title="Move panel up" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                    <button class="panel-move-btn panel-move-down" data-panel="macros-panel" title="Move panel down" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
                                 <button id="edit-macros-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
                                     <i class="fas fa-edit"></i> Edit Macros
                                 </button>
@@ -354,6 +362,14 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div class="panel-order-controls" style="display: flex; flex-direction: column; gap: 2px;">
+                                    <button class="panel-move-btn panel-move-up" data-panel="waterfall-panel" title="Move panel up" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                    <button class="panel-move-btn panel-move-down" data-panel="waterfall-panel" title="Move panel down" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
                                 <span id="waterfall-status" style="font-size: 0.75rem; color: var(--text-muted);">Disabled</span>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="waterfall-enable-toggle">
