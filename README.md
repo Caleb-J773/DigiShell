@@ -171,6 +171,82 @@ digishell/
 **Terminal:**
 - prompt_toolkit - terminal UI library
 
+## Troubleshooting
+
+### Port 8000 Already in Use
+
+If you see an error like:
+```
+ERROR: [Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000):
+only one usage of each socket address (protocol/network address/port) is normally permitted
+```
+
+This means another application is already using port 8000. To fix this:
+
+1. **Find what's using the port:**
+   - Windows: `netstat -ano | findstr :8000`
+   - Linux/Mac: `lsof -i :8000` or `netstat -tulpn | grep :8000`
+
+2. **Close the other application** using port 8000, or
+
+3. **Change DigiShell's port** (see "Changing the Port" below)
+
+### Changing the Port
+
+You can set a custom port with the `DIGISHELL_PORT` environment variable:
+
+**Windows (Command Prompt):**
+```cmd
+set DIGISHELL_PORT=8080
+python -m backend.main
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:DIGISHELL_PORT=8080
+python -m backend.main
+```
+
+**Linux/Mac:**
+```bash
+export DIGISHELL_PORT=8080
+python -m backend.main
+```
+
+Then access DigiShell at `http://localhost:8080` (or whatever port you chose).
+
+### FlDigi Connection Issues
+
+If you see errors like:
+```
+ERROR - Error getting RX text: HTTPConnectionPool(host='127.0.0.1', port=7362):
+Max retries exceeded... Failed to establish a new connection
+```
+
+**Possible causes:**
+1. **FlDigi is not running** - Start FlDigi before starting DigiShell
+2. **XML-RPC is disabled** - In FlDigi: Configure → Misc → XML-RPC Server, make sure "Enable XML-RPC server" is checked
+3. **FlDigi crashed** - Restart FlDigi and use the reconnect option (web: Connect button, TUI: `/reconnect` command)
+
+### FlDigi Closes While DigiShell is Running
+
+DigiShell will detect when FlDigi closes and stop the cascading errors. You'll see a clear disconnection status:
+
+- **Web Interface**: The status indicator shows "Disconnected". Click the "Connect" button to reconnect after restarting FlDigi.
+- **Terminal UI**: Shows "⚠ FlDigi disconnected" status. Use `/reconnect` (or `/r`) command to reconnect after restarting FlDigi.
+
+No more error spam in the logs!
+
+### Can't Connect on Web Interface
+
+1. **Check the URL** - Make sure you're using `http://localhost:8000` (or the correct port if you changed it)
+2. **Check firewall** - Your firewall might be blocking the connection
+3. **Wrong network interface** - If accessing from another device on your LAN, use your computer's IP address instead of `localhost`
+
+### Permission Denied or Access Errors
+
+Run your terminal/command prompt as administrator (Windows) or use `sudo` (Linux/Mac) if you get permission errors during installation.
+
 ## Want to contribute?
 
 Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.

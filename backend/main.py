@@ -28,13 +28,33 @@ background_task = None
 async def poll_fldigi_status():
     status_poll_counter = 0
     last_status = None
+    connection_check_counter = 0
+    last_connection_state = None
+    consecutive_failures = 0
 
     while True:
         try:
             if fldigi_client.is_connected():
+                # Periodically check connection health
+                connection_check_counter += 1
+                if connection_check_counter >= 50:  # Check every 5 seconds (50 * 0.1s)
+                    connection_check_counter = 0
+                    if not fldigi_client.check_connection_health():
+                        logger.warning("FlDigi connection lost")
+                        consecutive_failures = 0
+                        await manager.broadcast_connection_status(
+                            connected=False,
+                            details={"error": "FlDigi disconnected. Use the Connect button to reconnect."}
+                        )
+                        last_connection_state = False
+                        await asyncio.sleep(0.1)
+                        continue
+
+                # Get RX text
                 new_rx_text = fldigi_client.get_rx_text()
                 if new_rx_text:
                     await manager.broadcast_text(new_rx_text, text_type="rx")
+                    consecutive_failures = 0  # Reset on successful operation
 
                 status_poll_counter += 1
                 if status_poll_counter >= 5:
@@ -63,10 +83,49 @@ async def poll_fldigi_status():
                         await manager.broadcast_status(status_dict)
                         last_status = status_dict
 
+                    # Broadcast connection status if it changed to connected
+                    if last_connection_state != True:
+                        await manager.broadcast_connection_status(
+                            connected=True,
+                            details={
+                                "version": fldigi_client.get_version(),
+                                "name": fldigi_client.get_name()
+                            }
+                        )
+                        last_connection_state = True
+                        consecutive_failures = 0
+
+            else:
+                # Not connected - just notify once if state changed
+                if last_connection_state != False:
+                    await manager.broadcast_connection_status(
+                        connected=False,
+                        details={"error": "Not connected to FlDigi. Use the Connect button to reconnect."}
+                    )
+                    last_connection_state = False
+
             await asyncio.sleep(0.1)
 
         except Exception as e:
-            logger.error(f"Error in status polling: {e}")
+            consecutive_failures += 1
+
+            # Only log occasionally to avoid spam
+            if consecutive_failures == 1 or consecutive_failures % 50 == 0:
+                logger.error(f"Error in status polling: {e}")
+
+            # If we have multiple consecutive failures, mark as disconnected
+            if consecutive_failures >= 10:
+                if fldigi_client.is_connected():
+                    logger.warning("Multiple consecutive failures, marking connection as lost")
+                    fldigi_client.disconnect()
+                    if last_connection_state != False:
+                        await manager.broadcast_connection_status(
+                            connected=False,
+                            details={"error": "Connection to FlDigi lost. Use the Connect button to reconnect."}
+                        )
+                        last_connection_state = False
+                consecutive_failures = 0
+
             await asyncio.sleep(1)
 
 
@@ -230,6 +289,17 @@ if __name__ == "__main__":
     import signal
     import sys
     import socket
+    import os
+
+    def check_port_available(port):
+        """Check if a port is available for binding."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.bind(('0.0.0.0', port))
+            sock.close()
+            return True
+        except OSError:
+            return False
 
     def get_network_ips():
         ips = []
@@ -259,31 +329,80 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
+    # Get port from environment variable or use default
+    try:
+        port = int(os.environ.get('DIGISHELL_PORT', 8000))
+    except ValueError:
+        print(f"ERROR: Invalid DIGISHELL_PORT value. Using default port 8000.")
+        port = 8000
+
+    # Check if port is available
+    if not check_port_available(port):
+        print()
+        print("=" * 60)
+        print(f"ERROR: Port {port} is already in use!")
+        print("=" * 60)
+        print()
+        print("Another application is using this port. You have a few options:")
+        print()
+        print("1. Find and close the application using this port:")
+        if sys.platform == "win32":
+            print(f"   netstat -ano | findstr :{port}")
+        else:
+            print(f"   lsof -i :{port}")
+            print(f"   netstat -tulpn | grep :{port}")
+        print()
+        print("2. Use a different port by setting the DIGISHELL_PORT environment variable:")
+        if sys.platform == "win32":
+            print("   Windows CMD:        set DIGISHELL_PORT=8080")
+            print("   Windows PowerShell: $env:DIGISHELL_PORT=8080")
+        else:
+            print(f"   export DIGISHELL_PORT=8080")
+        print()
+        print("3. Then run DigiShell again")
+        print()
+        print("=" * 60)
+        sys.exit(1)
+
     print("=" * 60)
     print("FLDIGI Layer - Starting Server")
     print("=" * 60)
     print()
     print("Access URLs:")
-    print(f"  Local:    http://localhost:8000")
+    print(f"  Local:    http://localhost:{port}")
 
     network_ips = get_network_ips()
     if network_ips:
         for interface, ip in network_ips:
             label = f"({interface})" if interface else ""
-            print(f"  Network:  http://{ip}:8000 {label}")
+            print(f"  Network:  http://{ip}:{port} {label}")
 
     print()
-    print("API Docs:   http://localhost:8000/docs")
-    print("WebSocket:  ws://localhost:8000/ws")
+    print(f"API Docs:   http://localhost:{port}/docs")
+    print(f"WebSocket:  ws://localhost:{port}/ws")
     print("=" * 60)
     print("Press Ctrl+C to stop")
     print()
 
-    uvicorn.run(
-        "backend.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=False,
-        log_level="warning",
-        access_log=False
-    )
+    try:
+        uvicorn.run(
+            "backend.main:app",
+            host="0.0.0.0",
+            port=port,
+            reload=False,
+            log_level="warning",
+            access_log=False
+        )
+    except OSError as e:
+        if "address already in use" in str(e).lower() or "10048" in str(e):
+            print()
+            print("=" * 60)
+            print(f"ERROR: Failed to bind to port {port}")
+            print("=" * 60)
+            print()
+            print("The port became unavailable while starting.")
+            print("Please use a different port with DIGISHELL_PORT environment variable.")
+            print("=" * 60)
+            sys.exit(1)
+        else:
+            raise

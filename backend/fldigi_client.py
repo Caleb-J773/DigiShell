@@ -5,6 +5,11 @@ from pyfldigi import Client
 
 logger = logging.getLogger(__name__)
 
+# Suppress excessive logging from dependencies
+logging.getLogger('pyfldigi').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
+logging.getLogger('requests').setLevel(logging.CRITICAL)
+
 
 class FldigiClient:
 
@@ -49,6 +54,40 @@ class FldigiClient:
     def is_connected(self) -> bool:
         return self._connected
 
+    def check_connection_health(self) -> bool:
+        """Check if the connection is actually alive by making a simple API call."""
+        if not self._connected:
+            return False
+        try:
+            # Try a lightweight operation to verify connection
+            _ = self.client.name
+            return True
+        except Exception as e:
+            logger.warning(f"Connection health check failed: {e}")
+            self._connected = False
+            return False
+
+    def _is_connection_error(self, error: Exception) -> bool:
+        """Check if an exception indicates a connection problem."""
+        error_str = str(error).lower()
+        error_type = type(error).__name__
+
+        # Connection error keywords
+        connection_indicators = [
+            'connection', 'refused', '10054', '10061',
+            'forcibly closed', 'max retries', 'failed to establish',
+            'target machine actively refused'
+        ]
+
+        return any(keyword in error_str for keyword in connection_indicators) or \
+               error_type in ['ConnectionError', 'ConnectionRefusedError', 'ConnectionResetError']
+
+    def reconnect(self) -> tuple[bool, Optional[str]]:
+        """Attempt to reconnect to FlDigi."""
+        logger.info("Attempting to reconnect to FLDIGI...")
+        self.disconnect()
+        return self.connect()
+
     def get_version(self) -> Optional[str]:
         if not self.is_connected():
             return None
@@ -56,7 +95,7 @@ class FldigiClient:
             version = self.client.version
             return f"{version['major']}.{version['minor']}{version['patch']}"
         except Exception as e:
-            logger.error(f"Error getting version: {e}")
+            logger.debug(f"Error getting version: {e}")
             return None
 
     def get_name(self) -> Optional[str]:
@@ -65,7 +104,7 @@ class FldigiClient:
         try:
             return self.client.name
         except Exception as e:
-            logger.error(f"Error getting name: {e}")
+            logger.debug(f"Error getting name: {e}")
             return None
 
     def get_modem(self) -> Optional[str]:
@@ -74,7 +113,7 @@ class FldigiClient:
         try:
             return self.client.modem.name
         except Exception as e:
-            logger.error(f"Error getting modem: {e}")
+            logger.debug(f"Error getting modem: {e}")
             return None
 
     def set_modem(self, modem_name: str) -> bool:
@@ -85,7 +124,7 @@ class FldigiClient:
             logger.info(f"Set modem to: {modem_name}")
             return True
         except Exception as e:
-            logger.error(f"Error setting modem: {e}")
+            logger.debug(f"Error setting modem: {e}")
             return False
 
     def get_carrier(self) -> Optional[int]:
@@ -94,7 +133,7 @@ class FldigiClient:
         try:
             return self.client.modem.carrier
         except Exception as e:
-            logger.error(f"Error getting carrier: {e}")
+            logger.debug(f"Error getting carrier: {e}")
             return None
 
     def set_carrier(self, frequency: int) -> bool:
@@ -105,7 +144,7 @@ class FldigiClient:
             logger.info(f"Set carrier to: {frequency} Hz")
             return True
         except Exception as e:
-            logger.error(f"Error setting carrier: {e}")
+            logger.debug(f"Error setting carrier: {e}")
             return False
 
     def get_bandwidth(self) -> Optional[int]:
@@ -114,7 +153,7 @@ class FldigiClient:
         try:
             return self.client.modem.bandwidth
         except Exception as e:
-            logger.error(f"Error getting bandwidth: {e}")
+            logger.debug(f"Error getting bandwidth: {e}")
             return None
 
     def set_bandwidth(self, bandwidth: int) -> bool:
@@ -125,7 +164,7 @@ class FldigiClient:
             logger.info(f"Set bandwidth to: {bandwidth} Hz")
             return True
         except Exception as e:
-            logger.error(f"Error setting bandwidth: {e}")
+            logger.debug(f"Error setting bandwidth: {e}")
             return False
 
     def get_quality(self) -> Optional[float]:
@@ -134,7 +173,7 @@ class FldigiClient:
         try:
             return self.client.modem.quality
         except Exception as e:
-            logger.error(f"Error getting quality: {e}")
+            logger.debug(f"Error getting quality: {e}")
             return None
 
     def get_status1(self) -> Optional[str]:
@@ -144,7 +183,7 @@ class FldigiClient:
         try:
             return self.client.client.main.get_status1()
         except Exception as e:
-            logger.error(f"Error getting status1: {e}")
+            logger.debug(f"Error getting status1: {e}")
             return None
 
     def get_status2(self) -> Optional[str]:
@@ -154,7 +193,7 @@ class FldigiClient:
         try:
             return self.client.client.main.get_status2()
         except Exception as e:
-            logger.error(f"Error getting status2: {e}")
+            logger.debug(f"Error getting status2: {e}")
             return None
 
     def get_signal_metrics(self) -> Dict[str, Any]:
@@ -295,7 +334,13 @@ class FldigiClient:
         try:
             return self.client.main.get_trx_state()
         except Exception as e:
-            logger.error(f"Error getting TRX status: {e}")
+            # Check if this is a connection error
+            if self._is_connection_error(e):
+                if self._connected:
+                    logger.warning("FlDigi connection lost")
+                    self._connected = False
+            else:
+                logger.debug(f"Error getting TRX status: {e}")
             return None
 
     def tx(self) -> bool:
@@ -306,7 +351,7 @@ class FldigiClient:
             logger.info("Started TX")
             return True
         except Exception as e:
-            logger.error(f"Error starting TX: {e}")
+            logger.debug(f"Error starting TX: {e}")
             return False
 
     def rx(self) -> bool:
@@ -317,7 +362,7 @@ class FldigiClient:
             logger.info("Switched to RX")
             return True
         except Exception as e:
-            logger.error(f"Error switching to RX: {e}")
+            logger.debug(f"Error switching to RX: {e}")
             return False
 
     def tune(self) -> bool:
@@ -328,7 +373,7 @@ class FldigiClient:
             logger.info("Started TUNE")
             return True
         except Exception as e:
-            logger.error(f"Error starting TUNE: {e}")
+            logger.debug(f"Error starting TUNE: {e}")
             return False
 
     def abort(self) -> bool:
@@ -339,7 +384,7 @@ class FldigiClient:
             logger.info("Aborted TX/TUNE")
             return True
         except Exception as e:
-            logger.error(f"Error aborting: {e}")
+            logger.debug(f"Error aborting: {e}")
             return False
 
     def get_rx_text(self) -> Optional[str]:
@@ -351,7 +396,13 @@ class FldigiClient:
                 return data.decode('utf-8', errors='ignore')
             return data if data else ""
         except Exception as e:
-            logger.error(f"Error getting RX text: {e}")
+            # Check if this is a connection error
+            if self._is_connection_error(e):
+                if self._connected:
+                    logger.warning("FlDigi connection lost")
+                    self._connected = False
+            else:
+                logger.debug(f"Error getting RX text: {e}")
             return None
 
     def get_tx_text(self) -> Optional[str]:
@@ -363,7 +414,7 @@ class FldigiClient:
                 return data.decode('utf-8', errors='ignore')
             return data if data else ""
         except Exception as e:
-            logger.error(f"Error getting TX text: {e}")
+            logger.debug(f"Error getting TX text: {e}")
             return None
 
     def add_tx_text(self, text: str, wait: bool = False) -> bool:
@@ -379,7 +430,7 @@ class FldigiClient:
 
             return True
         except Exception as e:
-            logger.error(f"Error transmitting text: {e}")
+            logger.debug(f"Error transmitting text: {e}")
             return False
 
     def start_live_tx(self, text: str) -> bool:
@@ -392,7 +443,7 @@ class FldigiClient:
             logger.info("[TX LIVE] TX started via main.send()")
             return True
         except Exception as e:
-            logger.error(f"Error starting live TX: {e}")
+            logger.debug(f"Error starting live TX: {e}")
             return False
 
     def add_tx_chars(self, text: str, start_tx: bool = True) -> bool:
@@ -410,7 +461,7 @@ class FldigiClient:
 
             return True
         except Exception as e:
-            logger.error(f"Error adding characters to TX buffer: {e}")
+            logger.debug(f"Error adding characters to TX buffer: {e}")
             return False
 
     def send_backspace(self) -> bool:
@@ -421,7 +472,7 @@ class FldigiClient:
             self.client.client.text.add_tx('\x08')
             return True
         except Exception as e:
-            logger.error(f"Error sending backspace: {e}")
+            logger.debug(f"Error sending backspace: {e}")
             return False
 
     def end_tx_live(self, wait_for_drain: bool = False) -> bool:
@@ -437,7 +488,7 @@ class FldigiClient:
             logger.info("[TX LIVE] Switched to RX mode")
             return True
         except Exception as e:
-            logger.error(f"Error ending TX: {e}")
+            logger.debug(f"Error ending TX: {e}")
             return False
 
     def clear_rx(self) -> bool:
@@ -448,7 +499,7 @@ class FldigiClient:
             logger.info("Cleared RX buffer")
             return True
         except Exception as e:
-            logger.error(f"Error clearing RX: {e}")
+            logger.debug(f"Error clearing RX: {e}")
             return False
 
     def clear_tx(self) -> bool:
@@ -459,7 +510,7 @@ class FldigiClient:
             logger.info("Cleared TX buffer")
             return True
         except Exception as e:
-            logger.error(f"Error clearing TX: {e}")
+            logger.debug(f"Error clearing TX: {e}")
             return False
 
     def get_rsid(self) -> Optional[bool]:
@@ -468,7 +519,7 @@ class FldigiClient:
         try:
             return self.client.main.rsid
         except Exception as e:
-            logger.error(f"Error getting RSID: {e}")
+            logger.debug(f"Error getting RSID: {e}")
             return None
 
     def set_rsid(self, enabled: bool) -> bool:
@@ -479,7 +530,7 @@ class FldigiClient:
             logger.info(f"Set RSID to: {enabled}")
             return True
         except Exception as e:
-            logger.error(f"Error setting RSID: {e}")
+            logger.debug(f"Error setting RSID: {e}")
             return False
 
     def get_txid(self) -> Optional[bool]:
@@ -488,7 +539,7 @@ class FldigiClient:
         try:
             return bool(self.client.client.main.get_txid())
         except Exception as e:
-            logger.error(f"Error getting TXID: {e}")
+            logger.debug(f"Error getting TXID: {e}")
             return None
 
     def set_txid(self, enabled: bool) -> bool:
@@ -499,7 +550,7 @@ class FldigiClient:
             logger.info(f"Set TXID to: {enabled}")
             return True
         except Exception as e:
-            logger.error(f"Error setting TXID: {e}")
+            logger.debug(f"Error setting TXID: {e}")
             return False
 
     def get_rig_name(self) -> Optional[str]:
@@ -508,7 +559,7 @@ class FldigiClient:
         try:
             return self.client.rig.name
         except Exception as e:
-            logger.error(f"Error getting rig name: {e}")
+            logger.debug(f"Error getting rig name: {e}")
             return None
 
     def get_rig_frequency(self) -> Optional[float]:
@@ -517,7 +568,7 @@ class FldigiClient:
         try:
             return self.client.rig.frequency
         except Exception as e:
-            logger.error(f"Error getting rig frequency: {e}")
+            logger.debug(f"Error getting rig frequency: {e}")
             return None
 
     def set_rig_frequency(self, frequency: float) -> bool:
@@ -528,7 +579,7 @@ class FldigiClient:
             logger.info(f"Set rig frequency to: {frequency} Hz")
             return True
         except Exception as e:
-            logger.error(f"Error setting rig frequency: {e}")
+            logger.debug(f"Error setting rig frequency: {e}")
             return False
 
     def get_rig_mode(self) -> Optional[str]:
@@ -537,7 +588,7 @@ class FldigiClient:
         try:
             return self.client.rig.mode
         except Exception as e:
-            logger.error(f"Error getting rig mode: {e}")
+            logger.debug(f"Error getting rig mode: {e}")
             return None
 
     def set_rig_mode(self, mode: str) -> bool:
@@ -548,7 +599,7 @@ class FldigiClient:
             logger.info(f"Set rig mode to: {mode}")
             return True
         except Exception as e:
-            logger.error(f"Error setting rig mode: {e}")
+            logger.debug(f"Error setting rig mode: {e}")
             return False
 
     def get_afc(self) -> Optional[bool]:
@@ -575,7 +626,7 @@ class FldigiClient:
         try:
             return bool(self.client.client.main.get_squelch())
         except Exception as e:
-            logger.error(f"Error getting squelch status: {e}")
+            logger.debug(f"Error getting squelch status: {e}")
             return None
 
     def set_squelch(self, enabled: bool) -> bool:
@@ -586,7 +637,7 @@ class FldigiClient:
             logger.info(f"Set squelch to: {enabled}")
             return True
         except Exception as e:
-            logger.error(f"Error setting squelch: {e}")
+            logger.debug(f"Error setting squelch: {e}")
             return False
 
     def get_reverse(self) -> Optional[bool]:
@@ -613,7 +664,7 @@ class FldigiClient:
         try:
             return float(self.client.client.main.get_squelch_level())
         except Exception as e:
-            logger.error(f"Error getting squelch level: {e}")
+            logger.debug(f"Error getting squelch level: {e}")
             return None
 
     def set_squelch_level(self, level: float) -> bool:
@@ -625,7 +676,7 @@ class FldigiClient:
             logger.info(f"Set squelch level to: {clamped_level}")
             return True
         except Exception as e:
-            logger.error(f"Error setting squelch level: {e}")
+            logger.debug(f"Error setting squelch level: {e}")
             return False
 
     def get_status(self) -> Dict[str, Any]:

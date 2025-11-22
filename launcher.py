@@ -12,6 +12,16 @@ def print_header(title):
     print("=" * 44)
     print()
 
+def check_port_available(port):
+    """Check if a port is available for binding."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind(('0.0.0.0', port))
+        sock.close()
+        return True
+    except OSError:
+        return False
+
 def check_python():
     print(f"[OK] Python detected")
     print(f"Python {sys.version.split()[0]}")
@@ -237,24 +247,68 @@ def main():
     print("=" * 44)
 
     if interface_mode == 1:
+        # Get port from environment variable or use default
+        try:
+            port = int(os.environ.get('DIGISHELL_PORT', 8000))
+        except ValueError:
+            print("[ERROR] Invalid DIGISHELL_PORT value. Using default port 8000.")
+            port = 8000
+
+        # Check if port is available
+        if not check_port_available(port):
+            print()
+            print("=" * 44)
+            print(f"ERROR: Port {port} is already in use!")
+            print("=" * 44)
+            print()
+            print("Another application is using this port.")
+            print()
+            print("Options:")
+            print("1. Close the other application")
+            print("2. Use a different port:")
+            if sys.platform == "win32":
+                print("   set DIGISHELL_PORT=8080")
+            else:
+                print("   export DIGISHELL_PORT=8080")
+            print()
+            print("Then restart DigiShell")
+            print("=" * 44)
+            input("\nPress Enter to exit...")
+            sys.exit(1)
+
         print("DigiShell - Starting Server")
         print("=" * 44)
         print()
-        print("[INFO] Server starting on http://localhost:8000")
-        print("[INFO] Open your browser and navigate to: http://localhost:8000")
+        print(f"[INFO] Server starting on http://localhost:{port}")
+        print(f"[INFO] Open your browser and navigate to: http://localhost:{port}")
         print("[INFO] Press Ctrl+C to stop the server")
         print()
 
         if getattr(sys, 'frozen', False):
             import uvicorn
             from backend.main import app
-            uvicorn.run(
-                app,
-                host="0.0.0.0",
-                port=8000,
-                log_level="warning",
-                access_log=False
-            )
+            try:
+                uvicorn.run(
+                    app,
+                    host="0.0.0.0",
+                    port=port,
+                    log_level="warning",
+                    access_log=False
+                )
+            except OSError as e:
+                if "address already in use" in str(e).lower() or "10048" in str(e):
+                    print()
+                    print("=" * 44)
+                    print(f"ERROR: Failed to bind to port {port}")
+                    print("=" * 44)
+                    print()
+                    print("The port became unavailable while starting.")
+                    print("Please use DIGISHELL_PORT to set a different port.")
+                    print("=" * 44)
+                    input("\nPress Enter to exit...")
+                    sys.exit(1)
+                else:
+                    raise
         else:
             subprocess.run([python_exe, "-m", "backend.main"])
     else:

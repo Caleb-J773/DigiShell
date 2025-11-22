@@ -5,6 +5,7 @@
 import { wsClient } from './websocket.js';
 import { api } from './api.js';
 import { initPresets } from './presets.js';
+import { LAYOUTS, applyLayout, getCurrentLayout, initLayoutSystem } from './layouts.js';
 
 const MODE_SPEEDS = {
     'PSK31': 65,
@@ -118,12 +119,109 @@ const elements = {
 };
 
 /**
+ * Setup layout UI elements
+ */
+function setupLayoutUI() {
+    // Populate layouts grid in settings
+    const layoutsGrid = document.getElementById('layouts-grid');
+    if (layoutsGrid) {
+        layoutsGrid.innerHTML = '';
+        Object.entries(LAYOUTS).forEach(([id, layout]) => {
+            const layoutCard = document.createElement('div');
+            layoutCard.className = 'layout-card';
+            layoutCard.style.cssText = `
+                padding: 1rem;
+                border: 2px solid var(--border-light);
+                border-radius: var(--radius-md);
+                cursor: pointer;
+                transition: all 0.2s ease;
+                background: var(--bg-secondary);
+            `;
+
+            const isActive = getCurrentLayout() === id;
+            if (isActive) {
+                layoutCard.style.borderColor = 'var(--accent)';
+                layoutCard.style.background = 'var(--accent-light)';
+            }
+
+            layoutCard.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-${isActive ? 'check-circle' : 'circle'}" style="color: ${isActive ? 'var(--accent)' : 'var(--text-secondary)'}; font-size: 1.25rem;"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">${layout.name}</div>
+                        <div style="font-size: 0.8125rem; color: var(--text-secondary);">${layout.description}</div>
+                    </div>
+                </div>
+            `;
+
+            layoutCard.addEventListener('click', () => {
+                applyLayout(id);
+                // Refresh UI
+                setupLayoutUI();
+            });
+
+            layoutCard.addEventListener('mouseenter', () => {
+                if (!isActive) {
+                    layoutCard.style.borderColor = 'var(--accent-hover)';
+                    layoutCard.style.transform = 'translateX(4px)';
+                }
+            });
+
+            layoutCard.addEventListener('mouseleave', () => {
+                if (!isActive) {
+                    layoutCard.style.borderColor = 'var(--border-light)';
+                    layoutCard.style.transform = 'translateX(0)';
+                }
+            });
+
+            layoutsGrid.appendChild(layoutCard);
+        });
+    }
+
+    // Setup sidebar toggle for minimal layout
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+
+        // Close sidebar when clicking outside in minimal layout
+        document.addEventListener('click', (e) => {
+            if (getCurrentLayout() === 'minimal') {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+    }
+
+    // Handle layouts tab in settings
+    const layoutsTab = document.getElementById('tab-layouts');
+    if (layoutsTab) {
+        layoutsTab.addEventListener('click', () => {
+            // Switch to layouts tab
+            document.querySelectorAll('.settings-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.settings-tab-content').forEach(content => content.classList.remove('active'));
+
+            layoutsTab.classList.add('active');
+            document.getElementById('settings-content-layouts').classList.add('active');
+        });
+    }
+}
+
+/**
  * Initialize application
  */
 async function init() {
     console.log('Initializing FLDIGI Web Wrapper...');
 
     setupEventListeners();
+
+    initLayoutSystem();
+
+    setupLayoutUI();
 
     setupWebSocketHandlers();
 
@@ -403,6 +501,11 @@ function updateConnectionStatus(connected, details = {}) {
         elements.connectBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
         elements.connectBtn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
 
+        // Show reconnection success notification if we were previously disconnected
+        if (details.version) {
+            showNotification(`Connected to FlDigi (${details.version})`, 'success');
+        }
+
         loadInitialData();
     } else {
         elements.statusIndicator.classList.remove('connected');
@@ -411,6 +514,10 @@ function updateConnectionStatus(connected, details = {}) {
         // Reset to primary button style when disconnected (to connect)
         elements.connectBtn.style.background = 'linear-gradient(135deg, var(--accent), var(--accent-hover))';
         elements.connectBtn.style.boxShadow = '0 4px 12px rgba(14, 165, 233, 0.25)';
+
+        // Show disconnection notification with error details if available
+        const errorMsg = details.error || 'Not connected to FlDigi';
+        showNotification(`FlDigi Disconnected: ${errorMsg}`, 'warning');
     }
 }
 
