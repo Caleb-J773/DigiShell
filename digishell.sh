@@ -99,8 +99,25 @@ if [ $FLDIGI_RUNNING -eq 0 ]; then
 
     if [ $FLDIGI_FOUND -eq 1 ]; then
         echo "[OK] Found FlDigi at: $FLDIGI_PATH"
-        "$FLDIGI_PATH" &> /dev/null &
-        echo "[OK] FlDigi started, waiting for initialization..."
+
+        # Check if waterfall streaming is enabled
+        USE_WATERFALL_MODE=0
+        CONFIG_FILE="$HOME/.fldigi_web.json"
+        if [ -f "$CONFIG_FILE" ]; then
+            if grep -q '"waterfallStreamingEnabled".*:.*true' "$CONFIG_FILE" 2>/dev/null; then
+                USE_WATERFALL_MODE=1
+                echo "[INFO] Waterfall streaming enabled - launching FlDigi in minimal mode"
+            fi
+        fi
+
+        # Launch FlDigi with optional --wfall-only parameter
+        if [ $USE_WATERFALL_MODE -eq 1 ]; then
+            "$FLDIGI_PATH" --wfall-only &> /dev/null &
+            echo "[OK] FlDigi started in waterfall-only mode, waiting for initialization..."
+        else
+            "$FLDIGI_PATH" &> /dev/null &
+            echo "[OK] FlDigi started, waiting for initialization..."
+        fi
         sleep 5
         echo ""
     else

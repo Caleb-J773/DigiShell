@@ -392,6 +392,8 @@ class FldigiClient:
             if not text.endswith('^r'):
                 text = text + '^r'
 
+            # Use pyFldigi wrapper - handles buffer clearing automatically
+            # This works in both normal and --wfall-only mode
             self.client.main.send(text, block=wait, timeout=30)
             logger.info(f"[TX] Sent {len(text)} chars (block={wait}): {text[:50]}...")
 
@@ -406,6 +408,7 @@ class FldigiClient:
 
         try:
             logger.info(f"[TX LIVE] Starting new TX session with {len(text)} chars")
+            # Use main.send() to ensure buffer is cleared before starting
             self.client.main.send(text, block=False, timeout=30)
             logger.info("[TX LIVE] TX started via main.send()")
             return True

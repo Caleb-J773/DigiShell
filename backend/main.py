@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.fldigi_client import fldigi_client
 from backend.websocket_manager import manager
 from backend.models import ConnectionStatus, StatusUpdate
-from backend.routers import modem, txrx, rig, macros, settings, presets
+from backend.routers import modem, txrx, rig, macros, settings, presets, waterfall
 from backend.dependencies import require_fldigi_connected
 from backend.config import (
     STATUS_POLL_INTERVAL,
@@ -181,6 +181,7 @@ app.include_router(rig.router)
 app.include_router(macros.router)
 app.include_router(settings.router)
 app.include_router(presets.router)
+app.include_router(waterfall.router)
 
 
 

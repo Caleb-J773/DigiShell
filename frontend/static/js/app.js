@@ -32,7 +32,8 @@ window.webConfig = {
     theme: 'dark',
     hasSeenWelcome: false,
     custom_keybinds: null,
-    betaFeatures: false
+    betaFeatures: false,
+    waterfallStreamingEnabled: false  // BETA: FlDigi waterfall streaming
 };
 
 async function loadWebConfig() {
@@ -72,13 +73,20 @@ function applyBetaFeatures(enabled) {
     const modemTab = document.getElementById('tab-modem');
     const txProgressContainer = document.getElementById('tx-progress-container');
     const txProgressToggle = document.getElementById('tx-progress-toggle');
+    const waterfallToggleContainer = document.getElementById('waterfall-streaming-toggle-container');
 
     if (enabled) {
         modemTab.style.display = '';
         txProgressContainer.style.display = 'flex';
+        if (waterfallToggleContainer) {
+            waterfallToggleContainer.style.display = 'flex';
+        }
     } else {
         modemTab.style.display = 'none';
         txProgressContainer.style.display = 'none';
+        if (waterfallToggleContainer) {
+            waterfallToggleContainer.style.display = 'none';
+        }
 
         // Turn off TX progress when beta features are disabled
         if (txProgressToggle && txProgressToggle.checked) {
@@ -86,6 +94,15 @@ function applyBetaFeatures(enabled) {
             localStorage.setItem('showTxProgress', 'false');
             // Trigger change event to update state
             txProgressToggle.dispatchEvent(new Event('change'));
+        }
+
+        // Turn off waterfall streaming when beta features are disabled
+        if (window.webConfig.waterfallStreamingEnabled) {
+            window.webConfig.waterfallStreamingEnabled = false;
+            saveWebConfig();
+            if (window.waterfallViewer) {
+                window.waterfallViewer.applySettings();
+            }
         }
     }
 }
@@ -100,6 +117,23 @@ async function initTheme() {
     // Apply beta features setting on load
     if (typeof applyBetaFeatures === 'function') {
         applyBetaFeatures(window.webConfig.betaFeatures || false);
+    }
+
+    // Apply waterfall streaming settings on load (if viewer is ready)
+    // If not ready yet, it will apply settings when it initializes
+    if (window.waterfallViewer) {
+        window.waterfallViewer.applySettings();
+    } else {
+        // Store flag to apply settings when viewer is ready
+        window._applyWaterfallSettingsOnReady = true;
+    }
+
+    // Apply saved panel order (if applyPanelOrder function is available)
+    if (typeof applyPanelOrder === 'function') {
+        applyPanelOrder();
+    } else {
+        // Store flag to apply panel order when function is available
+        window._applyPanelOrderOnReady = true;
     }
 
     // Initialize theme manager after config is loaded
@@ -339,6 +373,11 @@ document.getElementById('settings-btn').onclick = () => {
     // Load and apply beta features setting
     document.getElementById('beta-features-toggle').checked = window.webConfig.betaFeatures || false;
     applyBetaFeatures(window.webConfig.betaFeatures || false);
+    // Load waterfall streaming setting
+    const waterfallToggle = document.getElementById('waterfall-streaming-settings-toggle');
+    if (waterfallToggle) {
+        waterfallToggle.checked = window.webConfig.waterfallStreamingEnabled || false;
+    }
     // Load theme grids if theme UI is available
     if (window.loadThemeGrids) {
         window.loadThemeGrids();
@@ -1151,6 +1190,174 @@ document.getElementById('save-keybinds-btn').onclick = async () => {
     document.getElementById('keybinds-modal').classList.remove('active');
     showToast('Keybinds saved successfully!', 'success');
 };
+
+// Panel Reordering
+const REORDERABLE_PANELS = ['macros-panel', 'waterfall-panel'];
+
+function getPanelOrder() {
+    // Get the current order of panels in the DOM
+    const container = document.getElementById('macros-panel')?.parentElement;
+    if (!container) return REORDERABLE_PANELS;
+
+    const order = [];
+    for (const panelId of REORDERABLE_PANELS) {
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            order.push({
+                id: panelId,
+                element: panel
+            });
+        }
+    }
+
+    // Sort by actual DOM position
+    order.sort((a, b) => {
+        const posA = Array.from(container.children).indexOf(a.element);
+        const posB = Array.from(container.children).indexOf(b.element);
+        return posA - posB;
+    });
+
+    return order.map(item => item.id);
+}
+
+async function savePanelOrder() {
+    const order = getPanelOrder();
+    window.webConfig.panelOrder = order;
+    await saveWebConfig();
+}
+
+function updatePanelMoveButtons() {
+    const order = getPanelOrder();
+
+    order.forEach((panelId, index) => {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+
+        const upBtn = panel.querySelector('.panel-move-up');
+        const downBtn = panel.querySelector('.panel-move-down');
+
+        if (upBtn) {
+            upBtn.disabled = index === 0;
+            upBtn.style.opacity = index === 0 ? '0.3' : '1';
+            upBtn.style.cursor = index === 0 ? 'not-allowed' : 'pointer';
+        }
+
+        if (downBtn) {
+            downBtn.disabled = index === order.length - 1;
+            downBtn.style.opacity = index === order.length - 1 ? '0.3' : '1';
+            downBtn.style.cursor = index === order.length - 1 ? 'not-allowed' : 'pointer';
+        }
+    });
+}
+
+async function movePanelUp(panelId) {
+    const order = getPanelOrder();
+    const index = order.indexOf(panelId);
+
+    if (index <= 0) return; // Already at top or not found
+
+    const panel = document.getElementById(panelId);
+    const previousPanel = document.getElementById(order[index - 1]);
+
+    if (panel && previousPanel && panel.parentElement) {
+        panel.parentElement.insertBefore(panel, previousPanel);
+        await savePanelOrder();
+        updatePanelMoveButtons();
+    }
+}
+
+async function movePanelDown(panelId) {
+    const order = getPanelOrder();
+    const index = order.indexOf(panelId);
+
+    if (index < 0 || index >= order.length - 1) return; // Already at bottom or not found
+
+    const panel = document.getElementById(panelId);
+    const nextPanel = document.getElementById(order[index + 1]);
+
+    if (panel && nextPanel && panel.parentElement) {
+        panel.parentElement.insertBefore(nextPanel, panel);
+        await savePanelOrder();
+        updatePanelMoveButtons();
+    }
+}
+
+window.applyPanelOrder = function applyPanelOrder() {
+    const savedOrder = window.webConfig?.panelOrder;
+    if (!savedOrder || !Array.isArray(savedOrder)) {
+        updatePanelMoveButtons();
+        return;
+    }
+
+    // Get the container
+    const macrosPanel = document.getElementById('macros-panel');
+    const waterfallPanel = document.getElementById('waterfall-panel');
+
+    if (!macrosPanel || !macrosPanel.parentElement) return;
+
+    const container = macrosPanel.parentElement;
+
+    // Find the anchor point - we want to insert after TX panel but before where macros currently is
+    // First, detach both reorderable panels temporarily
+    const panels = [];
+    for (const panelId of savedOrder) {
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            panels.push(panel);
+            panel.remove(); // Temporarily remove from DOM
+        }
+    }
+
+    // Find the TX panel to use as our anchor
+    const txPanel = Array.from(container.children).find(child =>
+        child.querySelector('#tx-text')
+    );
+
+    // Reinsert panels in the correct order, right after TX panel
+    if (txPanel) {
+        let insertAfter = txPanel;
+        for (const panel of panels) {
+            if (insertAfter.nextSibling) {
+                container.insertBefore(panel, insertAfter.nextSibling);
+            } else {
+                container.appendChild(panel);
+            }
+            insertAfter = panel;
+        }
+    } else {
+        // Fallback: just append in order
+        for (const panel of panels) {
+            container.appendChild(panel);
+        }
+    }
+
+    updatePanelMoveButtons();
+};
+
+// Set up event listeners for panel move buttons
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.panel-move-up').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const panelId = btn.getAttribute('data-panel');
+            await movePanelUp(panelId);
+        });
+    });
+
+    document.querySelectorAll('.panel-move-down').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const panelId = btn.getAttribute('data-panel');
+            await movePanelDown(panelId);
+        });
+    });
+
+    // Apply panel order if config was loaded before DOM ready
+    if (window._applyPanelOrderOnReady || (window.webConfig && window.webConfig.panelOrder)) {
+        applyPanelOrder();
+        window._applyPanelOrderOnReady = false;
+    }
+});
 
 (async () => {
     await loadStoredKeybinds();
