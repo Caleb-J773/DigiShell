@@ -392,16 +392,10 @@ class FldigiClient:
             if not text.endswith('^r'):
                 text = text + '^r'
 
-            # Use text.add_tx() for better compatibility with --wfall-only mode
-            # This doesn't rely on TX pane UI components
-            self.client.client.text.add_tx(text)
-
-            # Start TX if not already transmitting
-            trx_status = self.get_trx_status()
-            if trx_status and trx_status != 'TX':
-                self.client.main.tx()
-
-            logger.info(f"[TX] Sent {len(text)} chars: {text[:50]}...")
+            # Use pyFldigi wrapper - handles buffer clearing automatically
+            # This works in both normal and --wfall-only mode
+            self.client.main.send(text, block=wait, timeout=30)
+            logger.info(f"[TX] Sent {len(text)} chars (block={wait}): {text[:50]}...")
 
             return True
         except Exception as e:
@@ -414,12 +408,9 @@ class FldigiClient:
 
         try:
             logger.info(f"[TX LIVE] Starting new TX session with {len(text)} chars")
-            # Use text.add_tx() for better compatibility with --wfall-only mode
-            self.client.client.text.add_tx(text)
-
-            # Start TX
-            self.client.main.tx()
-            logger.info("[TX LIVE] TX started")
+            # Use main.send() to ensure buffer is cleared before starting
+            self.client.main.send(text, block=False, timeout=30)
+            logger.info("[TX LIVE] TX started via main.send()")
             return True
         except Exception as e:
             logger.debug(f"Error starting live TX: {e}")
