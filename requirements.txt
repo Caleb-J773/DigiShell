@@ -17,3 +17,7 @@ pydantic-settings>=2.6.0
 # Terminal UI (optional, for run_tui.py)
 rich>=13.0.0
 prompt_toolkit>=3.0.0
+
+# FlDigi Waterfall Streaming (optional, for beta features)
+python-xlib>=0.33; sys_platform == 'linux'
+Pillow>=10.0.0

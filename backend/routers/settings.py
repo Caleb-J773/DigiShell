@@ -41,6 +41,7 @@ class WebConfig(BaseModel):
     themes: Optional[Dict[str, Any]] = None
     uiPreferences: Optional[Dict[str, Any]] = None
     betaFeatures: Optional[bool] = False
+    waterfallStreamingEnabled: Optional[bool] = False  # BETA: FlDigi waterfall streaming (disabled by default)
 
 
 class WebConfigResponse(BaseModel):

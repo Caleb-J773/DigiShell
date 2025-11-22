@@ -32,7 +32,8 @@ window.webConfig = {
     theme: 'dark',
     hasSeenWelcome: false,
     custom_keybinds: null,
-    betaFeatures: false
+    betaFeatures: false,
+    waterfallStreamingEnabled: false  // BETA: FlDigi waterfall streaming
 };
 
 async function loadWebConfig() {
@@ -72,13 +73,20 @@ function applyBetaFeatures(enabled) {
     const modemTab = document.getElementById('tab-modem');
     const txProgressContainer = document.getElementById('tx-progress-container');
     const txProgressToggle = document.getElementById('tx-progress-toggle');
+    const waterfallToggleContainer = document.getElementById('waterfall-streaming-toggle-container');
 
     if (enabled) {
         modemTab.style.display = '';
         txProgressContainer.style.display = 'flex';
+        if (waterfallToggleContainer) {
+            waterfallToggleContainer.style.display = 'flex';
+        }
     } else {
         modemTab.style.display = 'none';
         txProgressContainer.style.display = 'none';
+        if (waterfallToggleContainer) {
+            waterfallToggleContainer.style.display = 'none';
+        }
 
         // Turn off TX progress when beta features are disabled
         if (txProgressToggle && txProgressToggle.checked) {
@@ -86,6 +94,15 @@ function applyBetaFeatures(enabled) {
             localStorage.setItem('showTxProgress', 'false');
             // Trigger change event to update state
             txProgressToggle.dispatchEvent(new Event('change'));
+        }
+
+        // Turn off waterfall streaming when beta features are disabled
+        if (window.webConfig.waterfallStreamingEnabled) {
+            window.webConfig.waterfallStreamingEnabled = false;
+            saveWebConfig();
+            if (window.waterfallViewer) {
+                window.waterfallViewer.applySettings();
+            }
         }
     }
 }
@@ -100,6 +117,11 @@ async function initTheme() {
     // Apply beta features setting on load
     if (typeof applyBetaFeatures === 'function') {
         applyBetaFeatures(window.webConfig.betaFeatures || false);
+    }
+
+    // Apply waterfall streaming settings on load
+    if (window.waterfallViewer) {
+        window.waterfallViewer.applySettings();
     }
 
     // Initialize theme manager after config is loaded
@@ -339,6 +361,11 @@ document.getElementById('settings-btn').onclick = () => {
     // Load and apply beta features setting
     document.getElementById('beta-features-toggle').checked = window.webConfig.betaFeatures || false;
     applyBetaFeatures(window.webConfig.betaFeatures || false);
+    // Load waterfall streaming setting
+    const waterfallToggle = document.getElementById('waterfall-streaming-settings-toggle');
+    if (waterfallToggle) {
+        waterfallToggle.checked = window.webConfig.waterfallStreamingEnabled || false;
+    }
     // Load theme grids if theme UI is available
     if (window.loadThemeGrids) {
         window.loadThemeGrids();
