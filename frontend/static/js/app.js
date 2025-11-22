@@ -634,7 +634,7 @@ const TUTORIAL_STEPS = [
                 <i class="fas fa-plug" style="font-size: 4rem; color: var(--accent);"></i>
             </div>
             <p style="margin-bottom: 1rem;">First, make sure <strong>FLDIGI is running</strong> on your computer with <strong>XML-RPC enabled</strong> (port 7362).</p>
-            <p style="margin-bottom: 1rem;">DigiShell will automatically detect and connect to FLDIGI when available. The connection status is shown in the top-right corner of the interface.</p>
+            <p style="margin-bottom: 1rem;">DigiShell will automatically detect and connect to FLDIGI when available. The connection status is shown in the top middle of the interface.</p>
             <div style="background: var(--success-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--success);">
                 <strong>Tip:</strong> The status indicator will turn green when connected! You can click it to manually reconnect if needed.
             </div>
@@ -667,10 +667,10 @@ const TUTORIAL_STEPS = [
             </div>
             <p style="margin-bottom: 1rem;"><strong>Receive Window:</strong> Shows incoming text from other stations in real-time with color coding - green for received text, red for your transmitted text. The window is resizable for your comfort.</p>
             <p style="margin-bottom: 1rem;"><strong>Transmit Buffer:</strong> Type your message here and click <strong>"Send"</strong> or press <strong>Ctrl+Enter</strong>. The intelligent buffer lets you continue typing while transmitting - you can backspace but cannot edit previous lines.</p>
-            <p style="margin-bottom: 1rem;"><strong>Smart Auto-Stop:</strong> DigiShell automatically ends transmission when you stop typing - no manual intervention needed!</p>
-            <p style="margin-bottom: 1rem;"><strong>Signal Monitoring:</strong> Watch real-time signal metrics including SNR (Signal-to-Noise Ratio), signal strength, and quality percentage.</p>
+            <p style="margin-bottom: 1rem;"><strong>Smart Auto-Stop:</strong> PyFLDIGI automatically ends transmission when you stop typing. You can also manually end transmission by placing <strong>^r</strong> at the end of your text.</p>
+            <p style="margin-bottom: 1rem;"><strong>Signal Monitoring:</strong> Watch real-time signal metrics including SNR (Signal-to-Noise Ratio) and signal strength.</p>
             <div style="background: var(--info-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--info);">
-                <strong>Pro Tip:</strong> Use the carrier frequency slider to fine-tune your signal for optimal decoding!
+                <strong>Tip:</strong> Use the carrier frequency slider to move around the bandwidth space.
             </div>
         `
     },
@@ -729,9 +729,8 @@ const TUTORIAL_STEPS = [
                 <li><strong>SNR</strong> - Signal-to-Noise Ratio in dB</li>
             </ul>
             <p style="margin-bottom: 1rem;"><strong>Rig Control:</strong> Control your radio directly from the interface if FLDIGI is configured for rig control (frequency, mode, PTT).</p>
-            <p style="margin-bottom: 1rem;"><strong>Modem Settings:</strong> Fine-tune AFC (Automatic Frequency Control), squelch level, and reverse sideband for optimal performance.</p>
             <div style="background: var(--info-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--info);">
-                <strong>Beta Features:</strong> Enable experimental features in Settings → Features for early access to new capabilities!
+                <strong>Beta Features:</strong> Enable experimental features in Settings → Features.
             </div>
         `
     },
@@ -748,7 +747,6 @@ const TUTORIAL_STEPS = [
                 <li><strong>Ctrl+K</strong> - Clear RX buffer</li>
                 <li><strong>Ctrl+R</strong> - Start RX mode</li>
                 <li><strong>Ctrl+D</strong> - Connect/Disconnect FLDIGI</li>
-                <li><strong>Escape</strong> - Abort transmission</li>
                 <li><strong>Alt+1 through Alt+5</strong> - Send macros 1-5</li>
             </ul>
             <p style="margin-bottom: 1rem;"><strong>Pro Tips:</strong></p>
@@ -758,7 +756,6 @@ const TUTORIAL_STEPS = [
                 <li>Use presets for instant band/mode switching</li>
                 <li>Customize your layout and theme for optimal comfort</li>
                 <li>Set "Last Call" in Station Info before using &lt;CALL&gt; macros</li>
-                <li>Watch signal metrics to optimize your station setup</li>
             </ul>
             <div style="background: var(--accent-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent); text-align: center;">
                 <strong>73 and good DX! 📡</strong>
@@ -883,7 +880,7 @@ document.getElementById('shortcuts-help-btn').addEventListener('dblclick', () =>
 const DEFAULT_KEYBINDS = {
     'send_tx': { keys: 'Ctrl+Enter', description: 'Send TX message', action: 'sendTx' },
     'clear_rx': { keys: 'Ctrl+K', description: 'Clear RX buffer', action: 'clearRx' },
-    'abort_tx': { keys: 'Escape', description: 'Abort transmission', action: 'abort' },
+    'abort_tx': { keys: '', description: 'Abort transmission', action: 'abort' },
     'toggle_connection': { keys: 'Ctrl+D', description: 'Connect/Disconnect', action: 'toggleConnection' },
     'start_rx': { keys: 'Ctrl+R', description: 'Start RX', action: 'startRx' },
 };
