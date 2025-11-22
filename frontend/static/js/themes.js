@@ -164,6 +164,60 @@ const THEME_PRESETS = {
             '--terminal-tx': '#dc2626'
         }
     },
+    'light-mint': {
+        name: 'Light Mint',
+        base: 'light',
+        colors: {
+            '--bg-primary': '#f7fcfa',
+            '--bg-secondary': '#f0faf6',
+            '--bg-tertiary': '#e6f5ef',
+            '--bg-hover': '#d9ede5',
+            '--text-primary': '#0d3b2f',
+            '--text-secondary': '#4a6358',
+            '--text-muted': '#7a9388',
+            '--border-light': '#d9ede5',
+            '--border-medium': '#b8dccf',
+            '--accent': '#10b981',
+            '--accent-hover': '#059669',
+            '--accent-light': '#d1fae5',
+            '--success': '#16a34a',
+            '--success-light': '#dcfce7',
+            '--warning': '#f59e0b',
+            '--warning-light': '#fef3c7',
+            '--danger': '#ef4444',
+            '--danger-light': '#fee2e2',
+            '--terminal-bg': '#1a3a2e',
+            '--terminal-text': '#10b981',
+            '--terminal-tx': '#ef4444'
+        }
+    },
+    'light-lavender': {
+        name: 'Light Lavender',
+        base: 'light',
+        colors: {
+            '--bg-primary': '#faf9fc',
+            '--bg-secondary': '#f5f3f9',
+            '--bg-tertiary': '#efeaf5',
+            '--bg-hover': '#e5ddf0',
+            '--text-primary': '#2d1b4e',
+            '--text-secondary': '#5e4a7e',
+            '--text-muted': '#9381ac',
+            '--border-light': '#e5ddf0',
+            '--border-medium': '#d4c7e3',
+            '--accent': '#8b5cf6',
+            '--accent-hover': '#7c3aed',
+            '--accent-light': '#ede9fe',
+            '--success': '#10b981',
+            '--success-light': '#d1fae5',
+            '--warning': '#f59e0b',
+            '--warning-light': '#fef3c7',
+            '--danger': '#ef4444',
+            '--danger-light': '#fee2e2',
+            '--terminal-bg': '#2d1b4e',
+            '--terminal-text': '#a78bfa',
+            '--terminal-tx': '#ef4444'
+        }
+    },
 
     // Dark Mode Themes
     'dark': {
