@@ -147,10 +147,6 @@
     background: var(--accent-hover);
 }
 
-.layout-minimal .panel:has(.macro-grid) .station-info {
-    display: none;
-}
-
 .layout-minimal .terminal-rx {
     min-height: 400px;
     height: calc(100vh - 450px);
