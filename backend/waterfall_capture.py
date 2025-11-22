@@ -236,10 +236,11 @@ class WaterfallCaptureService:
 
             hwnd = self.window_id
 
-            # Get window dimensions
-            left, top, right, bottom = win32gui.GetWindowRect(hwnd)
-            width = right - left
-            height = bottom - top
+            # Get CLIENT area dimensions (content area without title bar/borders)
+            # This is what we actually capture and what coordinates should be relative to
+            client_rect = win32gui.GetClientRect(hwnd)
+            width = client_rect[2] - client_rect[0]
+            height = client_rect[3] - client_rect[1]
 
             # Create device contexts
             hwnd_dc = win32gui.GetWindowDC(hwnd)
@@ -252,8 +253,8 @@ class WaterfallCaptureService:
             save_dc.SelectObject(save_bitmap)
 
             # Copy window content to bitmap
-            # Use PrintWindow for better compatibility with some windows
-            windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 2)  # 2 = PW_RENDERFULLCONTENT
+            # PW_CLIENTONLY (1) = capture only client area
+            windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 1)
 
             # Convert bitmap to PIL Image
             bmpinfo = save_bitmap.GetInfo()
@@ -275,7 +276,7 @@ class WaterfallCaptureService:
             mfc_dc.DeleteDC()
             win32gui.ReleaseDC(hwnd, hwnd_dc)
 
-            # Cache window size for click coordinate conversion
+            # Cache CLIENT area size for click coordinate conversion
             self.last_window_size = (width, height)
 
             # Encode as JPEG
@@ -384,31 +385,32 @@ class WaterfallCaptureService:
                 return False
 
             hwnd = self.window_id
-            window_width, window_height = self.last_window_size
+            client_width, client_height = self.last_window_size
 
-            # Convert canvas coordinates to window coordinates
+            # Convert canvas coordinates to client area coordinates
             # Canvas might be scaled differently than actual window
-            scale_x = window_width / canvas_width
-            scale_y = window_height / canvas_height
+            scale_x = client_width / canvas_width
+            scale_y = client_height / canvas_height
 
-            window_x = int(canvas_x * scale_x)
-            window_y = int(canvas_y * scale_y)
+            client_x = int(canvas_x * scale_x)
+            client_y = int(canvas_y * scale_y)
 
-            # Convert window-relative coordinates to screen coordinates
-            rect = win32gui.GetWindowRect(hwnd)
-            screen_x = rect[0] + window_x
-            screen_y = rect[1] + window_y
+            # Clamp coordinates to client area bounds
+            client_x = max(0, min(client_x, client_width - 1))
+            client_y = max(0, min(client_y, client_height - 1))
 
             # Create the click position parameter (LPARAM)
             # LPARAM = MAKELONG(x, y) for WM_LBUTTONDOWN/UP
-            lparam = win32api.MAKELONG(window_x, window_y)
+            # Coordinates are client-relative (perfect for our case)
+            lparam = win32api.MAKELONG(client_x, client_y)
 
-            # Send mouse down then mouse up to simulate click
-            win32gui.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lparam)
-            time.sleep(0.01)  # Small delay between down and up
-            win32gui.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, lparam)
+            # Use SendMessage for synchronous, reliable delivery
+            # This ensures FlDigi receives the message
+            win32gui.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lparam)
+            time.sleep(0.02)  # Small delay between down and up
+            win32gui.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, lparam)
 
-            print(f"Sent click to FlDigi at window coords ({window_x}, {window_y})")
+            print(f"Sent click to FlDigi at client coords ({client_x}, {client_y}) from canvas ({canvas_x}, {canvas_y})")
             return True
 
         except Exception as e:
