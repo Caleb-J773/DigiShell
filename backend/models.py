@@ -83,6 +83,10 @@ class StatusUpdate(BaseModel):
     rig_frequency: Optional[float] = None
     rig_mode: Optional[str] = None
     rig_name: Optional[str] = None
+    quality: Optional[float] = None
+    snr: Optional[float] = None
+    rst_estimate: Optional[str] = None
+    rsq_estimate: Optional[str] = None
 
 
 class PresetFrequency(BaseModel):

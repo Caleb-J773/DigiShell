@@ -40,6 +40,9 @@ async def poll_fldigi_status():
                 if status_poll_counter >= 5:
                     status_poll_counter = 0
 
+                    # Get signal metrics
+                    signal_metrics = fldigi_client.get_signal_metrics()
+
                     status = StatusUpdate(
                         modem=fldigi_client.get_modem(),
                         carrier=fldigi_client.get_carrier(),
@@ -48,6 +51,10 @@ async def poll_fldigi_status():
                         rig_frequency=fldigi_client.get_rig_frequency(),
                         rig_mode=fldigi_client.get_rig_mode(),
                         rig_name=fldigi_client.get_rig_name(),
+                        quality=signal_metrics.get("quality"),
+                        snr=signal_metrics.get("snr"),
+                        rst_estimate=signal_metrics.get("rst_estimate"),
+                        rsq_estimate=signal_metrics.get("rsq_estimate"),
                         connected=True
                     )
 

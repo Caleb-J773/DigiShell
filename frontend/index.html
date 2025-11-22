@@ -62,6 +62,14 @@
                     <div class="stat-label">Carrier</div>
                     <div class="stat-value"><span id="carrier-value">1500</span> Hz</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-label">S/N (dB)</div>
+                    <div id="snr-value" class="stat-value">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">RST/RSQ</div>
+                    <div id="rst-value" class="stat-value" title="Signal Report Estimate">-</div>
+                </div>
             </div>
 
             <!-- Grid -->
@@ -262,7 +270,7 @@
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
-                                <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
+                                <label id="tx-progress-container" style="display: none; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
                                     <input type="checkbox" id="tx-progress-toggle" style="cursor: pointer;">
                                     <span>TX Progress (estimated)</span>
                                 </label>
@@ -558,13 +566,28 @@
                     <button id="tab-themes" class="settings-tab active" data-tab="themes">
                         <i class="fas fa-palette"></i> Themes
                     </button>
-                    <button id="tab-modem" class="settings-tab" data-tab="modem">
+                    <button id="tab-modem" class="settings-tab" data-tab="modem" style="display: none;">
                         <i class="fas fa-wave-square"></i> Modem
                     </button>
                 </div>
 
                 <!-- Themes Tab -->
                 <div id="settings-content-themes" class="settings-tab-content active">
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-flask" style="color: var(--accent);"></i>
+                        Features
+                    </h3>
+                    <div class="toggle-item" style="margin-bottom: 2rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span class="toggle-label">Enable Beta Features</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Shows experimental modem settings and TX progress indicator</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="beta-features-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
                     <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
                         <i class="fas fa-sun" style="color: var(--accent);"></i>
                         Light Themes

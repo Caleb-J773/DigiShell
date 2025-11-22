@@ -137,6 +137,158 @@ class FldigiClient:
             logger.error(f"Error getting quality: {e}")
             return None
 
+    def get_status1(self) -> Optional[str]:
+        """Get status field 1 (typically S/N ratio)"""
+        if not self.is_connected():
+            return None
+        try:
+            return self.client.client.main.get_status1()
+        except Exception as e:
+            logger.error(f"Error getting status1: {e}")
+            return None
+
+    def get_status2(self) -> Optional[str]:
+        """Get status field 2"""
+        if not self.is_connected():
+            return None
+        try:
+            return self.client.client.main.get_status2()
+        except Exception as e:
+            logger.error(f"Error getting status2: {e}")
+            return None
+
+    def get_signal_metrics(self) -> Dict[str, Any]:
+        """Get comprehensive signal metrics including quality, S/N, and calculated RST"""
+        metrics = {
+            "quality": self.get_quality(),
+            "status1": self.get_status1(),  # Usually S/N
+            "status2": self.get_status2(),
+            "snr": None,
+            "rst_estimate": None,
+            "rsq_estimate": None
+        }
+
+        # Try to parse S/N from status1
+        if metrics["status1"]:
+            try:
+                # Status1 typically shows "s/n: XX dB" or similar
+                import re
+                match = re.search(r'[-+]?\d+\.?\d*', metrics["status1"])
+                if match:
+                    metrics["snr"] = float(match.group())
+            except Exception:
+                pass
+
+        # Calculate RST/RSQ estimate based on quality and SNR
+        if metrics["quality"] is not None:
+            metrics["rst_estimate"] = self._calculate_rst(metrics["quality"], metrics["snr"])
+            metrics["rsq_estimate"] = self._calculate_rsq(metrics["quality"], metrics["snr"])
+
+        return metrics
+
+    def _calculate_rst(self, quality: float, snr: Optional[float]) -> str:
+        """Calculate RST (Readability-Signal-Tone) estimate for CW/phone modes"""
+        # R (Readability): 1-5
+        if quality >= 90:
+            r = 5  # Perfectly readable
+        elif quality >= 75:
+            r = 4  # Readable with practically no difficulty
+        elif quality >= 50:
+            r = 3  # Readable with considerable difficulty
+        elif quality >= 25:
+            r = 2  # Barely readable
+        else:
+            r = 1  # Unreadable
+
+        # S (Signal Strength): 1-9
+        if snr is not None:
+            # Map SNR to S-units (rough approximation)
+            if snr >= 40:
+                s = 9
+            elif snr >= 30:
+                s = 8
+            elif snr >= 20:
+                s = 7
+            elif snr >= 10:
+                s = 6
+            elif snr >= 5:
+                s = 5
+            elif snr >= 0:
+                s = 4
+            elif snr >= -5:
+                s = 3
+            elif snr >= -10:
+                s = 2
+            else:
+                s = 1
+        else:
+            # Fallback to quality-based estimate
+            s = max(1, min(9, int(quality / 11) + 1))
+
+        # T (Tone): Always 9 for digital modes
+        t = 9
+
+        return f"{r}{s}{t}"
+
+    def _calculate_rsq(self, quality: float, snr: Optional[float]) -> str:
+        """Calculate RSQ (Readability-Signal-Quality) estimate for digital modes"""
+        # R (Readability): 1-5
+        if quality >= 90:
+            r = 5
+        elif quality >= 75:
+            r = 4
+        elif quality >= 50:
+            r = 3
+        elif quality >= 25:
+            r = 2
+        else:
+            r = 1
+
+        # S (Signal): 1-9
+        if snr is not None:
+            if snr >= 40:
+                s = 9
+            elif snr >= 30:
+                s = 8
+            elif snr >= 20:
+                s = 7
+            elif snr >= 10:
+                s = 6
+            elif snr >= 5:
+                s = 5
+            elif snr >= 0:
+                s = 4
+            elif snr >= -5:
+                s = 3
+            elif snr >= -10:
+                s = 2
+            else:
+                s = 1
+        else:
+            s = max(1, min(9, int(quality / 11) + 1))
+
+        # Q (Quality): 1-9 based on decode quality
+        if quality >= 95:
+            q = 9
+        elif quality >= 85:
+            q = 8
+        elif quality >= 75:
+            q = 7
+        elif quality >= 65:
+            q = 6
+        elif quality >= 50:
+            q = 5
+        elif quality >= 35:
+            q = 4
+        elif quality >= 25:
+            q = 3
+        elif quality >= 15:
+            q = 2
+        else:
+            q = 1
+
+        return f"{r}{s}{q}"
+
     def get_trx_status(self) -> Optional[str]:
         if not self.is_connected():
             return None

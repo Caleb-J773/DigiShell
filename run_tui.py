@@ -57,7 +57,10 @@ config = {
     "macros": {},
     "show_tx_progress": False,
     "theme": "default",
+    "layout": "default",
 }
+
+current_layout = "default"
 
 # Terminal Theme Definitions
 TERMINAL_THEMES = {
@@ -329,7 +332,7 @@ def first_time_setup():
 
 
 def load_config():
-    global config, show_tx_progress
+    global config, show_tx_progress, current_layout
     try:
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, 'r') as f:
@@ -339,6 +342,10 @@ def load_config():
                 # Ensure theme is valid
                 if config.get('theme') not in TERMINAL_THEMES:
                     config['theme'] = 'default'
+                # Load layout preference
+                current_layout = config.get('layout', 'default')
+                if current_layout not in ['default', 'compact', 'wide', 'minimal']:
+                    current_layout = 'default'
         else:
             return False
     except Exception as e:
@@ -549,60 +556,85 @@ def get_commands_text():
             ('class:help.title', 'TX Mode: '),
             ('class:help.cmd', 'LIVE' if live_tx_mode else 'BATCH'),
             ('class:dim', ' (Enter=TX)\n'),
-            ('class:help.title', 'Keys: '),
-            ('class:help.cmd', 'Enter'),
-            ('class:help', '=TX '),
-            ('class:help.cmd', 'Tab'),
-            ('class:help', '=↵ '),
-            ('class:help.cmd', '↑↓'),
-            ('class:help', '=Scroll\n'),
+            ('class:help.title', 'Keys:\n'),
+            ('class:help.cmd', '  Enter'),
+            ('class:help', ' - TX\n'),
+            ('class:help.cmd', '  Tab'),
+            ('class:help', ' - Newline\n'),
+            ('class:help.cmd', '  ↑↓'),
+            ('class:help', ' - Scroll\n'),
             ('class:help.title', 'Commands:\n'),
-            ('class:help.cmd', '  /live'),
-            ('class:help', ' Toggle TX '),
-            ('class:help.cmd', '/txprogress'),
-            ('class:help', ' Overlay\n'),
-            ('class:help.cmd', '  /m <mode>'),
-            ('class:help', ' Modem '),
-            ('class:help.cmd', '/modes'),
-            ('class:help', ' List\n'),
+            ('class:help.cmd', '  /m'),
+            ('class:help', ' <mode> - Set modem\n'),
+            ('class:help.cmd', '  /modes'),
+            ('class:help', ' - List modes\n'),
             ('class:help.cmd', '  /carrier'),
-            ('class:help', ' Freq '),
-            ('class:help.cmd', '/txid'),
-            ('class:help', ' TXID on/off\n'),
+            ('class:help', ' - Set freq\n'),
+            ('class:help.cmd', '  /txid'),
+            ('class:help', ' - Toggle TXID\n'),
+            ('class:help.cmd', '  /live'),
+            ('class:help', ' - Toggle TX mode\n'),
             ('class:help.cmd', '  /theme'),
-            ('class:help', ' Change theme '),
-            ('class:help.cmd', '/macro <#>'),
-            ('class:help', ' Run\n'),
+            ('class:help', ' - Change theme\n'),
+            ('class:help.cmd', '  /layout'),
+            ('class:help', ' - Change layout\n'),
+            ('class:help.cmd', '  /macro'),
+            ('class:help', ' <#> - Run macro\n'),
             ('class:help.cmd', '  /call'),
-            ('class:help', ' Set call '),
-            ('class:help.cmd', '/help 2'),
-            ('class:help', ' More\n'),
+            ('class:help', ' - Set call\n'),
+            ('class:help.cmd', '  /help 2'),
+            ('class:help', ' - More\n'),
         ]
-    else:
+    elif help_page == 2:
         text = [
-            ('class:help.title', 'Commands (2/2):\n'),
+            ('class:help.title', 'Commands (2/3):\n'),
             ('class:help.cmd', '  /addmacro'),
-            ('class:help', ' Add/edit macro\n'),
+            ('class:help', ' - Add/edit\n'),
             ('class:help.cmd', '  /delmacro'),
-            ('class:help', ' Delete macro\n'),
+            ('class:help', ' - Delete\n'),
             ('class:help.cmd', '  /config'),
-            ('class:help', ' Set station info\n'),
+            ('class:help', ' - Station info\n'),
             ('class:help.cmd', '  /clear'),
-            ('class:help', ' Clear RX '),
-            ('class:help.cmd', '/save'),
-            ('class:help', ' Save RX\n'),
+            ('class:help', ' - Clear RX\n'),
+            ('class:help.cmd', '  /save'),
+            ('class:help', ' - Save RX\n'),
+            ('class:help.cmd', '  /txprogress'),
+            ('class:help', ' - TX overlay\n'),
             ('class:help.cmd', '  Ctrl+C'),
-            ('class:help', ' Quit '),
-            ('class:help.cmd', '/help 1'),
-            ('class:help', ' Back\n'),
+            ('class:help', ' - Quit\n'),
+            ('class:help.cmd', '  /help 3'),
+            ('class:help', ' - Next\n'),
+        ]
+    else:  # help_page == 3
+        text = [
+            ('class:help.title', 'Status (3/3):\n'),
         ]
 
-    if config.get('callsign') != 'NOCALL':
-        text.append(('class:help.title', '\nStation: '))
-        text.append(('class:help', f"{config['callsign']}"))
-        if last_call:
-            text.append(('class:dim', f" → {last_call}"))
-        text.append(('class:help', '\n'))
+        # Signal metrics
+        signal_metrics = fldigi_client.get_signal_metrics()
+        if signal_metrics.get('snr') is not None or signal_metrics.get('rst_estimate'):
+            text.append(('class:help.title', 'Signal:\n'))
+            if signal_metrics.get('snr') is not None:
+                text.append(('class:help', f"  S/N: "))
+                text.append(('class:help.cmd', f"{signal_metrics['snr']:.1f} dB\n"))
+            if signal_metrics.get('rsq_estimate'):
+                text.append(('class:help', f"  RSQ: "))
+                text.append(('class:help.cmd', f"{signal_metrics['rsq_estimate']}\n"))
+        else:
+            text.append(('class:dim', '  No signal data\n'))
+
+        # Station info
+        if config.get('callsign') != 'NOCALL':
+            text.append(('class:help.title', 'Station:\n'))
+            text.append(('class:help', f"  {config['callsign']}\n"))
+            text.append(('class:help', f"  {config['name']}\n"))
+            text.append(('class:help', f"  {config['qth']}\n"))
+            if last_call:
+                text.append(('class:help.title', 'Last Call:\n'))
+                text.append(('class:help', f"  {last_call}\n"))
+
+        text.append(('class:help.cmd', '\n  /help 1'))
+        text.append(('class:help', ' - Back\n'))
 
     return FormattedText(text)
 
@@ -617,6 +649,11 @@ def get_status_text():
     carrier = fldigi_client.get_carrier() or 0
     frequency = fldigi_client.get_rig_frequency() or 0
     trx_status = fldigi_client.get_trx_status() or "Unknown"
+
+    # Get signal metrics
+    signal_metrics = fldigi_client.get_signal_metrics()
+    snr = signal_metrics.get('snr')
+    rst = signal_metrics.get('rsq_estimate') or signal_metrics.get('rst_estimate')
 
     if trx_status == "RX":
         status_class = 'class:status.rx'
@@ -640,6 +677,17 @@ def get_status_text():
         ('class:status.label', 'Status: '),
         (status_class, trx_status),
     ]
+
+    # Add signal metrics if available
+    if snr is not None:
+        text.append(('', '  '))
+        text.append(('class:status.label', 'S/N: '))
+        text.append(('class:status.value', f'{snr:.1f}dB'))
+
+    if rst:
+        text.append(('', '  '))
+        text.append(('class:status.label', 'RST: '))
+        text.append(('class:status.value', rst))
 
     now = datetime.now()
     if command_status and show_status_until and now < show_status_until:
@@ -800,13 +848,14 @@ async def process_input(text):
             global help_page
             if args and args.isdigit():
                 page = int(args)
-                if page in [1, 2]:
+                if page in [1, 2, 3]:
                     help_page = page
                     command_status = f"Help page {page}"
                 else:
-                    command_status = "Help: use /help 1 or /help 2"
+                    command_status = "Help: use /help 1, /help 2, or /help 3"
             else:
-                help_page = 2 if help_page == 1 else 1
+                # Cycle through pages
+                help_page = help_page % 3 + 1
                 command_status = f"Help page {help_page}"
             show_status_until = datetime.now() + timedelta(seconds=2)
 
@@ -930,15 +979,46 @@ async def process_input(text):
                 theme_id = args.lower().strip()
                 if theme_id in TERMINAL_THEMES:
                     config['theme'] = theme_id
+                    # Apply theme dynamically
+                    new_style = get_theme_style()
+                    get_app().style = new_style
+                    get_app().layout.focus(input_field)
                     if save_config():
                         theme_name = TERMINAL_THEMES[theme_id]['name']
-                        command_status = f"✓ Theme set to {theme_name}. Restart TUI to apply."
-                        show_status_until = datetime.now() + timedelta(seconds=4)
+                        command_status = f"✓ Theme set to {theme_name}"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
                     else:
                         command_status = "✗ Failed to save theme"
                         show_status_until = datetime.now() + timedelta(seconds=3)
                 else:
                     command_status = f"Theme '{theme_id}' not found. Use /theme to list."
+                    show_status_until = datetime.now() + timedelta(seconds=4)
+
+        elif command == 'layout':
+            global current_layout
+            available_layouts = ['default', 'compact', 'wide', 'minimal']
+            if not args:
+                # List available layouts
+                layout_list = ', '.join(available_layouts)
+                command_status = f"Current: {current_layout} | Available: {layout_list}"
+                show_status_until = datetime.now() + timedelta(seconds=6)
+            else:
+                layout_id = args.lower().strip()
+                if layout_id in available_layouts:
+                    current_layout = layout_id
+                    config['layout'] = layout_id
+                    # Rebuild layout
+                    new_container = build_layout(layout_id)
+                    get_app().layout.container = new_container
+                    get_app().layout.focus(input_field)
+                    if save_config():
+                        command_status = f"✓ Layout set to {layout_id}"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
+                    else:
+                        command_status = f"✓ Layout set to {layout_id} (not saved)"
+                        show_status_until = datetime.now() + timedelta(seconds=3)
+                else:
+                    command_status = f"Layout '{layout_id}' not found. Available: {', '.join(available_layouts)}"
                     show_status_until = datetime.now() + timedelta(seconds=4)
 
         elif command == 'macro':
@@ -1183,10 +1263,12 @@ def _(event):
             window.vertical_scroll += 1
 
 
-root_container = HSplit([
-    header_window,
-    VSplit([
-        HSplit([
+def build_layout(layout_type="default"):
+    """Build the TUI layout based on layout type"""
+    if layout_type == "compact":
+        # Compact: No sidebar, just RX/TX vertical
+        return HSplit([
+            header_window,
             Frame(rx_display, title='Receive Buffer', height=Dimension(weight=70)),
             Frame(
                 HSplit([
@@ -1196,13 +1278,66 @@ root_container = HSplit([
                 title='Input / TX Window',
                 height=Dimension(weight=30)
             ),
-        ], width=Dimension(weight=70)),
-        Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=15, max=50)),
-    ]),
-    status_window,
-])
+            status_window,
+        ])
+    elif layout_type == "wide":
+        # Wide: All horizontal - RX | TX | Commands
+        return HSplit([
+            header_window,
+            VSplit([
+                Frame(rx_display, title='Receive Buffer', width=Dimension(weight=40)),
+                Frame(
+                    HSplit([
+                        input_help_window,
+                        input_field,
+                    ]),
+                    title='Input / TX Window',
+                    width=Dimension(weight=35)
+                ),
+                Frame(help_window, title='Commands & Info', width=Dimension(weight=25, min=15)),
+            ]),
+            status_window,
+        ])
+    elif layout_type == "minimal":
+        # Minimal: Full screen RX with small TX at bottom, no sidebar
+        return HSplit([
+            header_window,
+            Frame(rx_display, title='Receive Buffer', height=Dimension(weight=75)),
+            Frame(
+                HSplit([
+                    input_help_window,
+                    input_field,
+                ]),
+                title='Input / TX Window',
+                height=Dimension(weight=25, min=5)
+            ),
+            status_window,
+        ])
+    else:
+        # Default: Standard 3-panel with sidebar
+        return HSplit([
+            header_window,
+            VSplit([
+                HSplit([
+                    Frame(rx_display, title='Receive Buffer', height=Dimension(weight=70)),
+                    Frame(
+                        HSplit([
+                            input_help_window,
+                            input_field,
+                        ]),
+                        title='Input / TX Window',
+                        height=Dimension(weight=30)
+                    ),
+                ], width=Dimension(weight=70)),
+                Frame(help_window, title='Commands & Info', width=Dimension(weight=30, min=15, max=50)),
+            ]),
+            status_window,
+        ])
 
-layout = Layout(root_container, focused_element=input_field)
+
+root_container = None  # Will be built later after config is loaded
+
+layout = None  # Will be created later
 
 
 async def poll_fldigi():
@@ -1272,7 +1407,7 @@ async def update_display():
 
 
 async def run_app_async():
-    global connection_time
+    global connection_time, layout
 
     load_config()
 
@@ -1288,6 +1423,10 @@ async def run_app_async():
     if config.get('callsign') != 'NOCALL':
         print(f"Station: {config['callsign']} ({config['name']})")
         print(f"Macros: {len(config.get('macros', {}))} available")
+
+    # Build layout based on saved preference
+    root_container = build_layout(current_layout)
+    layout = Layout(root_container, focused_element=input_field)
 
     # Generate style based on current theme
     current_style = get_theme_style()

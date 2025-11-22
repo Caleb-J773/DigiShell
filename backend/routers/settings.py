@@ -39,6 +39,7 @@ class WebConfig(BaseModel):
     custom_keybinds: Optional[Dict[str, Any]] = None
     themes: Optional[Dict[str, Any]] = None
     uiPreferences: Optional[Dict[str, Any]] = None
+    betaFeatures: Optional[bool] = False
 
 
 class WebConfigResponse(BaseModel):
