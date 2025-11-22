@@ -1290,19 +1290,44 @@ window.applyPanelOrder = function applyPanelOrder() {
     }
 
     // Get the container
-    const firstPanel = document.getElementById(REORDERABLE_PANELS[0]);
-    if (!firstPanel || !firstPanel.parentElement) return;
+    const macrosPanel = document.getElementById('macros-panel');
+    const waterfallPanel = document.getElementById('waterfall-panel');
 
-    const container = firstPanel.parentElement;
+    if (!macrosPanel || !macrosPanel.parentElement) return;
 
-    // Reorder panels according to saved order
-    for (let i = savedOrder.length - 1; i >= 0; i--) {
-        const panelId = savedOrder[i];
+    const container = macrosPanel.parentElement;
+
+    // Find the anchor point - we want to insert after TX panel but before where macros currently is
+    // First, detach both reorderable panels temporarily
+    const panels = [];
+    for (const panelId of savedOrder) {
         const panel = document.getElementById(panelId);
-
         if (panel) {
-            // Move to the beginning of the container (reverse order since we're iterating backwards)
-            container.insertBefore(panel, container.firstChild);
+            panels.push(panel);
+            panel.remove(); // Temporarily remove from DOM
+        }
+    }
+
+    // Find the TX panel to use as our anchor
+    const txPanel = Array.from(container.children).find(child =>
+        child.querySelector('#tx-text')
+    );
+
+    // Reinsert panels in the correct order, right after TX panel
+    if (txPanel) {
+        let insertAfter = txPanel;
+        for (const panel of panels) {
+            if (insertAfter.nextSibling) {
+                container.insertBefore(panel, insertAfter.nextSibling);
+            } else {
+                container.appendChild(panel);
+            }
+            insertAfter = panel;
+        }
+    } else {
+        // Fallback: just append in order
+        for (const panel of panels) {
+            container.appendChild(panel);
         }
     }
 
