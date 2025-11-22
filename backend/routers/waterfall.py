@@ -3,6 +3,7 @@ FlDigi Waterfall Streaming Router
 
 Provides REST API and WebSocket endpoints for the waterfall capture feature.
 This is a BETA feature and disabled by default.
+Supports both Linux (X11) and Windows platforms.
 """
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
@@ -53,15 +54,25 @@ async def set_waterfall_enabled(request: WaterfallEnableRequest):
     """
     Enable or disable the waterfall capture service.
 
-    Note: This is a beta feature. Requires Linux with X11, python-xlib, and Pillow.
+    Note: This is a beta feature.
+    Requires platform-specific dependencies:
+    - Linux: X11, python-xlib, Pillow
+    - Windows: pywin32, Pillow
     """
     try:
         if request.enabled:
             if not waterfall_service.is_available():
+                import sys
+                if sys.platform == "linux":
+                    req_msg = "Requires Linux with X11, python-xlib, and Pillow."
+                elif sys.platform == "win32":
+                    req_msg = "Requires Windows with pywin32 and Pillow."
+                else:
+                    req_msg = "Not supported on this platform."
+
                 raise HTTPException(
                     status_code=400,
-                    detail="Waterfall capture not available on this system. "
-                           "Requires Linux with X11, python-xlib, and Pillow."
+                    detail=f"Waterfall capture not available on this system. {req_msg}"
                 )
 
             await waterfall_service.enable()

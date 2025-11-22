@@ -2,7 +2,7 @@
 FlDigi Waterfall Window Capture Service
 
 This module captures the FlDigi waterfall window and streams it to web clients.
-Only works on Linux with X11. This is a BETA feature and disabled by default.
+Works on both Linux (X11) and Windows. This is a BETA feature and disabled by default.
 """
 
 import asyncio
@@ -13,8 +13,9 @@ import time
 from typing import Optional, Tuple
 from pathlib import Path
 
-# Only import X11 libraries if on Linux
+# Platform-specific imports
 if sys.platform == "linux":
+    # Linux: Use X11/Xlib
     try:
         from Xlib import X, display as xdisplay
         from Xlib.error import DisplayConnectionError
@@ -23,6 +24,19 @@ if sys.platform == "linux":
         XLIB_AVAILABLE = False
 else:
     XLIB_AVAILABLE = False
+
+if sys.platform == "win32":
+    # Windows: Use pywin32
+    try:
+        import win32gui
+        import win32ui
+        import win32con
+        from ctypes import windll
+        WIN32_AVAILABLE = True
+    except ImportError:
+        WIN32_AVAILABLE = False
+else:
+    WIN32_AVAILABLE = False
 
 try:
     from PIL import Image
@@ -52,7 +66,12 @@ class WaterfallCaptureService:
 
     def is_available(self) -> bool:
         """Check if waterfall capture is available on this system."""
-        return XLIB_AVAILABLE and PIL_AVAILABLE and sys.platform == "linux"
+        if sys.platform == "linux":
+            return XLIB_AVAILABLE and PIL_AVAILABLE
+        elif sys.platform == "win32":
+            return WIN32_AVAILABLE and PIL_AVAILABLE
+        else:
+            return False
 
     def get_status(self) -> dict:
         """Get current status of the waterfall capture service."""
@@ -68,9 +87,10 @@ class WaterfallCaptureService:
     async def enable(self):
         """Enable the waterfall capture service."""
         if not self.is_available():
+            platform_req = "Linux with X11, python-xlib" if sys.platform == "linux" else "Windows with pywin32"
             raise RuntimeError(
-                "Waterfall capture not available. "
-                "Requires Linux with X11, python-xlib, and Pillow."
+                f"Waterfall capture not available. "
+                f"Requires {platform_req} and Pillow."
             )
 
         self.enabled = True
@@ -165,9 +185,122 @@ class WaterfallCaptureService:
             print(f"Error finding FlDigi window: {e}")
             return None
 
+    def _find_fldigi_window_windows(self) -> Optional[int]:
+        """
+        Find the FlDigi window on Windows by searching for window titles.
+        Returns the window handle (HWND) if found, None otherwise.
+        """
+        if sys.platform != "win32" or not WIN32_AVAILABLE:
+            return None
+
+        try:
+            # List to store found window handles
+            found_handles = []
+
+            def enum_windows_callback(hwnd, _):
+                """Callback for EnumWindows to find FlDigi window."""
+                if win32gui.IsWindowVisible(hwnd):
+                    window_text = win32gui.GetWindowText(hwnd)
+                    if window_text and 'fldigi' in window_text.lower():
+                        found_handles.append(hwnd)
+                return True
+
+            # Enumerate all top-level windows
+            win32gui.EnumWindows(enum_windows_callback, None)
+
+            if found_handles:
+                return found_handles[0]  # Return first match
+
+            return None
+
+        except Exception as e:
+            print(f"Error finding FlDigi window on Windows: {e}")
+            return None
+
+    def _capture_window_windows(self) -> Optional[bytes]:
+        """
+        Capture the FlDigi window on Windows and return as JPEG bytes.
+        Returns None if capture fails.
+        """
+        if sys.platform != "win32" or not WIN32_AVAILABLE:
+            return None
+
+        try:
+            # Find window if not already found
+            if not self.window_id:
+                self.window_id = self._find_fldigi_window_windows()
+                if not self.window_id:
+                    return None
+
+            hwnd = self.window_id
+
+            # Get window dimensions
+            left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+            width = right - left
+            height = bottom - top
+
+            # Create device contexts
+            hwnd_dc = win32gui.GetWindowDC(hwnd)
+            mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
+            save_dc = mfc_dc.CreateCompatibleDC()
+
+            # Create bitmap
+            save_bitmap = win32ui.CreateBitmap()
+            save_bitmap.CreateCompatibleBitmap(mfc_dc, width, height)
+            save_dc.SelectObject(save_bitmap)
+
+            # Copy window content to bitmap
+            # Use PrintWindow for better compatibility with some windows
+            windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 2)  # 2 = PW_RENDERFULLCONTENT
+
+            # Convert bitmap to PIL Image
+            bmpinfo = save_bitmap.GetInfo()
+            bmpstr = save_bitmap.GetBitmapBits(True)
+
+            image = Image.frombuffer(
+                'RGB',
+                (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
+                bmpstr,
+                'raw',
+                'BGRX',
+                0,
+                1
+            )
+
+            # Cleanup GDI objects
+            win32gui.DeleteObject(save_bitmap.GetHandle())
+            save_dc.DeleteDC()
+            mfc_dc.DeleteDC()
+            win32gui.ReleaseDC(hwnd, hwnd_dc)
+
+            # Encode as JPEG
+            buffer = io.BytesIO()
+            image.save(buffer, format="JPEG", quality=self.jpeg_quality, optimize=True)
+
+            return buffer.getvalue()
+
+        except Exception as e:
+            # Window might have been closed or moved
+            print(f"Error capturing window on Windows: {e}")
+            self.window_id = None
+            return None
+
     def _capture_window(self) -> Optional[bytes]:
         """
         Capture the FlDigi window and return as JPEG bytes.
+        Platform-agnostic wrapper that calls the appropriate platform-specific method.
+        Returns None if capture fails.
+        """
+        if sys.platform == "linux":
+            return self._capture_window_linux()
+        elif sys.platform == "win32":
+            return self._capture_window_windows()
+        else:
+            return None
+
+    def _capture_window_linux(self) -> Optional[bytes]:
+        """
+        Capture the FlDigi window on Linux/X11 and return as JPEG bytes.
         Returns None if capture fails.
         """
         try:

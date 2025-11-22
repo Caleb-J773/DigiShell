@@ -20,4 +20,5 @@ prompt_toolkit>=3.0.0
 
 # FlDigi Waterfall Streaming (optional, for beta features)
 python-xlib>=0.33; sys_platform == 'linux'
+pywin32>=306; sys_platform == 'win32'
 Pillow>=10.0.0
