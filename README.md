@@ -2,7 +2,7 @@
 
 A fun and simple interface wrapper for FLDIGI. Works in your browser or terminal. This is a work in progress project and it is possibly unstable and has bugs and other issues.
 
-**Website:** [digishell.kc3vpb.com](https://digishell.kc3vpb.com) - link don't work lol, still setting it up.
+**Website:** [digishell.kc3vpb.com](https://digishell.kc3vpb.com) 
 
 ![Image](https://iili.io/KygYH5x.png)
 
@@ -228,25 +228,11 @@ Max retries exceeded... Failed to establish a new connection
 2. **XML-RPC is disabled** - In FlDigi: Configure → Misc → XML-RPC Server, make sure "Enable XML-RPC server" is checked
 3. **FlDigi crashed** - Restart FlDigi and use the reconnect option (web: Connect button, TUI: `/reconnect` command)
 
-### FlDigi Closes While DigiShell is Running
-
-DigiShell will detect when FlDigi closes and stop the cascading errors. You'll see a clear disconnection status:
-
-- **Web Interface**: The status indicator shows "Disconnected". Click the "Connect" button to reconnect after restarting FlDigi.
-- **Terminal UI**: Shows "⚠ FlDigi disconnected" status. Use `/reconnect` (or `/r`) command to reconnect after restarting FlDigi.
-
-No more error spam in the logs!
-
 ### Can't Connect on Web Interface
 
 1. **Check the URL** - Make sure you're using `http://localhost:8000` (or the correct port if you changed it)
 2. **Check firewall** - Your firewall might be blocking the connection
 3. **Wrong network interface** - If accessing from another device on your LAN, use your computer's IP address instead of `localhost`
-
-### Permission Denied or Access Errors
-
-Run your terminal/command prompt as administrator (Windows) or use `sudo` (Linux/Mac) if you get permission errors during installation.
-
 ## Want to contribute?
 
 Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.
