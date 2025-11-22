@@ -2,8 +2,8 @@ import uvicorn
 import logging
 import signal
 import sys
-import socket
 import os
+from backend.utils import check_port_available, get_network_ips
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -15,36 +15,6 @@ logging.getLogger('backend.fldigi_client').setLevel(logging.ERROR)
 logging.getLogger('uvicorn').setLevel(logging.ERROR)
 logging.getLogger('uvicorn.access').setLevel(logging.ERROR)
 
-def check_port_available(port):
-    """Check if a port is available for binding."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.bind(('0.0.0.0', port))
-        sock.close()
-        return True
-    except OSError:
-        return False
-
-def get_network_ips():
-    ips = []
-    try:
-        import netifaces
-        for interface in netifaces.interfaces():
-            addrs = netifaces.ifaddresses(interface)
-            if netifaces.AF_INET in addrs:
-                for addr in addrs[netifaces.AF_INET]:
-                    ip = addr['addr']
-                    if ip != '127.0.0.1':
-                        ips.append((interface, ip))
-    except ImportError:
-        hostname = socket.gethostname()
-        try:
-            ip = socket.gethostbyname(hostname)
-            if ip != '127.0.0.1':
-                ips.append(('default', ip))
-        except:
-            pass
-    return ips
 
 def signal_handler(sig, frame):
     print("\nShutting down gracefully...")

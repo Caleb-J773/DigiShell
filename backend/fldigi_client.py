@@ -225,88 +225,55 @@ class FldigiClient:
 
         return metrics
 
+    def _calculate_readability(self, quality: float) -> int:
+        """Calculate R (Readability) component: 1-5"""
+        if quality >= 90:
+            return 5
+        elif quality >= 75:
+            return 4
+        elif quality >= 50:
+            return 3
+        elif quality >= 25:
+            return 2
+        else:
+            return 1
+
+    def _calculate_signal(self, quality: float, snr: Optional[float]) -> int:
+        """Calculate S (Signal) component: 1-9"""
+        if snr is not None:
+            if snr >= 40:
+                return 9
+            elif snr >= 30:
+                return 8
+            elif snr >= 20:
+                return 7
+            elif snr >= 10:
+                return 6
+            elif snr >= 5:
+                return 5
+            elif snr >= 0:
+                return 4
+            elif snr >= -5:
+                return 3
+            elif snr >= -10:
+                return 2
+            else:
+                return 1
+        else:
+            return max(1, min(9, int(quality / 11) + 1))
+
     def _calculate_rst(self, quality: float, snr: Optional[float]) -> str:
         """Calculate RST (Readability-Signal-Tone) estimate for CW/phone modes"""
-        # R (Readability): 1-5
-        if quality >= 90:
-            r = 5  # Perfectly readable
-        elif quality >= 75:
-            r = 4  # Readable with practically no difficulty
-        elif quality >= 50:
-            r = 3  # Readable with considerable difficulty
-        elif quality >= 25:
-            r = 2  # Barely readable
-        else:
-            r = 1  # Unreadable
-
-        # S (Signal Strength): 1-9
-        if snr is not None:
-            # Map SNR to S-units (rough approximation)
-            if snr >= 40:
-                s = 9
-            elif snr >= 30:
-                s = 8
-            elif snr >= 20:
-                s = 7
-            elif snr >= 10:
-                s = 6
-            elif snr >= 5:
-                s = 5
-            elif snr >= 0:
-                s = 4
-            elif snr >= -5:
-                s = 3
-            elif snr >= -10:
-                s = 2
-            else:
-                s = 1
-        else:
-            # Fallback to quality-based estimate
-            s = max(1, min(9, int(quality / 11) + 1))
-
-        # T (Tone): Always 9 for digital modes
+        r = self._calculate_readability(quality)
+        s = self._calculate_signal(quality, snr)
         t = 9
-
         return f"{r}{s}{t}"
 
     def _calculate_rsq(self, quality: float, snr: Optional[float]) -> str:
         """Calculate RSQ (Readability-Signal-Quality) estimate for digital modes"""
-        # R (Readability): 1-5
-        if quality >= 90:
-            r = 5
-        elif quality >= 75:
-            r = 4
-        elif quality >= 50:
-            r = 3
-        elif quality >= 25:
-            r = 2
-        else:
-            r = 1
+        r = self._calculate_readability(quality)
+        s = self._calculate_signal(quality, snr)
 
-        # S (Signal): 1-9
-        if snr is not None:
-            if snr >= 40:
-                s = 9
-            elif snr >= 30:
-                s = 8
-            elif snr >= 20:
-                s = 7
-            elif snr >= 10:
-                s = 6
-            elif snr >= 5:
-                s = 5
-            elif snr >= 0:
-                s = 4
-            elif snr >= -5:
-                s = 3
-            elif snr >= -10:
-                s = 2
-            else:
-                s = 1
-        else:
-            s = max(1, min(9, int(quality / 11) + 1))
-
-        # Q (Quality): 1-9 based on decode quality
         if quality >= 95:
             q = 9
         elif quality >= 85:

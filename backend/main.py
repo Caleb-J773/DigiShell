@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +10,14 @@ from backend.fldigi_client import fldigi_client
 from backend.websocket_manager import manager
 from backend.models import ConnectionStatus, StatusUpdate
 from backend.routers import modem, txrx, rig, macros, settings, presets
+from backend.dependencies import require_fldigi_connected
+from backend.config import (
+    STATUS_POLL_INTERVAL,
+    CONNECTION_CHECK_INTERVAL,
+    POLL_SLEEP_INTERVAL,
+    CONSECUTIVE_FAILURE_THRESHOLD,
+    ERROR_RETRY_INTERVAL
+)
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -35,9 +43,8 @@ async def poll_fldigi_status():
     while True:
         try:
             if fldigi_client.is_connected():
-                # Periodically check connection health
                 connection_check_counter += 1
-                if connection_check_counter >= 50:  # Check every 5 seconds (50 * 0.1s)
+                if connection_check_counter >= CONNECTION_CHECK_INTERVAL:
                     connection_check_counter = 0
                     if not fldigi_client.check_connection_health():
                         logger.warning("FlDigi connection lost")
@@ -47,17 +54,16 @@ async def poll_fldigi_status():
                             details={"error": "FlDigi disconnected. Use the Connect button to reconnect."}
                         )
                         last_connection_state = False
-                        await asyncio.sleep(0.1)
+                        await asyncio.sleep(POLL_SLEEP_INTERVAL)
                         continue
 
-                # Get RX text
                 new_rx_text = fldigi_client.get_rx_text()
                 if new_rx_text:
                     await manager.broadcast_text(new_rx_text, text_type="rx")
-                    consecutive_failures = 0  # Reset on successful operation
+                    consecutive_failures = 0
 
                 status_poll_counter += 1
-                if status_poll_counter >= 5:
+                if status_poll_counter >= STATUS_POLL_INTERVAL:
                     status_poll_counter = 0
 
                     # Get signal metrics
@@ -96,7 +102,6 @@ async def poll_fldigi_status():
                         consecutive_failures = 0
 
             else:
-                # Not connected - just notify once if state changed
                 if last_connection_state != False:
                     await manager.broadcast_connection_status(
                         connected=False,
@@ -104,17 +109,15 @@ async def poll_fldigi_status():
                     )
                     last_connection_state = False
 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(POLL_SLEEP_INTERVAL)
 
         except Exception as e:
             consecutive_failures += 1
 
-            # Only log occasionally to avoid spam
             if consecutive_failures == 1 or consecutive_failures % 50 == 0:
                 logger.error(f"Error in status polling: {e}")
 
-            # If we have multiple consecutive failures, mark as disconnected
-            if consecutive_failures >= 10:
+            if consecutive_failures >= CONSECUTIVE_FAILURE_THRESHOLD:
                 if fldigi_client.is_connected():
                     logger.warning("Multiple consecutive failures, marking connection as lost")
                     fldigi_client.disconnect()
@@ -126,7 +129,7 @@ async def poll_fldigi_status():
                         last_connection_state = False
                 consecutive_failures = 0
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(ERROR_RETRY_INTERVAL)
 
 
 @asynccontextmanager
@@ -223,10 +226,7 @@ async def disconnect_from_fldigi():
 
 
 @app.get("/api/status")
-async def get_full_status():
-    if not fldigi_client.is_connected():
-        raise HTTPException(status_code=503, detail="Not connected to FLDIGI")
-
+async def get_full_status(_: None = Depends(require_fldigi_connected)):
     return fldigi_client.get_status()
 
 
@@ -288,39 +288,8 @@ if __name__ == "__main__":
     import uvicorn
     import signal
     import sys
-    import socket
     import os
-
-    def check_port_available(port):
-        """Check if a port is available for binding."""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            sock.bind(('0.0.0.0', port))
-            sock.close()
-            return True
-        except OSError:
-            return False
-
-    def get_network_ips():
-        ips = []
-        try:
-            import netifaces
-            for interface in netifaces.interfaces():
-                addrs = netifaces.ifaddresses(interface)
-                if netifaces.AF_INET in addrs:
-                    for addr in addrs[netifaces.AF_INET]:
-                        ip = addr['addr']
-                        if ip != '127.0.0.1':
-                            ips.append((interface, ip))
-        except ImportError:
-            hostname = socket.gethostname()
-            try:
-                ip = socket.gethostbyname(hostname)
-                if ip != '127.0.0.1':
-                    ips.append(('default', ip))
-            except:
-                pass
-        return ips
+    from backend.utils import check_port_available, get_network_ips
 
     def signal_handler(sig, frame):
         print("\nShutting down gracefully...")

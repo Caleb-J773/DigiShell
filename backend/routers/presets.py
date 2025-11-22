@@ -118,7 +118,7 @@ def load_custom_presets() -> List[PresetFrequency]:
             with open(PRESETS_FILE, 'r') as f:
                 data = json.load(f)
                 return [PresetFrequency(**preset) for preset in data]
-        except Exception:
+        except (json.JSONDecodeError, OSError, ValueError):
             return []
     return []
 
@@ -129,7 +129,7 @@ def save_custom_presets(presets: List[PresetFrequency]) -> bool:
         with open(PRESETS_FILE, 'w') as f:
             json.dump([p.dict() for p in presets], f, indent=2)
         return True
-    except Exception:
+    except (OSError, TypeError):
         return False
 
 
@@ -186,18 +186,15 @@ async def create_preset(request: PresetFrequencyCreate):
 @router.delete("/{preset_id}", response_model=StatusResponse)
 async def delete_preset(preset_id: str):
     """Delete a custom preset (cannot delete default presets)"""
-    # Check if trying to delete a default preset
     if preset_id.startswith("default-"):
         raise HTTPException(status_code=403, detail="Cannot delete default presets")
 
     custom_presets = load_custom_presets()
+    original_count = len(custom_presets)
 
-    # Find and remove the preset
-    preset_found = False
     custom_presets = [p for p in custom_presets if p.id != preset_id]
-    preset_found = len(custom_presets) < len(load_custom_presets())
 
-    if not preset_found:
+    if len(custom_presets) == original_count:
         raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
 
     if save_custom_presets(custom_presets):
