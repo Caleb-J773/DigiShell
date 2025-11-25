@@ -120,42 +120,7 @@ You can also manually edit the `.fldigi_tui.json` to add your own custom macros.
 - Currently right now, it doesn't actively track the transmitted characters unlike FlDigi. I'm not too experienced to figure this issue out and my attempts to resolve it have resulted in various issues with the transmit buffer being cleared. I'm unsure if this is an API issue or something with the library
 -  You can't edit lines in between other lines. FlDigi does let you do this, but I hadn't been able to find a way to do this.
 
-### Project Structure
-
-```
-digishell/
-├── backend/
-│   ├── main.py              # FastAPI server
-│   ├── fldigi_client.py     # FLDIGI XML-RPC wrapper
-│   ├── websocket_manager.py # WebSocket handler
-│   ├── models.py            # Data models
-│   └── routers/             # API endpoints
-│       ├── macros.py        # Macro management
-│       ├── modem.py         # Modem control
-│       ├── rig.py           # Rig operations
-│       ├── settings.py      # Settings management
-│       └── txrx.py          # TX/RX operations
-├── frontend/
-│   ├── index.html           # Main interface
-│   └── static/
-│       ├── css/
-│       │   └── main.css     # Styling
-│       ├── js/
-│       │   ├── api.js       # API client
-│       │   ├── app.js       # Main app logic
-│       │   ├── main.js      # Initialization
-│       │   └── websocket.js # WebSocket handler
-│       ├── fontawesome/     # Font Awesome CSS
-│       └── webfonts/        # Font Awesome fonts (self-hosted)
-├── run_tui.py               # Terminal interface
-├── run_backend.py           # Backend runner
-├── launcher.py              # Unified launcher
-├── DigiShell.bat            # Windows launcher
-├── BUILD.md                 # Build instructions
-├── DOCUMENTATION.md         # Additional documentation
-└── requirements.txt         # Python dependencies
-```
-
+-  
 ### Built with
 
 **Backend:**
@@ -214,28 +179,6 @@ python -m backend.main
 ```
 
 Then access DigiShell at `http://localhost:8080` (or whatever port you chose).
-
-### FlDigi Connection Issues
-
-If you see errors like:
-```
-ERROR - Error getting RX text: HTTPConnectionPool(host='127.0.0.1', port=7362):
-Max retries exceeded... Failed to establish a new connection
-```
-
-**Possible causes:**
-1. **FlDigi is not running** - Start FlDigi before starting DigiShell
-2. **XML-RPC is disabled** - In FlDigi: Configure → Misc → XML-RPC Server, make sure "Enable XML-RPC server" is checked
-3. **FlDigi crashed** - Restart FlDigi and use the reconnect option (web: Connect button, TUI: `/reconnect` command)
-
-### Can't Connect on Web Interface
-
-1. **Check the URL** - Make sure you're using `http://localhost:8000` (or the correct port if you changed it)
-2. **Check firewall** - Your firewall might be blocking the connection
-3. **Wrong network interface** - If accessing from another device on your LAN, use your computer's IP address instead of `localhost`
-## Want to contribute?
-
-Feel free to open issues or submit pull requests. I'm happy to look at improvements or bug fixes.
 
 
 ---
