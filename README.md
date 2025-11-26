@@ -33,6 +33,8 @@ This is also a personal research and learning project for fun to understand how 
 
 It took multiple iterations, planning it out step by step, a lot of testing, debugging weird issues, figuring out what worked and what didn't, and learning how to communicate what I wanted to an LLM. 
 
+Various projects both ham radio and non ham radio projects do not declare the use of AI. This notice is to basically declare it. 
+
 
 ## What it actually does
 
