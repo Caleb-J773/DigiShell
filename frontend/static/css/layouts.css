@@ -168,25 +168,30 @@
 
 .layout-mobile .stats-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
+    gap: 0.875rem;
 }
 
 .layout-mobile .stat-card {
-    padding: 0.75rem;
+    padding: 1rem;
 }
 
 .layout-mobile .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
 }
 
 .layout-mobile .stat-value {
-    font-size: 1rem;
+    font-size: 1.25rem;
 }
 
 .layout-mobile .main-grid {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
+}
+
+.layout-mobile .container {
+    padding: 1rem 1.25rem;
 }
 
 .layout-mobile .sidebar {
@@ -195,14 +200,18 @@
     top: 70px;
     bottom: 0;
     width: 90%;
-    max-width: 350px;
+    max-width: 380px;
     background: var(--bg-primary);
     border-right: 1px solid var(--border-medium);
     z-index: 1000;
     transition: left 0.3s ease;
     overflow-y: auto;
-    padding: 1rem;
+    overflow-x: hidden;
+    padding: 1.25rem;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .layout-mobile .sidebar.show {
@@ -237,34 +246,156 @@
     order: 1;
 }
 
-.layout-mobile .panel-header {
+.layout-mobile .sidebar .panel {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.layout-mobile .sidebar .panel-header {
+    padding: 1rem;
+}
+
+.layout-mobile .sidebar .panel-body {
+    padding: 1rem;
+}
+
+.layout-mobile .sidebar .form-group {
+    margin-bottom: 1rem;
+}
+
+.layout-mobile .sidebar input[type="text"],
+.layout-mobile .sidebar input[type="number"],
+.layout-mobile .sidebar select {
+    font-size: 16px;
     padding: 0.75rem;
+    min-height: 44px;
+}
+
+.layout-mobile .sidebar .btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.layout-mobile .sidebar .toggle-item {
+    padding: 1rem;
+}
+
+.layout-mobile .sidebar .info-row {
+    padding: 1rem;
+}
+
+.layout-mobile .sidebar .stat-card {
+    padding: 1rem;
+}
+
+.layout-mobile .sidebar .search-box input {
+    font-size: 16px;
+    padding-left: 42px;
+}
+
+.layout-mobile .sidebar select[size] {
+    font-size: 15px;
+}
+
+.layout-mobile .sidebar .station-info {
+    padding: 1.25rem;
+}
+
+.layout-mobile .sidebar .station-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.layout-mobile .sidebar .station-field {
+    font-size: 1rem;
+}
+
+.layout-mobile .sidebar .last-call-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+.layout-mobile .sidebar .last-call-input,
+.layout-mobile .sidebar .last-call-btn {
+    width: 100%;
+}
+
+.layout-mobile .sidebar .preset-list {
+    max-height: 250px;
+}
+
+.layout-mobile .panel-header {
+    padding: 1rem 1.25rem;
 }
 
 .layout-mobile .panel-body {
-    padding: 0.75rem;
+    padding: 1rem 1.25rem;
+}
+
+.layout-mobile .panel-title {
+    font-size: 1rem;
+}
+
+.layout-mobile .toggle-item {
+    padding: 1rem 1.25rem;
+}
+
+.layout-mobile .toggle-label {
+    font-size: 1rem;
+}
+
+.layout-mobile .info-row {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
 }
 
 .layout-mobile .btn {
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1.25rem;
     font-size: 1rem;
-    min-height: 44px;
+    min-height: 48px;
 }
 
 .layout-mobile .icon-button {
-    padding: 0.75rem;
-    min-width: 44px;
+    padding: 0.875rem;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 1.125rem;
+}
+
+.layout-mobile .btn-compact {
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
     min-height: 44px;
 }
 
+.layout-mobile .btn-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.layout-mobile .font-size-btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.5rem;
+}
+
+.layout-mobile .font-size-label {
+    font-size: 0.875rem;
+    min-width: 50px;
+}
+
 .layout-mobile .terminal-rx {
-    min-height: 300px;
+    min-height: 320px;
     font-size: 0.9375rem;
+    padding: 1rem;
 }
 
 .layout-mobile .terminal-tx {
-    min-height: 150px;
+    min-height: 180px;
     font-size: 1rem;
+    padding: 1rem;
 }
 
 .layout-mobile input[type="text"],
@@ -272,23 +403,79 @@
 .layout-mobile select,
 .layout-mobile textarea {
     font-size: 16px;
-    padding: 0.75rem;
+    padding: 0.875rem;
+    min-height: 48px;
+}
+
+.layout-mobile .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.layout-mobile .form-label {
+    font-size: 0.9375rem;
+    margin-bottom: 0.625rem;
 }
 
 .layout-mobile .macro-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
 }
 
-.layout-mobile .macro-button {
-    padding: 0.875rem;
-    font-size: 0.9375rem;
-    min-height: 50px;
+.layout-mobile .macro-btn {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    min-height: 52px;
+    justify-content: center;
 }
 
 .layout-mobile .panel:has(#rx-text) .panel-body,
 .layout-mobile .panel:has(#tx-text) .panel-body {
+    padding: 1rem;
+}
+
+.layout-mobile input[type="range"] {
+    height: 10px;
+    touch-action: none;
+}
+
+.layout-mobile input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+}
+
+.layout-mobile input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+}
+
+.layout-mobile .station-info {
+    padding: 1.25rem;
+}
+
+.layout-mobile .station-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.layout-mobile .station-field {
+    font-size: 1rem;
     padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+}
+
+.layout-mobile .last-call-container {
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.layout-mobile .last-call-input {
+    width: 100%;
+}
+
+.layout-mobile .last-call-btn {
+    width: 100%;
+    min-height: 48px;
 }
 
 @media (max-width: 1200px) {
