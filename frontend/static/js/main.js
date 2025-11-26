@@ -226,22 +226,28 @@ function setupLayoutUI() {
         layoutsGrid.appendChild(categorySection);
     });
 
-    // Setup sidebar toggle for minimal layout
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const sidebar = document.querySelector('.sidebar');
 
     if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', () => {
+        sidebarToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
             sidebar.classList.toggle('show');
         });
 
-        // Close sidebar when clicking outside in minimal layout
         document.addEventListener('click', (e) => {
-            if (getCurrentLayout() === 'minimal') {
-                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+            const layout = getCurrentLayout();
+            const layoutsWithCollapsibleSidebar = ['minimal', 'focus', 'monitor', 'mobile'];
+
+            if (layoutsWithCollapsibleSidebar.includes(layout)) {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && sidebar.classList.contains('show')) {
                     sidebar.classList.remove('show');
                 }
             }
+        });
+
+        sidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
         });
     }
 

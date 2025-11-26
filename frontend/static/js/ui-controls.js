@@ -72,10 +72,18 @@ function initFontSizeControls() {
 function togglePanelCollapse(panelId) {
     const panel = document.querySelector(`[data-panel="${panelId}"]`).closest('.panel');
     const isCollapsed = panel.classList.contains('collapsed');
+    const isExpanded = panel.classList.contains('expanded');
 
     if (isCollapsed) {
         panel.classList.remove('collapsed');
+        panel.classList.add('expanded');
         uiPreferences.collapsedPanels = uiPreferences.collapsedPanels.filter(id => id !== panelId);
+    } else if (isExpanded) {
+        panel.classList.remove('expanded');
+        panel.classList.add('collapsed');
+        if (!uiPreferences.collapsedPanels.includes(panelId)) {
+            uiPreferences.collapsedPanels.push(panelId);
+        }
     } else {
         panel.classList.add('collapsed');
         if (!uiPreferences.collapsedPanels.includes(panelId)) {
