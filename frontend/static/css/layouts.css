@@ -1,21 +1,9 @@
-/**
- * Layout System CSS
- * Different layout options for DigiShell web interface
- */
-
-/* ============================================
-   DEFAULT LAYOUT (current standard layout)
-   ============================================ */
 .layout-default .main-grid {
     display: grid;
     grid-template-columns: 350px 1fr;
     gap: 1rem;
 }
 
-/* ============================================
-   COMPACT LAYOUT
-   Narrower sidebar, more space for RX/TX
-   ============================================ */
 .layout-compact .main-grid {
     display: grid;
     grid-template-columns: 280px 1fr;
@@ -47,10 +35,6 @@
     padding: 0.75rem;
 }
 
-/* ============================================
-   SPLIT SCREEN LAYOUT
-   RX and TX side-by-side
-   ============================================ */
 .layout-split .main-grid {
     display: grid;
     grid-template-columns: 300px 1fr;
@@ -58,7 +42,6 @@
 }
 
 .layout-split .sidebar > .panel:not(.panel-modem):not(.panel-control) {
-    /* Collapse non-essential panels in split view */
     .panel-body {
         display: none;
     }
@@ -95,10 +78,6 @@
     height: calc(100vh - 400px);
 }
 
-/* ============================================
-   MINIMAL LAYOUT
-   Just essentials, maximum communication area
-   ============================================ */
 .layout-minimal .stats-grid {
     display: none;
 }
@@ -138,7 +117,7 @@
     color: white;
     border: none;
     padding: 0.75rem;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
     cursor: pointer;
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -156,15 +135,10 @@
     min-height: 200px;
 }
 
-/* Add toggle button (hidden by default) */
 .sidebar-toggle {
     display: none;
 }
 
-/* ============================================
-   MOBILE LAYOUT
-   Optimized for phones and tablets
-   ============================================ */
 .layout-mobile .header-content {
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -220,7 +194,7 @@
 .layout-mobile .btn {
     padding: 0.75rem 1rem;
     font-size: 1rem;
-    min-height: 44px; /* Touch target size */
+    min-height: 44px;
 }
 
 .layout-mobile .icon-button {
@@ -243,7 +217,7 @@
 .layout-mobile input[type="number"],
 .layout-mobile select,
 .layout-mobile textarea {
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
     padding: 0.75rem;
 }
 
@@ -258,7 +232,6 @@
     min-height: 50px;
 }
 
-/* Collapse panels by default on mobile */
 .layout-mobile .panel-body {
     max-height: 0;
     overflow: hidden;
@@ -275,16 +248,12 @@
     display: inline-block !important;
 }
 
-/* Expand RX/TX panels by default on mobile */
 .layout-mobile .panel:has(#rx-text) .panel-body,
 .layout-mobile .panel:has(#tx-text) .panel-body {
     max-height: none;
     padding: 0.75rem;
 }
 
-/* ============================================
-   RESPONSIVE ADJUSTMENTS
-   ============================================ */
 @media (max-width: 1200px) {
     .layout-default .main-grid,
     .layout-compact .main-grid,
@@ -326,10 +295,6 @@
     }
 }
 
-/* ============================================
-   WIDESCREEN LAYOUT
-   3-column layout for ultrawide monitors
-   ============================================ */
 .layout-widescreen .main-grid {
     display: grid;
     grid-template-columns: 280px 1fr 320px;
@@ -366,10 +331,6 @@
     }
 }
 
-/* ============================================
-   FOCUS MODE LAYOUT
-   Distraction-free RX with minimal controls
-   ============================================ */
 .layout-focus .stats-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
@@ -415,7 +376,7 @@
     color: white;
     border: none;
     padding: 0.75rem;
-    border-radius: 8px 0 0 8px;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
     cursor: pointer;
     box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -440,10 +401,6 @@
     gap: 0.5rem;
 }
 
-/* ============================================
-   CONTEST LAYOUT
-   Optimized for fast contest operations
-   ============================================ */
 .layout-contest .main-grid {
     display: grid;
     grid-template-columns: 260px 1fr;
@@ -504,10 +461,6 @@
     margin-bottom: 0.5rem;
 }
 
-/* ============================================
-   MONITOR LAYOUT
-   Large RX display for passive monitoring
-   ============================================ */
 .layout-monitor .main-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -543,7 +496,7 @@
     color: white;
     border: none;
     padding: 0.75rem;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
     cursor: pointer;
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -571,9 +524,6 @@
     line-height: 1.6;
 }
 
-/* ============================================
-   DARK MODE ADJUSTMENTS
-   ============================================ */
 body.dark-theme .layout-minimal .sidebar,
 body.dark-theme .layout-focus .sidebar,
 body.dark-theme .layout-monitor .sidebar {

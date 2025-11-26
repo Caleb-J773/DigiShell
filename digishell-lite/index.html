@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiShell Lite</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-terminal: #010409;
+
+            --border-primary: #30363d;
+            --border-secondary: #21262d;
+
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-tertiary: #6e7681;
+
+            --accent-primary: #58a6ff;
+            --accent-secondary: #1f6feb;
+
+            --status-rx: #3fb950;
+            --status-tx: #f78166;
+            --status-tune: #58a6ff;
+            --status-abort: #da3633;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+            --space-8: 32px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: var(--space-5);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            padding: var(--space-4) var(--space-6);
+            border-radius: 8px;
+            margin-bottom: var(--space-5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            position: relative;
+        }
+
+        .status-dot::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: inherit;
+            opacity: 0;
+            animation: none;
+        }
+
+        .status-dot.rx {
+            background: var(--status-rx);
+        }
+
+        .status-dot.rx::before {
+            animation: pulse-green 2s infinite;
+        }
+
+        .status-dot.tx {
+            background: var(--status-tx);
+        }
+
+        .status-dot.tx::before {
+            animation: pulse-orange 1s infinite;
+        }
+
+        .status-dot.tune {
+            background: var(--status-tune);
+        }
+
+        @keyframes pulse-green {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(1.5);
+            }
+        }
+
+        @keyframes pulse-orange {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(1.5);
+            }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: var(--space-5);
+            margin-bottom: var(--space-5);
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: var(--space-3);
+            }
+
+            header {
+                padding: var(--space-3) var(--space-4);
+            }
+
+            .panel {
+                padding: var(--space-4);
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 22px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: var(--space-6);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel h2 {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.15s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        select:hover, input:hover {
+            border-color: var(--border-primary);
+            background: var(--bg-secondary);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0;
+            position: relative;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:not(:disabled):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        button:not(:disabled):active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .panel > button + button {
+            margin-top: var(--space-3);
+        }
+
+        .btn-tx {
+            background: linear-gradient(180deg, #f78166 0%, #ea6045 100%);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-rx {
+            background: linear-gradient(180deg, #3fb950 0%, #2ea043 100%);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-tune {
+            background: linear-gradient(180deg, #58a6ff 0%, #1f6feb 100%);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-abort {
+            background: linear-gradient(180deg, #da3633 0%, #b62324 100%);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: #30363d;
+            border-color: #8b949e;
+        }
+
+        .terminal {
+            background: var(--bg-terminal);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal-rx {
+            height: 320px;
+            color: #7ee787;
+            margin-bottom: var(--space-4);
+        }
+
+        .terminal-tx {
+            min-height: 120px;
+            max-height: 300px;
+            resize: vertical;
+            color: #ffa657;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-terminal);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            color: #ffa657;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 120px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+            margin-top: var(--space-3);
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border-secondary);
+            margin: var(--space-5) 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DigiShell Lite</h1>
+            <div class="status">
+                <div class="status-dot rx" id="statusDot"></div>
+                <span id="statusText">RX</span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div>
+                <div class="panel">
+                    <h2>Modem</h2>
+                    <div class="form-group">
+                        <label for="modemSelect">Mode</label>
+                        <select id="modemSelect">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="carrierInput">Carrier (Hz)</label>
+                        <input type="number" id="carrierInput" min="0" max="4000" step="10" value="1500">
+                    </div>
+
+                    <button class="btn-secondary" onclick="applyModem()">Apply</button>
+
+                    <div class="divider"></div>
+
+                    <h2>Control</h2>
+                    <button class="btn-tx" onclick="startTX()">Transmit</button>
+                    <button class="btn-rx" onclick="startRX()">Receive</button>
+                    <button class="btn-tune" onclick="startTune()">Tune</button>
+                    <button class="btn-abort" onclick="abort()">Abort</button>
+
+                    <div class="divider"></div>
+
+                    <button class="btn-secondary" onclick="clearRX()">Clear RX</button>
+                    <button class="btn-secondary" onclick="clearTX()">Clear TX</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <h2>Receive</h2>
+                    <div class="terminal terminal-rx" id="rxTerminal"></div>
+
+                    <h2 style="margin-top: 20px;">Transmit</h2>
+                    <textarea id="txInput" placeholder="Type message here and press Send..." aria-label="Transmit message input"></textarea>
+
+                    <div class="button-group">
+                        <button class="btn-tx" onclick="sendText()">Send</button>
+                        <button class="btn-secondary" onclick="document.getElementById('txInput').value = ''">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStatus = 'rx';
+        let updateInterval;
+
+        function updateStatus() {
+            fetch('/api/status')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.connected) {
+                        currentStatus = data.status || 'rx';
+                        const statusDot = document.getElementById('statusDot');
+                        const statusText = document.getElementById('statusText');
+
+                        statusDot.className = 'status-dot ' + currentStatus;
+                        statusText.textContent = currentStatus.toUpperCase();
+                    } else {
+                        document.getElementById('statusText').textContent = 'DISCONNECTED';
+                        document.getElementById('statusDot').className = 'status-dot';
+                    }
+                })
+                .catch(err => console.error('Status update error:', err));
+        }
+
+        function updateRX() {
+            fetch('/api/rx')
+                .then(r => r.json())
+                .then(data => {
+                    const terminal = document.getElementById('rxTerminal');
+                    if (data.text !== terminal.textContent) {
+                        terminal.textContent = data.text;
+                        terminal.scrollTop = terminal.scrollHeight;
+                    }
+                })
+                .catch(err => console.error('RX update error:', err));
+        }
+
+        function loadModems() {
+            fetch('/api/modems')
+                .then(r => r.json())
+                .then(data => {
+                    const select = document.getElementById('modemSelect');
+                    select.innerHTML = '';
+
+                    if (data.modems && data.modems.length > 0) {
+                        data.modems.forEach(modem => {
+                            const option = document.createElement('option');
+                            option.value = modem;
+                            option.textContent = modem;
+                            select.appendChild(option);
+                        });
+
+                        fetch('/api/modem')
+                            .then(r => r.json())
+                            .then(modemData => {
+                                if (modemData.modem) {
+                                    select.value = modemData.modem;
+                                }
+                                if (modemData.carrier) {
+                                    document.getElementById('carrierInput').value = modemData.carrier;
+                                }
+                            });
+                    } else {
+                        select.innerHTML = '<option>No modems available</option>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Modem load error:', err);
+                    document.getElementById('modemSelect').innerHTML = '<option>Error loading modems</option>';
+                });
+        }
+
+        function applyModem() {
+            const modem = document.getElementById('modemSelect').value;
+            const carrier = parseInt(document.getElementById('carrierInput').value);
+
+            fetch('/api/modem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ modem: modem })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    return fetch('/api/carrier', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ carrier: carrier })
+                    });
+                }
+            })
+            .catch(err => console.error('Apply modem error:', err));
+        }
+
+        function startTX() {
+            fetch('/api/tx', { method: 'POST' })
+                .catch(err => console.error('TX error:', err));
+        }
+
+        function startRX() {
+            fetch('/api/rx/switch', { method: 'POST' })
+                .catch(err => console.error('RX error:', err));
+        }
+
+        function startTune() {
+            fetch('/api/tune', { method: 'POST' })
+                .catch(err => console.error('Tune error:', err));
+        }
+
+        function abort() {
+            fetch('/api/abort', { method: 'POST' })
+                .catch(err => console.error('Abort error:', err));
+        }
+
+        function sendText() {
+            const text = document.getElementById('txInput').value;
+            if (!text) return;
+
+            fetch('/api/tx/text', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    startTX();
+                }
+            })
+            .catch(err => console.error('Send text error:', err));
+        }
+
+        function clearRX() {
+            fetch('/api/rx/clear', { method: 'POST' })
+                .then(() => {
+                    document.getElementById('rxTerminal').textContent = '';
+                })
+                .catch(err => console.error('Clear RX error:', err));
+        }
+
+        function clearTX() {
+            fetch('/api/tx/clear', { method: 'POST' })
+                .catch(err => console.error('Clear TX error:', err));
+        }
+
+        document.getElementById('txInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendText();
+            }
+        });
+
+        window.addEventListener('load', function() {
+            loadModems();
+            updateStatus();
+            updateRX();
+
+            updateInterval = setInterval(function() {
+                updateStatus();
+                updateRX();
+            }, 1000);
+        });
+
+        window.addEventListener('beforeunload', function() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>
