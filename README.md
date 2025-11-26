@@ -149,7 +149,6 @@ only one usage of each socket address (protocol/network address/port) is normall
 This means another application is already using port 8000. To fix this:
 
 1. **Find what's using the port:**
-   - Windows: `netstat -ano | findstr :8000`
    - Linux/Mac: `lsof -i :8000` or `netstat -tulpn | grep :8000`
 
 2. **Close the other application** using port 8000, or
