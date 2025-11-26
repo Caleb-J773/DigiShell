@@ -85,7 +85,7 @@
                     <!-- Modem -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-header-group">
                                 <button class="panel-collapse-btn" data-panel="modem">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -100,7 +100,7 @@
                                 <i class="fas fa-search"></i>
                                 <input type="text" id="modem-search" placeholder="Search modes...">
                             </div>
-                            <select id="modem-select" size="8" style="margin-bottom: 1rem;">
+                            <select id="modem-select" size="8" class="mb-4">
                             </select>
                             <button id="set-modem-btn" class="btn btn-primary btn-block">
                                 <i class="fas fa-check"></i> Apply Mode
@@ -111,7 +111,7 @@
                     <!-- Control -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-header-group">
                                 <button class="panel-collapse-btn" data-panel="control">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -139,7 +139,7 @@
                     <!-- Settings -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-header-group">
                                 <button class="panel-collapse-btn" data-panel="settings">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -152,7 +152,7 @@
                         <div class="panel-body">
                             <div class="form-group">
                                 <label class="form-label">Carrier Frequency (Hz)</label>
-                                <input type="number" id="carrier-input" min="500" max="3000" value="1500" style="margin-bottom: 0.75rem;">
+                                <input type="number" id="carrier-input" min="500" max="3000" value="1500" class="mb-3">
                                 <input type="range" id="carrier-freq" min="500" max="3000" value="1500">
                             </div>
 
@@ -169,7 +169,7 @@
                     <!-- Preset Frequencies -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-header-group">
                                 <button class="panel-collapse-btn" data-panel="presets">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -183,14 +183,14 @@
                             </button>
                         </div>
                         <div class="panel-body">
-                            <div class="form-group" style="margin-bottom: 1rem;">
+                            <div class="form-group mb-4">
                                 <label class="form-label">Filter by Mode</label>
-                                <select id="preset-mode-filter" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--bg-primary); color: var(--text-primary);">
+                                <select id="preset-mode-filter" class="preset-mode-filter">
                                     <option value="">All Modes</option>
                                 </select>
                             </div>
-                            <div id="preset-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto;">
-                                <p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center;">Loading presets...</p>
+                            <div id="preset-list" class="preset-list">
+                                <p class="preset-loading">Loading presets...</p>
                             </div>
                         </div>
                     </div>
@@ -198,7 +198,7 @@
                     <!-- Rig -->
                     <div class="panel">
                         <div class="panel-header">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-header-group">
                                 <button class="panel-collapse-btn" data-panel="rig">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -226,7 +226,7 @@
                 </div>
 
                 <!-- Main Content -->
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="flex flex-col gap-4">
                     <!-- RX -->
                     <div class="panel">
                         <div class="panel-header">
@@ -234,7 +234,7 @@
                                 <i class="fas fa-download"></i>
                                 Receive Window
                             </div>
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <div class="flex gap-2 items-center">
                                 <div class="font-size-controls">
                                     <button class="font-size-btn" data-target="rx" data-action="decrease">
                                         <i class="fas fa-minus"></i>
@@ -244,10 +244,10 @@
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
-                                <button id="save-rx-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                <button id="save-rx-btn" class="btn btn-primary btn-compact">
                                     <i class="fas fa-save"></i> Save
                                 </button>
-                                <button id="clear-rx-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                <button id="clear-rx-btn" class="btn btn-secondary btn-compact">
                                     <i class="fas fa-trash"></i> Clear
                                 </button>
                             </div>
@@ -266,7 +266,7 @@
                                 <i class="fas fa-upload"></i>
                                 Transmit Buffer
                             </div>
-                            <div style="display: flex; gap: 0.625rem; align-items: center;">
+                            <div class="flex gap-2 items-center">
                                 <div class="font-size-controls">
                                     <button class="font-size-btn" data-target="tx" data-action="decrease">
                                         <i class="fas fa-minus"></i>
@@ -276,14 +276,14 @@
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
-                                <label id="tx-progress-container" style="display: none; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
-                                    <input type="checkbox" id="tx-progress-toggle" style="cursor: pointer;">
+                                <label id="tx-progress-container" class="flex items-center gap-1 text-xs text-muted cursor-pointer" style="display: none;">
+                                    <input type="checkbox" id="tx-progress-toggle" class="cursor-pointer">
                                     <span>TX Progress (estimated)</span>
                                 </label>
-                                <button id="clear-tx-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                <button id="clear-tx-btn" class="btn btn-secondary btn-compact">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                <button id="send-tx-btn" class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.8125rem;">
+                                <button id="send-tx-btn" class="btn-primary btn-compact">
                                     <i class="fas fa-paper-plane"></i> Send
                                 </button>
                             </div>
@@ -296,7 +296,7 @@
                     <!-- Macros -->
                     <div id="macros-panel" class="panel">
                         <div class="panel-header">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-header-group">
                                 <button class="panel-collapse-btn" data-panel="macros">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -305,19 +305,19 @@
                                     Macros & Station
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <div class="panel-order-controls" style="display: flex; flex-direction: column; gap: 2px;">
-                                    <button class="panel-move-btn panel-move-up" data-panel="macros-panel" title="Move panel up" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                            <div class="flex gap-2 items-center">
+                                <div class="panel-order-controls">
+                                    <button class="panel-move-btn panel-move-up" data-panel="macros-panel" title="Move panel up">
                                         <i class="fas fa-chevron-up"></i>
                                     </button>
-                                    <button class="panel-move-btn panel-move-down" data-panel="macros-panel" title="Move panel down" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                                    <button class="panel-move-btn panel-move-down" data-panel="macros-panel" title="Move panel down">
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
                                 </div>
-                                <button id="edit-macros-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                <button id="edit-macros-btn" class="btn btn-secondary btn-compact">
                                     <i class="fas fa-edit"></i> Edit Macros
                                 </button>
-                                <button id="config-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                <button id="config-btn" class="btn btn-secondary btn-compact">
                                     <i class="fas fa-cog"></i> Configure
                                 </button>
                             </div>
@@ -338,10 +338,10 @@
                                         <span id="station-qth">Somewhere</span>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 0.625rem; align-items: center;">
-                                    <label style="font-size: 0.875rem; font-weight: 500; white-space: nowrap;">Last Call:</label>
-                                    <input type="text" id="last-call-input" placeholder="NOCALL" style="flex: 1; text-transform: uppercase;">
-                                    <button id="set-call-btn" class="btn-primary" style="padding: 0.625rem 1.25rem;">Set</button>
+                                <div class="last-call-container">
+                                    <label class="last-call-label">Last Call:</label>
+                                    <input type="text" id="last-call-input" placeholder="NOCALL" class="last-call-input">
+                                    <button id="set-call-btn" class="btn-primary last-call-btn">Set</button>
                                 </div>
                             </div>
                             <div class="macro-grid" id="macro-buttons"></div>
@@ -351,26 +351,26 @@
                     <!-- FlDigi Waterfall Viewer (BETA) -->
                     <div id="waterfall-panel" class="panel" style="display: none;">
                         <div class="panel-header">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-header-group">
                                 <button class="panel-collapse-btn" data-panel="waterfall">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                                 <div class="panel-title">
                                     <i class="fas fa-water"></i>
                                     FlDigi Waterfall
-                                    <span style="font-size: 0.6875rem; color: var(--accent); font-weight: 600; margin-left: 0.5rem; padding: 0.125rem 0.375rem; background: var(--accent-light); border-radius: 3px;">BETA</span>
+                                    <span class="waterfall-beta-badge">BETA</span>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <div class="panel-order-controls" style="display: flex; flex-direction: column; gap: 2px;">
-                                    <button class="panel-move-btn panel-move-up" data-panel="waterfall-panel" title="Move panel up" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                            <div class="flex gap-2 items-center">
+                                <div class="panel-order-controls">
+                                    <button class="panel-move-btn panel-move-up" data-panel="waterfall-panel" title="Move panel up">
                                         <i class="fas fa-chevron-up"></i>
                                     </button>
-                                    <button class="panel-move-btn panel-move-down" data-panel="waterfall-panel" title="Move panel down" style="padding: 2px 6px; font-size: 0.625rem; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--text-primary);">
+                                    <button class="panel-move-btn panel-move-down" data-panel="waterfall-panel" title="Move panel down">
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
                                 </div>
-                                <span id="waterfall-status" style="font-size: 0.75rem; color: var(--text-muted);">Disabled</span>
+                                <span id="waterfall-status" class="waterfall-status">Disabled</span>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="waterfall-enable-toggle">
                                     <span class="toggle-slider"></span>
@@ -378,13 +378,13 @@
                             </div>
                         </div>
                         <div class="panel-body">
-                            <div id="waterfall-viewer" style="position: relative; width: 100%; min-height: 300px; background: var(--bg-secondary); border-radius: var(--radius-md); overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                                <div id="waterfall-placeholder" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                                    <i class="fas fa-water" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
-                                    <p style="font-size: 0.875rem;">Enable waterfall streaming to view the FlDigi waterfall display</p>
-                                    <p style="font-size: 0.75rem; margin-top: 0.5rem;">Requires platform-specific dependencies (see docs)</p>
+                            <div id="waterfall-viewer" class="waterfall-viewer">
+                                <div id="waterfall-placeholder" class="waterfall-placeholder">
+                                    <i class="fas fa-water"></i>
+                                    <p>Enable waterfall streaming to view the FlDigi waterfall display</p>
+                                    <p>Requires platform-specific dependencies (see docs)</p>
                                 </div>
-                                <canvas id="waterfall-canvas" style="display: none; width: 100%; height: auto; max-height: 500px; object-fit: contain; cursor: crosshair;"></canvas>
+                                <canvas id="waterfall-canvas" class="waterfall-canvas"></canvas>
                             </div>
                         </div>
                     </div>
@@ -405,7 +405,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Callsign</label>
-                    <input type="text" id="config-callsign" style="text-transform: uppercase;">
+                    <input type="text" id="config-callsign" class="uppercase">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Name</label>
@@ -424,7 +424,7 @@
 
     <!-- Macro Editor Modal -->
     <div id="macro-editor-modal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content modal-max-width-800">
             <div class="modal-header">
                 <h2 class="modal-title">Macro Editor</h2>
                 <button id="close-macro-editor-btn" class="modal-close">
@@ -432,9 +432,9 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Available Placeholders</h3>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div class="macro-placeholders">
+                    <h3 class="macro-placeholders-title">Available Placeholders</h3>
+                    <div class="macro-placeholders-container">
                         <span class="kbd">&lt;MYCALL&gt;</span>
                         <span class="kbd">&lt;MYNAME&gt;</span>
                         <span class="kbd">&lt;MYQTH&gt;</span>
@@ -445,7 +445,7 @@
                     </div>
                 </div>
 
-                <div id="macro-list" style="margin-bottom: 1.5rem; max-height: 400px; overflow-y: auto;">
+                <div id="macro-list" class="macro-list">
                 </div>
 
                 <button id="add-macro-btn" class="btn-primary btn-block">
@@ -471,11 +471,11 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Macro Text</label>
-                    <textarea id="macro-text-input" style="min-height: 120px; font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;" placeholder="Enter macro text with placeholders like <MYCALL>"></textarea>
+                    <textarea id="macro-text-input" class="modal-textarea-mono" placeholder="Enter macro text with placeholders like <MYCALL>"></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Preview</label>
-                    <div id="macro-preview" style="padding: 1rem; background: var(--terminal-bg); color: var(--terminal-text); border-radius: var(--radius-md); font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace; font-size: 0.875rem; min-height: 80px; white-space: pre-wrap; word-wrap: break-word;">
+                    <div id="macro-preview" class="macro-preview">
                         Type macro text to see preview...
                     </div>
                 </div>
@@ -531,25 +531,25 @@
 
     <!-- Welcome Modal (First Time) -->
     <div id="welcome-modal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content modal-max-width-600">
             <div class="modal-header">
-                <h2 class="modal-title">Welcome to DigiShell! 📡</h2>
+                <h2 class="modal-title">Welcome to DigiShell! <span class="welcome-emoji">📡</span></h2>
             </div>
             <div class="modal-body">
-                <p style="margin-bottom: 1.5rem; font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+                <p class="welcome-description">
                     Welcome! This is a modern web interface for FLDIGI that makes amateur radio digital mode communications easier and more accessible.
                 </p>
 
-                <div style="background: var(--accent-light); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border-left: 4px solid var(--accent);">
-                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent);">
+                <div class="welcome-callout">
+                    <h3 class="welcome-callout-title">
                         <i class="fas fa-user-circle"></i> Let's Get Started
                     </h3>
-                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <p class="welcome-callout-description">
                         First, please enter your amateur radio callsign to configure your station:
                     </p>
-                    <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-group welcome-form-group-no-margin">
                         <label class="form-label">Your Callsign *</label>
-                        <input type="text" id="welcome-callsign" placeholder="e.g., W1ABC" style="text-transform: uppercase; font-weight: 600;">
+                        <input type="text" id="welcome-callsign" placeholder="e.g., W1ABC" class="welcome-input-uppercase">
                     </div>
                 </div>
 
@@ -563,7 +563,7 @@
                     <input type="text" id="welcome-qth" placeholder="e.g., Massachusetts">
                 </div>
 
-                <div class="toggle-item" style="margin-bottom: 1.5rem;">
+                <div class="toggle-item welcome-toggle">
                     <span class="toggle-label">Show me a quick tutorial</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="welcome-tutorial-toggle" checked>
@@ -575,7 +575,7 @@
                     <i class="fas fa-check"></i> Continue to Interface
                 </button>
 
-                <p style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                <p class="welcome-footer-text">
                     You can always change these settings later in the Configuration menu
                 </p>
             </div>
@@ -584,7 +584,7 @@
 
     <!-- Tutorial Modal -->
     <div id="tutorial-modal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-content modal-max-width-700">
             <div class="modal-header">
                 <h2 class="modal-title" id="tutorial-title">Quick Tutorial (1/5)</h2>
                 <button id="close-tutorial-btn" class="modal-close">
@@ -594,11 +594,11 @@
             <div class="modal-body">
                 <div id="tutorial-content">
                 </div>
-                <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
-                    <button id="tutorial-prev-btn" class="btn btn-secondary" style="flex: 1;">
+                <div class="tutorial-nav">
+                    <button id="tutorial-prev-btn" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Previous
                     </button>
-                    <button id="tutorial-next-btn" class="btn-primary" style="flex: 1;">
+                    <button id="tutorial-next-btn" class="btn-primary">
                         Next <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -608,7 +608,7 @@
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-content modal-max-width-700">
             <div class="modal-header">
                 <h2 class="modal-title">Settings</h2>
                 <button id="close-settings-btn" class="modal-close">
@@ -616,8 +616,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Settings Tabs -->
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem;">
+                <div class="settings-tabs">
                     <button id="tab-themes" class="settings-tab active" data-tab="themes">
                         <i class="fas fa-palette"></i> Themes
                     </button>
@@ -631,14 +630,14 @@
 
                 <!-- Themes Tab -->
                 <div id="settings-content-themes" class="settings-tab-content active">
-                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-flask" style="color: var(--accent);"></i>
+                    <h3 class="features-title">
+                        <i class="fas fa-flask"></i>
                         Features
                     </h3>
-                    <div class="toggle-item" style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
-                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <div class="toggle-item feature-toggle-item">
+                        <div class="feature-toggle-content">
                             <span class="toggle-label">Enable Beta Features</span>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Shows experimental modem settings and TX progress indicator</span>
+                            <span class="feature-description">Shows experimental modem settings and TX progress indicator</span>
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="beta-features-toggle">
@@ -646,14 +645,13 @@
                         </label>
                     </div>
 
-                    <!-- Waterfall Streaming Toggle (only visible when beta features enabled) -->
-                    <div id="waterfall-streaming-toggle-container" class="toggle-item" style="display: none; margin-bottom: 2rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--accent-light);">
-                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div id="waterfall-streaming-toggle-container" class="toggle-item waterfall-toggle-container">
+                        <div class="feature-toggle-content">
+                            <div class="waterfall-toggle-label">
                                 <span class="toggle-label">FlDigi Waterfall Streaming</span>
-                                <span style="font-size: 0.6875rem; color: var(--accent); font-weight: 600; padding: 0.125rem 0.375rem; background: var(--accent-light); border-radius: 3px;">BETA</span>
+                                <span class="waterfall-beta-badge">BETA</span>
                             </div>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Stream FlDigi waterfall window to web interface</span>
+                            <span class="feature-description">Stream FlDigi waterfall window to web interface</span>
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="waterfall-streaming-settings-toggle">
@@ -661,25 +659,25 @@
                         </label>
                     </div>
 
-                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-sun" style="color: var(--accent);"></i>
+                    <h3 class="themes-section-title">
+                        <i class="fas fa-sun"></i>
                         Light Themes
                     </h3>
-                    <div id="light-themes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 2rem;">
+                    <div id="light-themes-grid" class="themes-grid">
                     </div>
 
-                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-moon" style="color: var(--accent);"></i>
+                    <h3 class="themes-section-title">
+                        <i class="fas fa-moon"></i>
                         Dark Themes
                     </h3>
-                    <div id="dark-themes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 2rem;">
+                    <div id="dark-themes-grid" class="themes-grid">
                     </div>
 
-                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-paint-brush" style="color: var(--accent);"></i>
+                    <h3 class="themes-section-title">
+                        <i class="fas fa-paint-brush"></i>
                         Custom Themes
                     </h3>
-                    <div id="custom-themes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+                    <div id="custom-themes-grid" class="themes-grid mb-4">
                     </div>
                     <button id="create-custom-theme-btn" class="btn-primary btn-block">
                         <i class="fas fa-plus"></i> Create Custom Theme
@@ -688,31 +686,30 @@
 
                 <!-- Layouts Tab -->
                 <div id="settings-content-layouts" class="settings-tab-content">
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-th-large" style="color: var(--accent);"></i>
+                    <div class="layouts-header">
+                        <h3 class="layouts-title">
+                            <i class="fas fa-th-large"></i>
                             Interface Layouts
                         </h3>
-                        <p style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.5;">
+                        <p class="layouts-description">
                             Choose a layout optimized for your workflow and screen size. All layouts are fully responsive and changes apply immediately.
                         </p>
                     </div>
 
                     <div id="layouts-grid">
-                        <!-- Layout categories will be populated by JavaScript -->
                     </div>
                 </div>
 
                 <!-- Modem Tab -->
                 <div id="settings-content-modem" class="settings-tab-content">
-                    <h3 style="margin-bottom: 1.25rem; font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Modem Configuration</h3>
+                    <h3 class="modem-settings-title">Modem Configuration</h3>
                     <div class="form-group">
                         <label class="form-label">Bandwidth (Hz)</label>
-                        <div style="display: flex; gap: 0.75rem; margin-bottom: 0.75rem;">
-                            <input type="number" id="settings-bandwidth-value" min="31" max="2000" style="width: 120px;">
-                            <span style="align-self: center; color: var(--text-secondary);">Hz</span>
+                        <div class="bandwidth-input-container">
+                            <input type="number" id="settings-bandwidth-value" min="31" max="2000" class="bandwidth-input">
+                            <span class="bandwidth-unit">Hz</span>
                         </div>
-                        <input type="range" id="settings-bandwidth" min="31" max="2000" style="width: 100%;">
+                        <input type="range" id="settings-bandwidth" min="31" max="2000" class="bandwidth-slider">
                     </div>
                     <div class="toggle-item">
                         <span class="toggle-label">AFC (Auto Frequency Control)</span>
@@ -735,7 +732,7 @@
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
-                    <button id="save-settings-btn" class="btn-primary btn-block" style="margin-top: 1.5rem;">
+                    <button id="save-settings-btn" class="btn-primary btn-block modem-apply-btn">
                         <i class="fas fa-check"></i> Apply Settings
                     </button>
                 </div>
@@ -745,7 +742,7 @@
 
     <!-- Keybinds Modal -->
     <div id="keybinds-modal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content modal-max-width-800">
             <div class="modal-header">
                 <h2 class="modal-title">Keyboard Shortcuts</h2>
                 <button id="close-keybinds-btn" class="modal-close">
@@ -753,29 +750,29 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div style="margin-bottom: 1.5rem;">
-                    <div style="background: var(--accent-light); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent); margin-bottom: 1.5rem;">
-                        <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--accent);">
+                <div class="keybinds-section">
+                    <div class="keybinds-info">
+                        <h3 class="keybinds-info-title">
                             <i class="fas fa-keyboard"></i> How to Set Custom Keybinds
                         </h3>
-                        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">
+                        <p class="keybinds-info-description">
                             Click in the input box and press your desired key combination. Supports Ctrl, Alt, Shift + any key.
                         </p>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">Default Actions</h3>
-                        <button id="reset-default-keybinds-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                    <div class="keybinds-section-header">
+                        <h3 class="keybinds-section-title">Default Actions</h3>
+                        <button id="reset-default-keybinds-btn" class="btn btn-secondary btn-compact">
                             <i class="fas fa-undo"></i> Reset to Defaults
                         </button>
                     </div>
 
-                    <div id="default-keybinds-list" style="margin-bottom: 2rem;">
+                    <div id="default-keybinds-list" class="keybinds-section">
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">Macro Shortcuts</h3>
-                        <button id="add-macro-keybind-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                    <div class="keybinds-section-header">
+                        <h3 class="keybinds-section-title">Macro Shortcuts</h3>
+                        <button id="add-macro-keybind-btn" class="btn btn-primary btn-compact">
                             <i class="fas fa-plus"></i> Add Macro Shortcut
                         </button>
                     </div>
@@ -803,13 +800,13 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Select Macro</label>
-                    <select id="macro-keybind-select" style="width: 100%;">
+                    <select id="macro-keybind-select" class="w-full">
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Keyboard Shortcut</label>
-                    <input type="text" id="macro-keybind-input" placeholder="Click and press your key combination" readonly style="cursor: pointer;">
-                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                    <input type="text" id="macro-keybind-input" placeholder="Click and press your key combination" readonly class="keybind-input-readonly">
+                    <small class="keybind-input-help">
                         Example: Ctrl+M, Alt+Q, Shift+F1
                     </small>
                 </div>
@@ -827,7 +824,7 @@
 
     <!-- Preset Manager Modal -->
     <div id="preset-manager-modal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-content modal-max-width-700">
             <div class="modal-header">
                 <h2 class="modal-title">Manage Preset Frequencies</h2>
                 <button id="close-preset-manager-btn" class="modal-close">
@@ -835,15 +832,15 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div style="margin-bottom: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">Your Custom Presets</h3>
-                        <button id="add-preset-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                <div class="mb-6">
+                    <div class="preset-manager-header">
+                        <h3 class="preset-manager-title">Your Custom Presets</h3>
+                        <button id="add-preset-btn" class="btn btn-primary btn-compact">
                             <i class="fas fa-plus"></i> Add Preset
                         </button>
                     </div>
-                    <div id="custom-presets-list" style="max-height: 300px; overflow-y: auto;">
-                        <p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center; padding: 2rem;">No custom presets yet. Click "Add Preset" to create one.</p>
+                    <div id="custom-presets-list" class="custom-presets-list">
+                        <p class="custom-presets-empty">No custom presets yet. Click "Add Preset" to create one.</p>
                     </div>
                 </div>
             </div>
@@ -866,14 +863,14 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Mode</label>
-                    <select id="preset-mode-input" style="width: 100%;">
+                    <select id="preset-mode-input" class="w-full">
                         <option value="">Select a mode...</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Rig Frequency (Hz)</label>
                     <input type="number" id="preset-rig-freq-input" placeholder="e.g., 14070000" min="0" step="1">
-                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                    <small class="preset-help-text">
                         Enter frequency in Hz (e.g., 14.070 MHz = 14070000 Hz)
                     </small>
                 </div>
@@ -899,7 +896,7 @@
 
     <!-- Custom Theme Editor Modal -->
     <div id="custom-theme-modal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content modal-max-width-600">
             <div class="modal-header">
                 <h2 class="modal-title" id="custom-theme-title">Create Custom Theme</h2>
                 <button id="close-custom-theme-btn" class="modal-close">
@@ -914,56 +911,56 @@
 
                 <div class="form-group">
                     <label class="form-label">Base Theme</label>
-                    <select id="custom-theme-base" style="width: 100%;">
+                    <select id="custom-theme-base" class="w-full">
                         <option value="dark">Dark Mode</option>
                         <option value="light">Light Mode</option>
                     </select>
                 </div>
 
-                <h3 style="margin: 1.5rem 0 1rem; font-size: 0.9375rem; font-weight: 600; color: var(--text-primary);">
+                <h3 class="theme-editor-section-title">
                     <i class="fas fa-palette"></i> Customize Colors
                 </h3>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="theme-editor-color-grid">
                     <div class="form-group">
                         <label class="form-label">Accent Color</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="color" id="custom-accent" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
-                            <input type="text" id="custom-accent-hex" placeholder="#0ea5e9" style="flex: 1; font-family: monospace;">
+                        <div class="theme-color-input-group">
+                            <input type="color" id="custom-accent" class="theme-color-picker">
+                            <input type="text" id="custom-accent-hex" placeholder="#0ea5e9" class="theme-color-hex">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Background Primary</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="color" id="custom-bg-primary" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
-                            <input type="text" id="custom-bg-primary-hex" placeholder="#0f172a" style="flex: 1; font-family: monospace;">
+                        <div class="theme-color-input-group">
+                            <input type="color" id="custom-bg-primary" class="theme-color-picker">
+                            <input type="text" id="custom-bg-primary-hex" placeholder="#0f172a" class="theme-color-hex">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Background Secondary</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="color" id="custom-bg-secondary" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
-                            <input type="text" id="custom-bg-secondary-hex" placeholder="#1e293b" style="flex: 1; font-family: monospace;">
+                        <div class="theme-color-input-group">
+                            <input type="color" id="custom-bg-secondary" class="theme-color-picker">
+                            <input type="text" id="custom-bg-secondary-hex" placeholder="#1e293b" class="theme-color-hex">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Text Primary</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="color" id="custom-text-primary" style="width: 50px; height: 40px; border-radius: var(--radius-md); cursor: pointer;">
-                            <input type="text" id="custom-text-primary-hex" placeholder="#f1f5f9" style="flex: 1; font-family: monospace;">
+                        <div class="theme-color-input-group">
+                            <input type="color" id="custom-text-primary" class="theme-color-picker">
+                            <input type="text" id="custom-text-primary-hex" placeholder="#f1f5f9" class="theme-color-hex">
                         </div>
                     </div>
                 </div>
 
-                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md); margin: 1.5rem 0; border-left: 4px solid var(--accent);">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Theme Preview:</div>
-                    <div id="theme-preview" style="padding: 1rem; border-radius: var(--radius-md); background: var(--bg-primary); border: 2px solid var(--accent);">
-                        <div style="font-weight: 600; margin-bottom: 0.5rem;">Sample Panel</div>
-                        <div style="font-size: 0.875rem; color: var(--text-secondary);">This is how your theme will look</div>
-                        <button class="btn-primary" style="margin-top: 0.75rem; padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                <div class="theme-preview-container">
+                    <div class="theme-preview-label">Theme Preview:</div>
+                    <div id="theme-preview" class="theme-preview-panel">
+                        <div class="theme-preview-title">Sample Panel</div>
+                        <div class="theme-preview-text">This is how your theme will look</div>
+                        <button class="btn-primary theme-preview-button">
                             Sample Button
                         </button>
                     </div>
@@ -984,9 +981,8 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- Footer -->
-    <footer style="background: var(--bg-primary); border-top: 1px solid var(--border-light); padding: 0.75rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 2rem;">
-        Made by <span style="color: var(--accent); font-weight: 600;">KC3VPB</span>
+    <footer class="footer">
+        Made by <span class="footer-creator">KC3VPB</span>
     </footer>
 
     <script type="module" src="/static/js/main.js?v=3.4-fast-typing-fix"></script>
