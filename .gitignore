@@ -58,3 +58,5 @@ DigiShell.spec
 BUILD.md
 .fldigi_tui.json
 .claude/settings.local.json
+launcher.py
+DOCUMENTATION.md
