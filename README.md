@@ -40,9 +40,13 @@ This has not been secured for the public web. It's designed for local devices, L
 
 ## Features
 
-Digishell has two different ways that you can interact with, the first way is via the **web interface**. The web version is a more styled, more customizable and feature rich. It can be accessed from any browser over a LAN or VPN. While building the web interface, I also took into account the need for remote stations and or in general operating away from the computer hooked up to FlDigi. As soon as it works pretty well for remote stations or operating from a tablet/phone during field operations. The web interface will work on a desktop, tablet, or phone via a mobile layout.
+Digishell has two different ways that you can interact with, the first way is via the **web interface**. The web version is a more styled, more customizable and feature rich. It can be accessed from any browser over a LAN or VPN. While building the web interface, I also took into account the need for remote stations and or in general operating away from the computer hooked up to FlDigi. It works pretty well for remote stations or operating from a tablet/phone during field operations. The web interface will work on a desktop, tablet, or phone via a mobile layout.
+
+Some notable features with the web interface include themes (dark mode + light mode, and varying colors) with being able to custom set your own, a full macro system, many different layouts you can choose from for your screen/operating preferences and also you are able to freely adjust the size of the TX and RX windows.
 
 The second way is via it's **terminal interface** otherwise known as a (TUI) terminal user interface. The terminal interface is great for SSH sessions, smaller screens and or in general just users who would like a terminal interface. The terminal interface doesn't have all the features like the web interface.
+
+![DigiShell Terminal](https://digishell.kc3vpb.com/shell1.png)
 
 ---
 
