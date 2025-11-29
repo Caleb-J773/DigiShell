@@ -18,6 +18,7 @@ Browser-based and terminal-friendly
 
 ![DigiShell Interface](https://iili.io/KygYH5x.png)
 
+
 ## What is this?
 
 DigiShell wraps around FLDIGI's XML-RPC interface using the pyFldigi library to give you a cleaner way to control it. FLDIGI still does all the actual work with the modems and signal processing.
@@ -26,7 +27,7 @@ I built this because I wanted something simpler to interact with during portable
 
 **This isn't meant to replace FLDIGI at all.** It doesn't have all the bells and whistles, and that's by design. This is just the essentials for making contacts: modem control, TX/RX, and its own macro system. If you need FLDIGI's advanced features (waterfall clicking, macro editing in the app, config adjustments, etc.), you'll still use FLDIGI directly for those.
 
-> **Note:** This is a work in progress. It's possibly unstable and has bugs and other issues.
+> **Note:** This is a work in progress. It's possibly unstable and has bugs and other issues.  DigiShell currently does not properly support getting the actual characters stream of TX, so it can only predict it. This option is disabled by default, so you will not see a streaming red like FlDigi of TXed characters. 
 
 ---
 
